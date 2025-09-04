@@ -208,6 +208,19 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
         description: `${fishCount} kalaa (${speciesList}) on nyt myynnissä.`,
       });
 
+      // Send email notifications to subscribers
+      try {
+        const { error: emailError } = await supabase.functions.invoke('send-new-catch-notifications');
+        if (emailError) {
+          console.error('Email notification error:', emailError);
+        } else {
+          console.log('Email notifications sent successfully');
+        }
+      } catch (emailError) {
+        // Don't fail the whole operation if emails fail
+        console.error('Failed to send email notifications:', emailError);
+      }
+
       form.reset({
         fish_entries: [{
           species: '',
