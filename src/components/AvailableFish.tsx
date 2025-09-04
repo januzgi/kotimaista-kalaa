@@ -4,12 +4,12 @@ import { ProductCard } from "./ProductCard";
 
 export const AvailableFish = () => {
   const fishProducts = [
-    { fishName: "Ahven", price: "12€/kg", fishIcon: "🐟" },
-    { fishName: "Kuha", price: "18€/kg", fishIcon: "🎣" },
-    { fishName: "Hauki", price: "14€/kg", fishIcon: "🐠" },
-    { fishName: "Siika", price: "16€/kg", fishIcon: "🐟" },
-    { fishName: "Muikku", price: "22€/kg", fishIcon: "🐠" },
-    { fishName: "Taimen", price: "24€/kg", fishIcon: "🎣" },
+    { fishName: "Ahven", price: "alkaen 15€/kg", fishIcon: "🐟" },
+    { fishName: "Kuha", price: "alkaen 18€/kg", fishIcon: "🎣" },
+    { fishName: "Hauki", price: "alkaen 8€/kg", fishIcon: "🐠" },
+    { fishName: "Siika", price: "alkaen 18€/kg", fishIcon: "🐟" },
+    { fishName: "Muikku", price: "alkaen 6€/kg", fishIcon: "🐠" },
+    { fishName: "Taimen", price: "alkaen 20€/kg", fishIcon: "🎣" },
   ];
 
   return (
@@ -19,7 +19,7 @@ export const AvailableFish = () => {
           Saatavilla olevat kalat
         </h2>
         <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
-          Esimerkkejä saatavilla olevista kaloista. Katso ajankohtaiset saatavuudet ja hinnat.
+          Alla esimerkkejä kalalajeista ja niiden viitteelliset alkaen-hinnat. Todellinen hinta riippuu kalan muodosta (esim. fileoitu).
         </p>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">

@@ -9,10 +9,10 @@ interface ProductCardProps {
 export const ProductCard = ({ fishName, price, fishIcon }: ProductCardProps) => {
   return (
     <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-      <CardContent className="p-4 sm:p-6 text-center">
-        <div className="text-3xl sm:text-4xl mb-3 sm:mb-4">{fishIcon}</div>
-        <h3 className="font-semibold text-base sm:text-lg mb-2 text-foreground">{fishName}</h3>
-        <p className="text-secondary font-bold text-lg sm:text-xl">{price}</p>
+      <CardContent className="p-3 sm:p-4 text-center">
+        <div className="text-2xl sm:text-3xl mb-2 sm:mb-3">{fishIcon}</div>
+        <h3 className="font-semibold text-sm sm:text-base mb-1 sm:mb-2 text-foreground">{fishName}</h3>
+        <p className="text-secondary font-bold text-sm sm:text-base">{price}</p>
       </CardContent>
     </Card>
   );
