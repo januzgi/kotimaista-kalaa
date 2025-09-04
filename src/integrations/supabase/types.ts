@@ -14,6 +14,44 @@ export type Database = {
   }
   public: {
     Tables: {
+      default_prices: {
+        Row: {
+          created_at: string
+          fisherman_id: string
+          form: string
+          id: string
+          price_per_kg: number
+          species: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fisherman_id: string
+          form: string
+          id?: string
+          price_per_kg: number
+          species: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fisherman_id?: string
+          form?: string
+          id?: string
+          price_per_kg?: number
+          species?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "default_prices_fisherman_id_fkey"
+            columns: ["fisherman_id"]
+            isOneToOne: false
+            referencedRelation: "fisherman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_subscriptions: {
         Row: {
           email: string

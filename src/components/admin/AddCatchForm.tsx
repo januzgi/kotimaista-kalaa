@@ -32,14 +32,23 @@ const SPECIES_OPTIONS = [
   { value: 'lohi', label: 'Lohi' }
 ];
 
-const DEFAULT_PRICES: Record<string, number> = {
-  muikku: 6,
-  ahven: 15,
-  kuha: 18,
-  hauki: 8,
-  siika: 18,
-  taimen: 20,
-  lohi: 20
+// Helper function to fetch default price from database
+const fetchDefaultPrice = async (fishermanId: string, species: string, form: string): Promise<number | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('default_prices')
+      .select('price_per_kg')
+      .eq('fisherman_id', fishermanId)
+      .eq('species', species)
+      .eq('form', form)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.price_per_kg || null;
+  } catch (error) {
+    console.error('Error fetching default price:', error);
+    return null;
+  }
 };
 
 const fishEntrySchema = z.object({
@@ -84,10 +93,21 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     name: 'fish_entries'
   });
 
-  const handleSpeciesChange = (index: number, species: string) => {
-    const defaultPrice = DEFAULT_PRICES[species] || 0;
-    form.setValue(`fish_entries.${index}.species`, species);
-    form.setValue(`fish_entries.${index}.price_per_kg`, defaultPrice);
+  // Handle species or form change to update default price
+  const handleFieldChange = async (index: number, field: 'species' | 'form', value: string) => {
+    form.setValue(`fish_entries.${index}.${field}`, value);
+    
+    // Get current values
+    const currentSpecies = field === 'species' ? value : form.getValues(`fish_entries.${index}.species`);
+    const currentForm = field === 'form' ? value : form.getValues(`fish_entries.${index}.form`);
+    
+    // If both species and form are selected, fetch default price
+    if (currentSpecies && currentForm) {
+      const defaultPrice = await fetchDefaultPrice(fishermanProfileId, currentSpecies, currentForm);
+      if (defaultPrice !== null) {
+        form.setValue(`fish_entries.${index}.price_per_kg`, defaultPrice);
+      }
+    }
   };
 
   const addFishEntry = () => {
@@ -241,10 +261,10 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Laji *</FormLabel>
-                          <Select 
-                            onValueChange={(value) => handleSpeciesChange(index, value)} 
-                            defaultValue={field.value}
-                          >
+                           <Select 
+                             onValueChange={(value) => handleFieldChange(index, 'species', value)} 
+                             defaultValue={field.value}
+                           >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Valitse laji" />
@@ -269,18 +289,18 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Muoto *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Valitse muoto" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="Fileoitu">Fileoitu</SelectItem>
-                              <SelectItem value="Perattu">Perattu</SelectItem>
-                              <SelectItem value="Perkaamaton">Perkaamaton</SelectItem>
-                            </SelectContent>
-                          </Select>
+                           <Select onValueChange={(value) => handleFieldChange(index, 'form', value)} defaultValue={field.value}>
+                             <FormControl>
+                               <SelectTrigger>
+                                 <SelectValue placeholder="Valitse muoto" />
+                               </SelectTrigger>
+                             </FormControl>
+                             <SelectContent>
+                               <SelectItem value="kokonainen">Kokonainen</SelectItem>
+                               <SelectItem value="fileoitu">Fileoitu</SelectItem>
+                               <SelectItem value="perattu">Perattu</SelectItem>
+                             </SelectContent>
+                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}

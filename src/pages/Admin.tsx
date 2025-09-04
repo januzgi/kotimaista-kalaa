@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddCatchForm } from '@/components/admin/AddCatchForm';
 import { InventoryList } from '@/components/admin/InventoryList';
 import { OrderManagement } from '@/components/admin/OrderManagement';
+import { DefaultPricesManagement } from '@/components/admin/DefaultPricesManagement';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -105,8 +106,9 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="catch" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="catch" className="text-xs sm:text-sm">Hallitse saalista</TabsTrigger>
+            <TabsTrigger value="prices" className="text-xs sm:text-sm">Hallitse kilohintoja</TabsTrigger>
             <TabsTrigger value="orders" className="text-xs sm:text-sm">Tilaukset</TabsTrigger>
           </TabsList>
 
@@ -119,6 +121,10 @@ const Admin = () => {
               fishermanProfileId={fishermanProfile.id}
               refreshKey={refreshKey}
             />
+          </TabsContent>
+
+          <TabsContent value="prices">
+            <DefaultPricesManagement fishermanProfile={fishermanProfile} />
           </TabsContent>
 
           <TabsContent value="orders">
