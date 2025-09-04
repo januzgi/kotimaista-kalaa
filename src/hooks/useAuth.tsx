@@ -57,6 +57,52 @@ export const useAuth = () => {
     }
   };
 
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      
+      if (error) throw error;
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Kirjautuminen epäonnistui",
+        description: error instanceof Error ? error.message : "Tarkista sähköposti ja salasana",
+      });
+      throw error;
+    }
+  };
+
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl
+        }
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Rekisteröityminen onnistui",
+        description: "Tarkista sähköpostisi vahvistuslinkin saamiseksi.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Rekisteröityminen epäonnistui",
+        description: error instanceof Error ? error.message : "Tuntematon virhe",
+      });
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
@@ -80,6 +126,8 @@ export const useAuth = () => {
     session,
     loading,
     signInWithProvider,
+    signInWithEmail,
+    signUpWithEmail,
     signOut
   };
 };
