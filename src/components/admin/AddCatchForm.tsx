@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
@@ -22,11 +22,35 @@ interface FulfillmentSlot {
   type: 'PICKUP' | 'DELIVERY';
 }
 
-const catchFormSchema = z.object({
+const SPECIES_OPTIONS = [
+  { value: 'muikku', label: 'Muikku' },
+  { value: 'kuha', label: 'Kuha' },
+  { value: 'ahven', label: 'Ahven' },
+  { value: 'hauki', label: 'Hauki' },
+  { value: 'siika', label: 'Siika' },
+  { value: 'taimen', label: 'Taimen' },
+  { value: 'lohi', label: 'Lohi' }
+];
+
+const DEFAULT_PRICES: Record<string, number> = {
+  muikku: 6,
+  ahven: 15,
+  kuha: 18,
+  hauki: 8,
+  siika: 18,
+  taimen: 20,
+  lohi: 20
+};
+
+const fishEntrySchema = z.object({
   species: z.string().min(1, 'Laji on pakollinen'),
   form: z.string().min(1, 'Muoto on pakollinen'),
   price_per_kg: z.number().min(0.01, 'Kilohinta on pakollinen'),
   available_quantity: z.number().min(0.01, 'Määrä on pakollinen'),
+});
+
+const catchFormSchema = z.object({
+  fish_entries: z.array(fishEntrySchema).min(1, 'Lisää vähintään yksi kala'),
   catch_date: z.date({ required_error: 'Pyyntipäivä on pakollinen' })
 });
 
@@ -45,9 +69,41 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
   const form = useForm<z.infer<typeof catchFormSchema>>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
+      fish_entries: [{
+        species: '',
+        form: '',
+        price_per_kg: 0,
+        available_quantity: 0
+      }],
       catch_date: new Date()
     }
   });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'fish_entries'
+  });
+
+  const handleSpeciesChange = (index: number, species: string) => {
+    const defaultPrice = DEFAULT_PRICES[species] || 0;
+    form.setValue(`fish_entries.${index}.species`, species);
+    form.setValue(`fish_entries.${index}.price_per_kg`, defaultPrice);
+  };
+
+  const addFishEntry = () => {
+    append({
+      species: '',
+      form: '',
+      price_per_kg: 0,
+      available_quantity: 0
+    });
+  };
+
+  const removeFishEntry = (index: number) => {
+    if (fields.length > 1) {
+      remove(index);
+    }
+  };
 
   const addSlot = () => {
     setSlots([...slots, { start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
@@ -77,23 +133,28 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
     setIsSubmitting(true);
     try {
-      // First, create the product
-      const { data: productData, error: productError } = await supabase
-        .from('products')
-        .insert({
-          fisherman_id: fishermanProfileId,
-          species: values.species,
-          form: values.form,
-          price_per_kg: values.price_per_kg,
-          available_quantity: values.available_quantity,
-          catch_date: values.catch_date.toISOString()
-        })
-        .select()
-        .single();
+      // Create products for each fish entry
+      const productPromises = values.fish_entries.map(async (fishEntry) => {
+        const { data: productData, error: productError } = await supabase
+          .from('products')
+          .insert({
+            fisherman_id: fishermanProfileId,
+            species: fishEntry.species,
+            form: fishEntry.form,
+            price_per_kg: fishEntry.price_per_kg,
+            available_quantity: fishEntry.available_quantity,
+            catch_date: values.catch_date.toISOString()
+          })
+          .select()
+          .single();
 
-      if (productError) throw productError;
+        if (productError) throw productError;
+        return productData;
+      });
 
-      // Then create fulfillment slots
+      const products = await Promise.all(productPromises);
+
+      // Create fulfillment slots (shared across all fish)
       const fulfillmentSlots = slots.map(slot => {
         const startDateTime = new Date(values.catch_date);
         const [startHour, startMinute] = slot.start_time.split(':');
@@ -117,12 +178,23 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
       if (slotsError) throw slotsError;
 
+      const fishCount = values.fish_entries.length;
+      const speciesList = values.fish_entries.map(f => f.species).join(', ');
+
       toast({
         title: "Saalis lisätty onnistuneesti",
-        description: `${values.species} on nyt myynnissä.`,
+        description: `${fishCount} kalaa (${speciesList}) on nyt myynnissä.`,
       });
 
-      form.reset();
+      form.reset({
+        fish_entries: [{
+          species: '',
+          form: '',
+          price_per_kg: 0,
+          available_quantity: 0
+        }],
+        catch_date: new Date()
+      });
       setSlots([{ start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
       onSuccess();
     } catch (error) {
@@ -145,85 +217,136 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="species"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Laji *</FormLabel>
-                    <FormControl>
-                      <Input placeholder="esim. Kuha" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Fish Entries Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-base font-medium">Kalat *</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addFishEntry}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Lisää toinen kala
+                </Button>
+              </div>
 
-              <FormField
-                control={form.control}
-                name="form"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Muoto *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Valitse muoto" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Fileoitu">Fileoitu</SelectItem>
-                        <SelectItem value="Perattu">Perattu</SelectItem>
-                        <SelectItem value="Perkaamaton">Perkaamaton</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {fields.map((field, index) => (
+                <Card key={field.id} className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name={`fish_entries.${index}.species`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Laji *</FormLabel>
+                          <Select 
+                            onValueChange={(value) => handleSpeciesChange(index, value)} 
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Valitse laji" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {SPECIES_OPTIONS.map(option => (
+                                <SelectItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="price_per_kg"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kilohinta (€) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name={`fish_entries.${index}.form`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Muoto *</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Valitse muoto" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="Fileoitu">Fileoitu</SelectItem>
+                              <SelectItem value="Perattu">Perattu</SelectItem>
+                              <SelectItem value="Perkaamaton">Perkaamaton</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="available_quantity"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Saatavilla (kg) *</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        placeholder="0.0"
-                        {...field}
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name={`fish_entries.${index}.price_per_kg`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Kilohinta (€) *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder="0.00"
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name={`fish_entries.${index}.available_quantity`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Saatavilla (kg) *</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              placeholder="0.0"
+                              {...field}
+                              value={field.value || ''}
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  {fields.length > 1 && (
+                    <div className="mt-4 flex justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeFishEntry(index)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Poista
+                      </Button>
+                    </div>
+                  )}
+                </Card>
+              ))}
             </div>
 
+            {/* Catch Date Section */}
             <FormField
               control={form.control}
               name="catch_date"
@@ -265,6 +388,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
               )}
             />
 
+            {/* Fulfillment Slots Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-base font-medium">Nouto- ja toimitusajat *</Label>
