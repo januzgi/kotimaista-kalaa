@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
+import { fi } from 'date-fns/locale';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,41 +16,128 @@ interface Product {
   created_at: string;
 }
 
+interface FulfillmentSlot {
+  id: string;
+  start_time: string;
+  end_time: string;
+  type: 'PICKUP' | 'DELIVERY';
+}
+
+interface CatchGroup {
+  catch_date: string;
+  products: Product[];
+  fulfillment_slots: FulfillmentSlot[];
+}
+
 interface InventoryListProps {
   fishermanProfileId: string;
   refreshKey: number;
 }
 
 export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListProps) => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [catchGroups, setCatchGroups] = useState<CatchGroup[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchInventoryData = async () => {
       try {
-        const { data, error } = await supabase
+        // Fetch products
+        const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select('*')
           .eq('fisherman_id', fishermanProfileId)
-          .order('created_at', { ascending: false });
+          .order('catch_date', { ascending: false });
 
-        if (error) throw error;
-        setProducts(data || []);
+        if (productsError) throw productsError;
+
+        // Fetch fulfillment slots
+        const { data: slotsData, error: slotsError } = await supabase
+          .from('fulfillment_slots')
+          .select('*')
+          .eq('fisherman_id', fishermanProfileId)
+          .order('start_time', { ascending: true });
+
+        if (slotsError) throw slotsError;
+
+        // Group products by catch_date and match with fulfillment slots
+        const grouped = (productsData || []).reduce((acc: Record<string, CatchGroup>, product: Product) => {
+          const catchDateKey = product.catch_date.split('T')[0]; // Get just the date part
+          
+          if (!acc[catchDateKey]) {
+            // Find fulfillment slots for this catch date
+            const catchSlots = (slotsData || []).filter((slot: any) => {
+              const slotDate = slot.start_time.split('T')[0];
+              return slotDate === catchDateKey;
+            });
+
+            acc[catchDateKey] = {
+              catch_date: catchDateKey,
+              products: [],
+              fulfillment_slots: catchSlots
+            };
+          }
+          
+          acc[catchDateKey].products.push(product);
+          return acc;
+        }, {});
+
+        // Convert to array and sort by catch date (descending)
+        const groupedArray = Object.values(grouped).sort((a, b) => 
+          new Date(b.catch_date).getTime() - new Date(a.catch_date).getTime()
+        );
+
+        setCatchGroups(groupedArray);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching inventory data:', error);
         toast({
           variant: "destructive",
           title: "Virhe",
-          description: "Tuotteiden lataaminen epäonnistui.",
+          description: "Varaston lataaminen epäonnistui.",
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProducts();
+    fetchInventoryData();
   }, [fishermanProfileId, refreshKey, toast]);
+
+  const formatCatchDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return `Saalis ${format(date, 'd. MMMM yyyy', { locale: fi })}`;
+  };
+
+  const formatTimeSlots = (slots: FulfillmentSlot[]) => {
+    if (slots.length === 0) return 'Ei aikatauluja';
+    
+    const pickupSlots = slots.filter(slot => slot.type === 'PICKUP');
+    const deliverySlots = slots.filter(slot => slot.type === 'DELIVERY');
+    
+    const formatSlotTime = (slot: FulfillmentSlot) => {
+      const startTime = format(new Date(slot.start_time), 'HH:mm');
+      const endTime = format(new Date(slot.end_time), 'HH:mm');
+      return `${startTime} - ${endTime}`;
+    };
+
+    const parts = [];
+    
+    if (pickupSlots.length > 0) {
+      const times = pickupSlots.map(formatSlotTime).join(', ');
+      parts.push(`Noutoajat: ${times}`);
+    }
+    
+    if (deliverySlots.length > 0) {
+      const times = deliverySlots.map(formatSlotTime).join(', ');
+      parts.push(`Kuljetusajat: ${times}`);
+    }
+    
+    return parts.join(' • ');
+  };
+
+  const getTotalProducts = () => {
+    return catchGroups.reduce((total, group) => total + group.products.length, 0);
+  };
 
   if (loading) {
     return (
@@ -69,39 +157,53 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nykyinen varasto ({products.length})</CardTitle>
+        <CardTitle>Nykyinen varasto ({getTotalProducts()})</CardTitle>
       </CardHeader>
       <CardContent>
-        {products.length === 0 ? (
+        {catchGroups.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">
             Ei tuotteita varastossa. Lisää ensimmäinen saalisi yllä olevalla lomakkeella.
           </p>
         ) : (
-          <div className="space-y-4">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{product.species}</h3>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      <Badge variant="secondary">{product.form}</Badge>
-                      <Badge variant="outline">
-                        {product.available_quantity} kg
-                      </Badge>
+          <div className="space-y-8">
+            {catchGroups.map((group) => (
+              <div key={group.catch_date} className="space-y-4">
+                {/* Catch Date Header */}
+                <div className="border-b pb-2">
+                  <h2 className="text-xl font-bold text-primary">
+                    {formatCatchDate(group.catch_date)}
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {formatTimeSlots(group.fulfillment_slots)}
+                  </p>
+                </div>
+
+                {/* Products for this catch */}
+                <div className="space-y-3 pl-4">
+                  {group.products.map((product) => (
+                    <div
+                      key={product.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-lg">{product.species}</h3>
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            <Badge variant="secondary">{product.form}</Badge>
+                            <Badge variant="outline">
+                              {product.available_quantity} kg
+                            </Badge>
+                          </div>
+                        </div>
+                        
+                        <div className="text-right">
+                          <p className="font-bold text-lg text-primary">
+                            {product.price_per_kg.toFixed(2)} €/kg
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <p className="font-bold text-lg text-primary">
-                      {product.price_per_kg.toFixed(2)} €/kg
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Pyydetty: {format(new Date(product.catch_date), 'dd.MM.yyyy')}
-                    </p>
-                  </div>
+                  ))}
                 </div>
               </div>
             ))}
