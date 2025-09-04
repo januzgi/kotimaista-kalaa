@@ -16,13 +16,6 @@ export const useAuth = () => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
-        
-        if (event === 'SIGNED_IN') {
-          toast({
-            title: "Kirjauduit sisään onnistuneesti",
-            description: "Tervetuloa takaisin!",
-          });
-        }
       }
     );
 
@@ -48,6 +41,11 @@ export const useAuth = () => {
       });
       
       if (error) throw error;
+      
+      toast({
+        title: "Kirjauduit sisään onnistuneesti",
+        description: "Tervetuloa takaisin!",
+      });
     } catch (error) {
       toast({
         variant: "destructive",
@@ -72,6 +70,11 @@ export const useAuth = () => {
         });
         throw error;
       }
+      
+      toast({
+        title: "Kirjauduit sisään onnistuneesti",
+        description: "Tervetuloa takaisin!",
+      });
     } catch (error) {
       throw error;
     }
