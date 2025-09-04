@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AddCatchForm } from '@/components/admin/AddCatchForm';
 import { InventoryList } from '@/components/admin/InventoryList';
+import { OrderManagement } from '@/components/admin/OrderManagement';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -121,16 +122,7 @@ const Admin = () => {
           </TabsContent>
 
           <TabsContent value="orders">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tilaukset</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-center py-8">
-                  Tilausten hallinta toteutetaan seuraavassa vaiheessa.
-                </p>
-              </CardContent>
-            </Card>
+            <OrderManagement fishermanProfile={fishermanProfile} />
           </TabsContent>
         </Tabs>
       </main>
