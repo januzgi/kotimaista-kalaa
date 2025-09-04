@@ -10,16 +10,17 @@ export const Footer = () => {
         <p className="text-xs mt-2 opacity-80">
           Tuoretta kalaa suoraan kalastajalta
         </p>
-        <p className="text-xs mt-2 opacity-80">
+        <p className="text-xs mt-2" style={{ color: '#ffffff' }}>
           Sivut luonut{' '}
           <a 
             href="https://www.linkedin.com/in/janisuoranta/" 
             target="_blank" 
             rel="noopener noreferrer"
             className="hover:underline inline-flex items-center gap-1"
+            style={{ color: '#ffffff' }}
           >
             SuorantaCoding
-            <ExternalLink className="h-3 w-3" />
+            <ExternalLink className="h-3 w-3" style={{ color: '#ffffff' }} />
           </a>
         </p>
       </div>
