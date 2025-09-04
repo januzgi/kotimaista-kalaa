@@ -74,6 +74,7 @@ export type Database = {
         Row: {
           created_at: string
           default_delivery_fee: number
+          display_on_homepage: boolean
           fishermans_note: string | null
           id: string
           pickup_address: string
@@ -85,6 +86,7 @@ export type Database = {
         Insert: {
           created_at?: string
           default_delivery_fee?: number
+          display_on_homepage?: boolean
           fishermans_note?: string | null
           id?: string
           pickup_address: string
@@ -96,6 +98,7 @@ export type Database = {
         Update: {
           created_at?: string
           default_delivery_fee?: number
+          display_on_homepage?: boolean
           fishermans_note?: string | null
           id?: string
           pickup_address?: string

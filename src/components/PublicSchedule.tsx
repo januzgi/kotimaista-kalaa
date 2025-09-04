@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { fi } from 'date-fns/locale';
+import { FishermanNote } from '@/components/FishermanNote';
 
 export const PublicSchedule = () => {
   const [plannedTrips, setPlannedTrips] = useState<Date[]>([]);
@@ -50,36 +51,48 @@ export const PublicSchedule = () => {
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle className="text-center">
-              {format(currentMonth, 'MMMM yyyy', { locale: fi })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center">
-              <Calendar
-                mode="multiple"
-                selected={plannedTrips}
-                onMonthChange={handleMonthChange}
-                locale={fi}
-                className="rounded-md"
-                classNames={{
-                  day_today:
-                    "bg-transparent text-foreground border-2 rounded-full border-[hsl(var(--primary))]",
-                }}
-                disabled={true} // Make it read-only
-                showOutsideDays={false}
-              />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Left Column - Calendar */}
+          <div className="flex justify-center lg:justify-end">
+            <Card className="w-full max-w-md">
+              <CardHeader>
+                <CardTitle className="text-center">
+                  {format(currentMonth, 'MMMM yyyy', { locale: fi })}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <Calendar
+                    mode="multiple"
+                    selected={plannedTrips}
+                    onMonthChange={handleMonthChange}
+                    locale={fi}
+                    className="rounded-md"
+                    classNames={{
+                      day_today:
+                        "bg-transparent text-foreground border-2 rounded-full border-[hsl(var(--primary))]",
+                    }}
+                    disabled={true} // Make it read-only
+                    showOutsideDays={false}
+                  />
+                </div>
+                
+                {plannedTrips.length > 0 && (
+                  <div className="mt-4 text-center text-sm text-muted-foreground">
+                    {plannedTrips.length} suunniteltua kalastuspäivää tässä kuussa
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Column - Fisherman's Note */}
+          <div className="flex justify-center lg:justify-start">
+            <div className="w-full max-w-md">
+              <FishermanNote />
             </div>
-            
-            {plannedTrips.length > 0 && (
-              <div className="mt-4 text-center text-sm text-muted-foreground">
-                {plannedTrips.length} suunniteltua kalastuspäivää tässä kuussa
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     </section>
   );
