@@ -237,6 +237,10 @@ const Profiili = () => {
                   </Button>
                 </div>
                 
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                  Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi kirjoittaa ajatuksia mahdollisesta saaliista, terveiset sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa. Se on asiakkaillekin mielenkiintoista.
+                </p>
+                
                 {isEditingNote ? (
                   <div className="space-y-2">
                     <Textarea
