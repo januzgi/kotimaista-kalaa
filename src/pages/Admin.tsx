@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Fish, Euro, ShoppingCart } from 'lucide-react';
 
 const Admin = () => {
   const { loading, isAdmin, fishermanProfile, user } = useAdminAccess();
@@ -107,9 +108,18 @@ const Admin = () => {
 
         <Tabs defaultValue="catch" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="catch" className="text-xs sm:text-sm">Hallitse saalista</TabsTrigger>
-            <TabsTrigger value="prices" className="text-xs sm:text-sm">Hallitse kilohintoja</TabsTrigger>
-            <TabsTrigger value="orders" className="text-xs sm:text-sm">Tilaukset</TabsTrigger>
+            <TabsTrigger value="catch" className="text-xs sm:text-sm flex items-center gap-2">
+              <Fish className="h-4 w-4" />
+              Hallitse saalista
+            </TabsTrigger>
+            <TabsTrigger value="prices" className="text-xs sm:text-sm flex items-center gap-2">
+              <Euro className="h-4 w-4" />
+              Hallitse kilohintoja
+            </TabsTrigger>
+            <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2">
+              <ShoppingCart className="h-4 w-4" />
+              Tilaukset
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="catch" className="space-y-6">
