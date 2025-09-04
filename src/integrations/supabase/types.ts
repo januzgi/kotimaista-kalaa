@@ -74,6 +74,7 @@ export type Database = {
         Row: {
           created_at: string
           default_delivery_fee: number
+          fishermans_note: string | null
           id: string
           pickup_address: string
           public_phone_number: string | null
@@ -84,6 +85,7 @@ export type Database = {
         Insert: {
           created_at?: string
           default_delivery_fee?: number
+          fishermans_note?: string | null
           id?: string
           pickup_address: string
           public_phone_number?: string | null
@@ -94,6 +96,7 @@ export type Database = {
         Update: {
           created_at?: string
           default_delivery_fee?: number
+          fishermans_note?: string | null
           id?: string
           pickup_address?: string
           public_phone_number?: string | null
