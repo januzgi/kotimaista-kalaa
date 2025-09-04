@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { Fish, Euro, ShoppingCart } from 'lucide-react';
+import { Fish, Euro, ShoppingCart, Calendar } from 'lucide-react';
+import { FishermanSchedule } from '@/components/admin/FishermanSchedule';
 
 const Admin = () => {
   const { loading, isAdmin, fishermanProfile, user } = useAdminAccess();
@@ -107,7 +108,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="catch" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="catch" className="text-xs sm:text-sm flex items-center gap-2">
               <Fish className="h-4 w-4" />
               Hallitse saalista
@@ -119,6 +120,10 @@ const Admin = () => {
             <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2">
               <ShoppingCart className="h-4 w-4" />
               Tilaukset
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="text-xs sm:text-sm flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Kalastajan aikataulu
             </TabsTrigger>
           </TabsList>
 
@@ -139,6 +144,10 @@ const Admin = () => {
 
           <TabsContent value="orders">
             <OrderManagement fishermanProfile={fishermanProfile} />
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <FishermanSchedule fishermanProfile={fishermanProfile} />
           </TabsContent>
         </Tabs>
       </main>

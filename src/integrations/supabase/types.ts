@@ -242,6 +242,41 @@ export type Database = {
           },
         ]
       }
+      planned_trips: {
+        Row: {
+          created_at: string
+          fisherman_id: string
+          id: string
+          notes: string | null
+          trip_date: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fisherman_id: string
+          id?: string
+          notes?: string | null
+          trip_date: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fisherman_id?: string
+          id?: string
+          notes?: string | null
+          trip_date?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_planned_trips_fisherman"
+            columns: ["fisherman_id"]
+            isOneToOne: false
+            referencedRelation: "fisherman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           available_quantity: number
