@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ShoppingBag, Truck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -129,30 +129,57 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
   };
 
   const formatTimeSlots = (slots: FulfillmentSlot[]) => {
-    if (slots.length === 0) return 'Ei aikatauluja';
+    if (slots.length === 0) {
+      return (
+        <div className="text-muted-foreground">Ei aikatauluja</div>
+      );
+    }
     
     const pickupSlots = slots.filter(slot => slot.type === 'PICKUP');
     const deliverySlots = slots.filter(slot => slot.type === 'DELIVERY');
     
     const formatSlotTime = (slot: FulfillmentSlot) => {
+      const date = format(new Date(slot.start_time), 'dd.MM.');
       const startTime = format(new Date(slot.start_time), 'HH:mm');
       const endTime = format(new Date(slot.end_time), 'HH:mm');
-      return `${startTime} - ${endTime}`;
+      return `${date} ${startTime} - ${endTime}`;
     };
 
-    const parts = [];
-    
-    if (pickupSlots.length > 0) {
-      const times = pickupSlots.map(formatSlotTime).join(', ');
-      parts.push(`Noutoajat: ${times}`);
-    }
-    
-    if (deliverySlots.length > 0) {
-      const times = deliverySlots.map(formatSlotTime).join(', ');
-      parts.push(`Kuljetusajat: ${times}`);
-    }
-    
-    return parts.join(' • ');
+    return (
+      <div className="space-y-2">
+        {pickupSlots.length > 0 && (
+          <div className="flex items-start gap-2">
+            <ShoppingBag className="h-4 w-4 mt-0.5 text-muted-foreground" />
+            <div>
+              <span className="font-medium">Noutoajat:</span>
+              <div className="text-sm">
+                {pickupSlots.map((slot, index) => (
+                  <div key={slot.id}>
+                    {formatSlotTime(slot)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {deliverySlots.length > 0 && (
+          <div className="flex items-start gap-2">
+            <Truck className="h-4 w-4 mt-0.5 text-muted-foreground" />
+            <div>
+              <span className="font-medium">Kuljetusajat:</span>
+              <div className="text-sm">
+                {deliverySlots.map((slot, index) => (
+                  <div key={slot.id}>
+                    {formatSlotTime(slot)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const getTotalProducts = () => {
@@ -309,9 +336,9 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
                       <h2 className="text-xl font-bold text-primary">
                         {formatCatchDate(group.catch_date)}
                       </h2>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <div className="mt-2">
                         {formatTimeSlots(group.fulfillment_slots)}
-                      </p>
+                      </div>
                     </div>
                     <Button
                       variant="ghost"
