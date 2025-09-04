@@ -62,52 +62,22 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
   useEffect(() => {
     const fetchInventoryData = async () => {
       try {
-        // Fetch products
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('fisherman_id', fishermanProfileId)
-          .order('catch_date', { ascending: false });
+        // Use the RPC function to get catch groups with proper data relationships
+        const { data: catchGroupsData, error } = await supabase
+          .rpc('get_catch_groups', { 
+            fisherman_profile_id: fishermanProfileId 
+          });
 
-        if (productsError) throw productsError;
+        if (error) throw error;
 
-        // Fetch fulfillment slots
-        const { data: slotsData, error: slotsError } = await supabase
-          .from('fulfillment_slots')
-          .select('*')
-          .eq('fisherman_id', fishermanProfileId)
-          .order('start_time', { ascending: true });
+        // Transform the RPC result to match our interface
+        const transformedGroups: CatchGroup[] = (catchGroupsData || []).map((group: any) => ({
+          catch_date: group.catch_date,
+          products: group.products || [],
+          fulfillment_slots: group.fulfillment_slots || []
+        }));
 
-        if (slotsError) throw slotsError;
-
-        // Group products by catch_date and match with fulfillment slots
-        const grouped = (productsData || []).reduce((acc: Record<string, CatchGroup>, product: Product) => {
-          const catchDateKey = product.catch_date.split('T')[0]; // Get just the date part
-          
-          if (!acc[catchDateKey]) {
-            // Find fulfillment slots for this catch date
-            const catchSlots = (slotsData || []).filter((slot: any) => {
-              const slotDate = slot.start_time.split('T')[0];
-              return slotDate === catchDateKey;
-            });
-
-            acc[catchDateKey] = {
-              catch_date: catchDateKey,
-              products: [],
-              fulfillment_slots: catchSlots
-            };
-          }
-          
-          acc[catchDateKey].products.push(product);
-          return acc;
-        }, {});
-
-        // Convert to array and sort by catch date (descending)
-        const groupedArray = Object.values(grouped).sort((a, b) => 
-          new Date(b.catch_date).getTime() - new Date(a.catch_date).getTime()
-        );
-
-        setCatchGroups(groupedArray);
+        setCatchGroups(transformedGroups);
       } catch (error) {
         console.error('Error fetching inventory data:', error);
         toast({
@@ -241,49 +211,23 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
         });
       }
 
-      // Refresh the data by refetching
+      // Refresh the data by refetching using the same RPC function
       const fetchInventoryData = async () => {
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('fisherman_id', fishermanProfileId)
-          .order('catch_date', { ascending: false });
+        const { data: catchGroupsData, error } = await supabase
+          .rpc('get_catch_groups', { 
+            fisherman_profile_id: fishermanProfileId 
+          });
 
-        if (productsError) throw productsError;
+        if (error) throw error;
 
-        const { data: slotsData, error: slotsError } = await supabase
-          .from('fulfillment_slots')
-          .select('*')
-          .eq('fisherman_id', fishermanProfileId)
-          .order('start_time', { ascending: true });
+        // Transform the RPC result to match our interface
+        const transformedGroups: CatchGroup[] = (catchGroupsData || []).map((group: any) => ({
+          catch_date: group.catch_date,
+          products: group.products || [],
+          fulfillment_slots: group.fulfillment_slots || []
+        }));
 
-        if (slotsError) throw slotsError;
-
-        const grouped = (productsData || []).reduce((acc: Record<string, CatchGroup>, product: Product) => {
-          const catchDateKey = product.catch_date.split('T')[0];
-          
-          if (!acc[catchDateKey]) {
-            const catchSlots = (slotsData || []).filter((slot: any) => {
-              const slotDate = slot.start_time.split('T')[0];
-              return slotDate === catchDateKey;
-            });
-
-            acc[catchDateKey] = {
-              catch_date: catchDateKey,
-              products: [],
-              fulfillment_slots: catchSlots
-            };
-          }
-          
-          acc[catchDateKey].products.push(product);
-          return acc;
-        }, {});
-
-        const groupedArray = Object.values(grouped).sort((a, b) => 
-          new Date(b.catch_date).getTime() - new Date(a.catch_date).getTime()
-        );
-
-        setCatchGroups(groupedArray);
+        setCatchGroups(transformedGroups);
       };
 
       await fetchInventoryData();
