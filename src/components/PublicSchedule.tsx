@@ -47,7 +47,7 @@ export const PublicSchedule = () => {
             Kalastajan aikataulu
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Katso milloin kalastaja suunnittelee lähtevänsä vesille. Merkatut päivät ovat suunniteltuja kalastuspäiviä.
+            Katso milloin kalastaja suunnittelee lähtevänsä vesille. <span style={{ color: '#000a43' }}>Sinisellä</span> merkatut päivät ovat suunniteltuja kalastuspäiviä.
           </p>
         </div>
 

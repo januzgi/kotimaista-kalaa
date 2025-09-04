@@ -42,10 +42,10 @@ export const FishermanNote = () => {
   return (
     <Card className="h-fit">
       <CardHeader>
-        <CardTitle className="text-lg">Kalastajan muistio:</CardTitle>
+        <CardTitle className="text-lg font-caveat">Kalastajan muistio:</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap italic">
           {note}
         </p>
       </CardContent>
