@@ -63,7 +63,7 @@ export const PublicSchedule = () => {
                 selected={plannedTrips}
                 onMonthChange={handleMonthChange}
                 locale={fi}
-                className="rounded-md"
+                className="rounded-md [&_.rdp-day_today]:text-white"
                 disabled={true} // Make it read-only
                 showOutsideDays={false}
               />
