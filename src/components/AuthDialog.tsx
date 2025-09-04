@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
 interface AuthDialogProps {
@@ -88,8 +89,14 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
         ) : (
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Kirjaudu sisään</TabsTrigger>
-              <TabsTrigger value="signup">Luo tili</TabsTrigger>
+              <TabsTrigger value="login">
+                <LogIn className="mr-2 h-4 w-4" />
+                Kirjaudu sisään
+              </TabsTrigger>
+              <TabsTrigger value="signup">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Luo tili
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="login" className="space-y-4 mt-4">
