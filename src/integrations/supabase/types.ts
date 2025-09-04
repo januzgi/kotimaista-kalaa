@@ -365,7 +365,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_catch_groups: {
+        Args: { fisherman_profile_id: string }
+        Returns: {
+          catch_date: string
+          fulfillment_slots: Json
+          products: Json
+        }[]
+      }
     }
     Enums: {
       fulfillment_type: "PICKUP" | "DELIVERY"
