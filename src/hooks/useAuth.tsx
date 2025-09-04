@@ -64,13 +64,15 @@ export const useAuth = () => {
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Kirjautuminen epäonnistui",
+          description: "Sähköposti tai salasana on virheellinen",
+        });
+        throw error;
+      }
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Kirjautuminen epäonnistui",
-        description: error instanceof Error ? error.message : "Tarkista sähköposti ja salasana",
-      });
       throw error;
     }
   };
@@ -88,11 +90,6 @@ export const useAuth = () => {
       });
       
       if (error) throw error;
-      
-      toast({
-        title: "Rekisteröityminen onnistui",
-        description: "Tarkista sähköpostisi vahvistuslinkin saamiseksi.",
-      });
     } catch (error) {
       toast({
         variant: "destructive",
