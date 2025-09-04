@@ -42,7 +42,7 @@ export const FishermanNote = () => {
   return (
     <Card className="h-fit">
       <CardHeader>
-        <CardTitle className="text-lg font-caveat">Kalastajan muistio:</CardTitle>
+        <CardTitle className="font-caveat" style={{ fontSize: '1.5rem' }}>Kalastajan muistio:</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap italic">
