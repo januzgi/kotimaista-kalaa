@@ -17,6 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface FulfillmentSlot {
+  date: Date;
   start_time: string;
   end_time: string;
   type: 'PICKUP' | 'DELIVERY';
@@ -70,7 +71,7 @@ interface AddCatchFormProps {
 
 export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProps) => {
   const [slots, setSlots] = useState<FulfillmentSlot[]>([
-    { start_time: '09:00', end_time: '17:00', type: 'PICKUP' }
+    { date: new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -126,7 +127,8 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
   };
 
   const addSlot = () => {
-    setSlots([...slots, { start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
+    const catchDate = form.getValues('catch_date');
+    setSlots([...slots, { date: catchDate || new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
   };
 
   const removeSlot = (index: number) => {
@@ -135,7 +137,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     }
   };
 
-  const updateSlot = (index: number, field: keyof FulfillmentSlot, value: string) => {
+  const updateSlot = (index: number, field: keyof FulfillmentSlot, value: string | Date) => {
     const updatedSlots = [...slots];
     updatedSlots[index] = { ...updatedSlots[index], [field]: value };
     setSlots(updatedSlots);
@@ -176,11 +178,11 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
       // Create fulfillment slots (shared across all fish)
       const fulfillmentSlots = slots.map(slot => {
-        const startDateTime = new Date(values.catch_date);
+        const startDateTime = new Date(slot.date);
         const [startHour, startMinute] = slot.start_time.split(':');
         startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
 
-        const endDateTime = new Date(values.catch_date);
+        const endDateTime = new Date(slot.date);
         const [endHour, endMinute] = slot.end_time.split(':');
         endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
@@ -215,7 +217,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
         }],
         catch_date: new Date()
       });
-      setSlots([{ start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
+      setSlots([{ date: new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
       onSuccess();
     } catch (error) {
       console.error('Error adding catch:', error);
@@ -425,7 +427,38 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
               {slots.map((slot, index) => (
                 <Card key={index} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    <div>
+                      <Label htmlFor={`date-${index}`}>Päivämäärä *</Label>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal",
+                              !slot.date && "text-muted-foreground"
+                            )}
+                          >
+                            {slot.date ? (
+                              format(slot.date, "dd.MM.yyyy")
+                            ) : (
+                              <span>Valitse päivä</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={slot.date}
+                            onSelect={(date) => date && updateSlot(index, 'date', date)}
+                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                     <div>
                       <Label htmlFor={`start-${index}`}>Alkuaika</Label>
                       <Input
