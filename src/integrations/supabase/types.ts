@@ -14,7 +14,273 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      email_subscriptions: {
+        Row: {
+          email: string
+          id: string
+          subscribed_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          subscribed_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
+      fisherman_profiles: {
+        Row: {
+          created_at: string
+          default_delivery_fee: number
+          id: string
+          pickup_address: string
+          public_phone_number: string | null
+          signature_image_url: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          default_delivery_fee?: number
+          id?: string
+          pickup_address: string
+          public_phone_number?: string | null
+          signature_image_url?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          default_delivery_fee?: number
+          id?: string
+          pickup_address?: string
+          public_phone_number?: string | null
+          signature_image_url?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fisherman_profiles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fulfillment_slots: {
+        Row: {
+          created_at: string
+          end_time: string
+          fisherman_id: string
+          id: string
+          start_time: string
+          type: Database["public"]["Enums"]["fulfillment_type"]
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          fisherman_id: string
+          id?: string
+          start_time: string
+          type: Database["public"]["Enums"]["fulfillment_type"]
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          fisherman_id?: string
+          id?: string
+          start_time?: string
+          type?: Database["public"]["Enums"]["fulfillment_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fulfillment_slots_fisherman_id_fkey"
+            columns: ["fisherman_id"]
+            isOneToOne: false
+            referencedRelation: "fisherman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          quantity: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          customer_address: string | null
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          final_delivery_fee: number | null
+          fulfillment_slot_id: string
+          fulfillment_type: Database["public"]["Enums"]["fulfillment_type"]
+          id: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_address?: string | null
+          customer_id: string
+          customer_name: string
+          customer_phone: string
+          final_delivery_fee?: number | null
+          fulfillment_slot_id: string
+          fulfillment_type: Database["public"]["Enums"]["fulfillment_type"]
+          id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_address?: string | null
+          customer_id?: string
+          customer_name?: string
+          customer_phone?: string
+          final_delivery_fee?: number | null
+          fulfillment_slot_id?: string
+          fulfillment_type?: Database["public"]["Enums"]["fulfillment_type"]
+          id?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_fulfillment_slot_id_fkey"
+            columns: ["fulfillment_slot_id"]
+            isOneToOne: false
+            referencedRelation: "fulfillment_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          available_quantity: number
+          catch_date: string
+          created_at: string
+          fisherman_id: string
+          form: string
+          id: string
+          price_per_kg: number
+          species: string
+          updated_at: string
+        }
+        Insert: {
+          available_quantity?: number
+          catch_date: string
+          created_at?: string
+          fisherman_id: string
+          form: string
+          id?: string
+          price_per_kg: number
+          species: string
+          updated_at?: string
+        }
+        Update: {
+          available_quantity?: number
+          catch_date?: string
+          created_at?: string
+          fisherman_id?: string
+          form?: string
+          id?: string
+          price_per_kg?: number
+          species?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_fisherman_id_fkey"
+            columns: ["fisherman_id"]
+            isOneToOne: false
+            referencedRelation: "fisherman_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone_number: string | null
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone_number?: string | null
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +289,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      fulfillment_type: "PICKUP" | "DELIVERY"
+      order_status: "NEW" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
+      user_role: "ADMIN" | "CUSTOMER"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +418,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      fulfillment_type: ["PICKUP", "DELIVERY"],
+      order_status: ["NEW", "CONFIRMED", "COMPLETED", "CANCELLED"],
+      user_role: ["ADMIN", "CUSTOMER"],
+    },
   },
 } as const
