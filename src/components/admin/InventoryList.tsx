@@ -1,8 +1,20 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
+import { Trash2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -37,6 +49,14 @@ interface InventoryListProps {
 export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListProps) => {
   const [catchGroups, setCatchGroups] = useState<CatchGroup[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: 'product' | 'catch';
+    id?: string;
+    catchDate?: string;
+    title: string;
+    description: string;
+  } | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -139,6 +159,120 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     return catchGroups.reduce((total, group) => total + group.products.length, 0);
   };
 
+  const handleDeleteProduct = (product: Product) => {
+    setDeleteTarget({
+      type: 'product',
+      id: product.id,
+      title: 'Poista tuote',
+      description: 'Haluatko varmasti poistaa tämän tuotteen varastosta?'
+    });
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteCatch = (catchDate: string) => {
+    setDeleteTarget({
+      type: 'catch',
+      catchDate,
+      title: 'Poista saalis',
+      description: 'Haluatko varmasti poistaa koko tämän päivän saaliin varastosta?'
+    });
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      if (deleteTarget.type === 'product' && deleteTarget.id) {
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', deleteTarget.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Tuote poistettu",
+          description: "Tuote on poistettu varastosta.",
+        });
+      } else if (deleteTarget.type === 'catch' && deleteTarget.catchDate) {
+        // Delete all products for this catch date
+        const productsToDelete = catchGroups
+          .find(group => group.catch_date === deleteTarget.catchDate)
+          ?.products.map(p => p.id) || [];
+
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .in('id', productsToDelete);
+
+        if (error) throw error;
+
+        toast({
+          title: "Saalis poistettu",
+          description: "Koko päivän saalis on poistettu varastosta.",
+        });
+      }
+
+      // Refresh the data by refetching
+      const fetchInventoryData = async () => {
+        const { data: productsData, error: productsError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('fisherman_id', fishermanProfileId)
+          .order('catch_date', { ascending: false });
+
+        if (productsError) throw productsError;
+
+        const { data: slotsData, error: slotsError } = await supabase
+          .from('fulfillment_slots')
+          .select('*')
+          .eq('fisherman_id', fishermanProfileId)
+          .order('start_time', { ascending: true });
+
+        if (slotsError) throw slotsError;
+
+        const grouped = (productsData || []).reduce((acc: Record<string, CatchGroup>, product: Product) => {
+          const catchDateKey = product.catch_date.split('T')[0];
+          
+          if (!acc[catchDateKey]) {
+            const catchSlots = (slotsData || []).filter((slot: any) => {
+              const slotDate = slot.start_time.split('T')[0];
+              return slotDate === catchDateKey;
+            });
+
+            acc[catchDateKey] = {
+              catch_date: catchDateKey,
+              products: [],
+              fulfillment_slots: catchSlots
+            };
+          }
+          
+          acc[catchDateKey].products.push(product);
+          return acc;
+        }, {});
+
+        const groupedArray = Object.values(grouped).sort((a, b) => 
+          new Date(b.catch_date).getTime() - new Date(a.catch_date).getTime()
+        );
+
+        setCatchGroups(groupedArray);
+      };
+
+      await fetchInventoryData();
+    } catch (error) {
+      console.error('Error deleting:', error);
+      toast({
+        variant: "destructive",
+        title: "Virhe",
+        description: "Poistaminen epäonnistui.",
+      });
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteTarget(null);
+    }
+  };
+
   if (loading) {
     return (
       <Card>
@@ -170,12 +304,24 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
               <div key={group.catch_date} className="space-y-4">
                 {/* Catch Date Header */}
                 <div className="border-b pb-2">
-                  <h2 className="text-xl font-bold text-primary">
-                    {formatCatchDate(group.catch_date)}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {formatTimeSlots(group.fulfillment_slots)}
-                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-bold text-primary">
+                        {formatCatchDate(group.catch_date)}
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {formatTimeSlots(group.fulfillment_slots)}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteCatch(group.catch_date)}
+                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Products for this catch */}
@@ -196,10 +342,20 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
                           </div>
                         </div>
                         
-                        <div className="text-right">
-                          <p className="font-bold text-lg text-primary">
-                            {product.price_per_kg.toFixed(2)} €/kg
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <div className="text-right">
+                            <p className="font-bold text-lg text-primary">
+                              {product.price_per_kg.toFixed(2)} €/kg
+                            </p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteProduct(product)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -210,6 +366,26 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
           </div>
         )}
       </CardContent>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{deleteTarget?.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Peruuta</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Poista
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };
