@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { EmailSubscriptionModal } from '@/components/EmailSubscriptionModal';
 
 export const HeroSection = () => {
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+
   return (
     <section className="py-8 sm:py-12 px-4">
       <div className="container mx-auto max-w-4xl">
@@ -36,13 +40,23 @@ export const HeroSection = () => {
                   Selaa saatavaa kalaa
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="w-full sm:w-auto"
+                onClick={() => setIsSubscriptionModalOpen(true)}
+              >
                 Tilaa sähköposti-ilmoitukset
               </Button>
             </div>
           </div>
         </div>
       </div>
+      
+      <EmailSubscriptionModal
+        open={isSubscriptionModalOpen}
+        onOpenChange={setIsSubscriptionModalOpen}
+      />
     </section>
   );
 };
