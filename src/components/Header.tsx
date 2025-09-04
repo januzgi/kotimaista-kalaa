@@ -1,15 +1,37 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Header = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkUserRole = async () => {
+      if (user) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (!error && data?.role === 'ADMIN') {
+          setIsAdmin(true);
+        }
+      } else {
+        setIsAdmin(false);
+      }
+    };
+
+    checkUserRole();
+  }, [user]);
 
   const getUserInitials = (name?: string) => {
     if (!name) return 'K';
@@ -52,6 +74,11 @@ export const Header = () => {
               <DropdownMenuItem onClick={() => navigate('/profiili')}>
                 Profiili
               </DropdownMenuItem>
+              {isAdmin && (
+                <DropdownMenuItem onClick={() => navigate('/admin')}>
+                  Ylläpito
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={signOut}>
                 Kirjaudu ulos
               </DropdownMenuItem>
