@@ -97,17 +97,17 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <main className="container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-dark mb-2">Ylläpito</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">Ylläpito</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Hallitse saalista ja tilauksia
           </p>
         </div>
 
         <Tabs defaultValue="catch" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="catch">Hallitse saalista</TabsTrigger>
-            <TabsTrigger value="orders">Tilaukset</TabsTrigger>
+            <TabsTrigger value="catch" className="text-xs sm:text-sm">Hallitse saalista</TabsTrigger>
+            <TabsTrigger value="orders" className="text-xs sm:text-sm">Tilaukset</TabsTrigger>
           </TabsList>
 
           <TabsContent value="catch" className="space-y-6">

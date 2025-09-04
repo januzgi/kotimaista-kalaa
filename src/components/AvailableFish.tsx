@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 import { ProductCard } from "./ProductCard";
 
 export const AvailableFish = () => {
@@ -13,11 +15,14 @@ export const AvailableFish = () => {
   return (
     <section className="py-12 px-4 bg-card">
       <div className="container mx-auto max-w-6xl">
-        <h2 className="text-3xl font-bold text-center text-primary mb-8">
+        <h2 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-4">
           Saatavilla olevat kalat
         </h2>
+        <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Esimerkkejä saatavilla olevista kaloista. Katso ajankohtaiset saatavuudet ja hinnat.
+        </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {fishProducts.map((fish, index) => (
             <ProductCard
               key={index}
@@ -26,6 +31,14 @@ export const AvailableFish = () => {
               fishIcon={fish.fishIcon}
             />
           ))}
+        </div>
+
+        <div className="text-center">
+          <Link to="/saatavilla">
+            <Button size="lg" className="w-full sm:w-auto">
+              Katso kaikki saatavilla olevat kalat
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

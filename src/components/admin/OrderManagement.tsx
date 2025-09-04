@@ -12,18 +12,18 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-dark mb-2">Tilaukset</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl sm:text-2xl font-bold text-dark mb-2">Tilaukset</h2>
+        <p className="text-sm sm:text-base text-muted-foreground">
           Hallitse saapuvia tilauksia ja vahvista ne asiakkaille
         </p>
       </div>
 
-      <Tabs defaultValue="new" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="new">Uudet</TabsTrigger>
-          <TabsTrigger value="confirmed">Vahvistetut</TabsTrigger>
-          <TabsTrigger value="completed">Valmiit</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="new" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="new" className="text-xs sm:text-sm">Uudet</TabsTrigger>
+            <TabsTrigger value="confirmed" className="text-xs sm:text-sm">Vahvistetut</TabsTrigger>
+            <TabsTrigger value="completed" className="text-xs sm:text-sm">Valmiit</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="new">
           <OrdersList 
