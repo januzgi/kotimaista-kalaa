@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Edit2 } from 'lucide-react';
@@ -21,7 +22,13 @@ const Profiili = () => {
   const [fishermanProfile, setFishermanProfile] = useState<any>(null);
   const [isEditingNote, setIsEditingNote] = useState(false);
   const [noteContent, setNoteContent] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Profile editing states
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editedName, setEditedName] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -47,6 +54,9 @@ const Profiili = () => {
         }
 
         setUserRole(userData.role);
+        
+        // Initialize name editing state
+        setEditedName(user.user_metadata?.full_name || '');
 
         // If user is ADMIN, fetch fisherman profile
         if (userData.role === 'ADMIN') {
@@ -75,77 +85,111 @@ const Profiili = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file || !user) return;
-
-    setIsUploading(true);
-
-    try {
-      // Upload to storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar.${fileExt}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Get public URL
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      // Update user metadata
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: { avatar_url: data.publicUrl }
-      });
-
-      if (updateError) throw updateError;
-
-      toast({
-        title: "Onnistui!",
-        description: "Profiilikuva päivitetty onnistuneesti.",
-      });
-
-      // Refresh the page to show new avatar
-      window.location.reload();
-    } catch (error) {
-      console.error('Error uploading avatar:', error);
-      toast({
-        variant: "destructive",
-        title: "Virhe",
-        description: "Profiilikuvan päivitys epäonnistui.",
-      });
-    } finally {
-      setIsUploading(false);
+    if (file) {
+      setSelectedFile(file);
+      setHasChanges(true);
     }
   };
 
-  const handleSaveNote = async () => {
-    if (!fishermanProfile || !user) return;
+  const handleNameEdit = () => {
+    setIsEditingName(true);
+  };
+
+  const handleNameChange = (value: string) => {
+    setEditedName(value);
+    setHasChanges(true);
+  };
+
+  const handleNoteChange = (value: string) => {
+    setNoteContent(value);
+    setHasChanges(true);
+  };
+
+  const handleSaveAll = async () => {
+    if (!user || !hasChanges) return;
+
+    setIsSaving(true);
 
     try {
-      const { error } = await supabase
-        .from('fisherman_profiles')
-        .update({ fishermans_note: noteContent })
-        .eq('user_id', user.id);
+      // Handle profile picture upload if a new file was selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${user.id}/avatar.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, selectedFile, { upsert: true });
 
-      if (error) throw error;
+        if (uploadError) throw uploadError;
 
+        // Get public URL
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(fileName);
+
+        // Update user avatar_url
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ avatar_url: data.publicUrl })
+          .eq('id', user.id);
+
+        if (updateError) throw updateError;
+
+        // Also update auth metadata
+        await supabase.auth.updateUser({
+          data: { avatar_url: data.publicUrl }
+        });
+      }
+
+      // Handle name update if it changed
+      if (editedName !== (user.user_metadata?.full_name || '')) {
+        const { error: nameError } = await supabase
+          .from('users')
+          .update({ full_name: editedName })
+          .eq('id', user.id);
+
+        if (nameError) throw nameError;
+
+        // Also update auth metadata
+        await supabase.auth.updateUser({
+          data: { full_name: editedName }
+        });
+      }
+
+      // Handle fisherman note update if user is ADMIN
+      if (userRole === 'ADMIN' && fishermanProfile) {
+        const { error: noteError } = await supabase
+          .from('fisherman_profiles')
+          .update({ fishermans_note: noteContent })
+          .eq('user_id', user.id);
+
+        if (noteError) throw noteError;
+      }
+
+      // Reset editing states
+      setIsEditingName(false);
       setIsEditingNote(false);
+      setSelectedFile(null);
+      setHasChanges(false);
+
       toast({
         title: "Onnistui!",
-        description: "Muistio tallennettu onnistuneesti.",
+        description: "Profiili päivitetty onnistuneesti.",
       });
+
+      // Refresh the page to show updates
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      console.error('Error saving note:', error);
+      console.error('Error saving profile:', error);
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Muistion tallennus epäonnistui.",
+        description: "Profiilin päivitys epäonnistui.",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -187,38 +231,53 @@ const Profiili = () => {
           <CardContent className="space-y-6">
             <div className="flex flex-col items-center space-y-4">
               <div className="relative group">
-                <Avatar className="w-24 h-24 cursor-pointer" onClick={handleAvatarClick}>
+                <Avatar className="w-24 h-24">
                   <AvatarImage 
-                    src={user.user_metadata?.avatar_url} 
+                    src={selectedFile ? URL.createObjectURL(selectedFile) : user.user_metadata?.avatar_url} 
                     alt={user.user_metadata?.full_name || 'Käyttäjä'} 
                   />
                   <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                     {getUserInitials(user.user_metadata?.full_name)}
                   </AvatarFallback>
                 </Avatar>
-                {isUploading && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-full">
-                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                  </div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center bg-background/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                  <Camera className="h-6 w-6 text-foreground" />
-                </div>
+                <button
+                  onClick={handleAvatarClick}
+                  className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 transition-colors shadow-sm"
+                >
+                  <Edit2 className="h-3 w-3" />
+                </button>
               </div>
               
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
-                onChange={handleFileUpload}
+                onChange={handleFileSelect}
                 className="hidden"
               />
               
               <div className="text-center">
-                <h2 className="text-xl font-semibold text-dark">
-                  {user.user_metadata?.full_name || 'Nimetön käyttäjä'}
-                </h2>
-                <p className="text-muted-foreground">
+                <div className="flex items-center justify-center gap-2">
+                  {isEditingName ? (
+                    <Input
+                      value={editedName}
+                      onChange={(e) => handleNameChange(e.target.value)}
+                      className="text-center text-xl font-semibold max-w-48"
+                      placeholder="Syötä nimesi"
+                    />
+                  ) : (
+                    <h2 className="text-xl font-semibold text-dark">
+                      {editedName || 'Nimetön käyttäjä'}
+                    </h2>
+                  )}
+                  <button
+                    onClick={handleNameEdit}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  >
+                    <Edit2 className="h-4 w-4" />
+                  </button>
+                </div>
+                <p className="text-muted-foreground mt-1">
                   {user.email}
                 </p>
               </div>
@@ -242,22 +301,36 @@ const Profiili = () => {
                 </p>
                 
                 {isEditingNote ? (
-                  <div className="space-y-2">
-                    <Textarea
-                      value={noteContent}
-                      onChange={(e) => setNoteContent(e.target.value)}
-                      placeholder="Kirjoita muistiosi tähän..."
-                      rows={4}
-                    />
-                    <Button onClick={handleSaveNote} size="sm">
-                      Tallenna
-                    </Button>
-                  </div>
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => handleNoteChange(e.target.value)}
+                    placeholder="Kirjoita muistiosi tähän..."
+                    rows={4}
+                  />
                 ) : (
                   <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
                     {noteContent || 'Ei muistiota lisätty.'}
                   </p>
                 )}
+              </div>
+            )}
+
+            {hasChanges && (
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleSaveAll}
+                  disabled={isSaving}
+                  className="w-full"
+                >
+                  {isSaving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
+                      Tallennetaan...
+                    </div>
+                  ) : (
+                    'Tallenna'
+                  )}
+                </Button>
               </div>
             )}
 
