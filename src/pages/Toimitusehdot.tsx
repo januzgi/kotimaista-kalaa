@@ -15,7 +15,7 @@ const Toimitusehdot = () => {
           </CardHeader>
           <CardContent className="prose prose-sm max-w-none space-y-6">
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">1. Yleiset ehdot</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">1. Yleistä</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Nämä toimitusehdot koskevat kaikkia Kotimaistakalaa-palvelun kautta tehtyjä tilauksia. 
                 Tekemällä tilauksen hyväksyt nämä ehdot kokonaisuudessaan.
@@ -23,60 +23,85 @@ const Toimitusehdot = () => {
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">2. Tilauksen sitovuus</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">2. Tilauksen tekeminen ja sitovuus</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Tilaus on sitova kun se on vahvistettu. Kalastaja vahvistaa tilauksen saatuaan tilausilmoituksen. 
-                Vahvistamisen jälkeen tilausta ei voi peruuttaa ilman kalastajan suostumusta.
+                Tilaus on sitova. Asiakkaalla on kuitenkin oikeus peruuttaa tilaus kohdan 5 (Peruutusehdot) mukaisesti. 
+                Tilaus vahvistetaan, kun kalastaja on hyväksynyt sen.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">3. Maksu</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">3. Hinnat ja maksu</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Maksu tapahtuu tilauksen noudossa tai toimituksessa suoraan kalastajalle. 
-                Hyväksyttyjä maksutapoja ovat käteinen ja mobiilimaksu, ellei toisin sovita.
+                Tuotteiden hinnat ovat nähtävillä tuotesivuilla. Kotiinkuljetuksen hinta ilmoitetaan tilausta tehdessä. 
+                Maksu suoritetaan tilauksen noudon tai toimituksen yhteydessä suoraan kalastajalle. 
+                Hyväksytyt maksutavat ovat käteinen ja mobiilimaksu, ellei toisin sovita.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-semibold text-dark mb-3">4. Toimitus ja nouto</h2>
               <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong>Nouto:</strong> Tuote noudetaan sovitusta osoitteesta sovittuna aikana. 
-                Noutamatta jääneet tuotteet voidaan myydä eteenpäin 30 minuuttia sovitun ajan jälkeen.
+                <strong>Nouto:</strong> Nouto-osoite ilmoitetaan tilausprosessin yhteydessä. 
+                Mikäli tuotetta ei noudeta 30 minuutin kuluessa sovitun noutoajan päättymisestä, 
+                kalastajalla on oikeus myydä tuote eteenpäin, ja tilaus katsotaan asiakkaan toimesta peruuntuneeksi.
               </p>
               <p className="text-muted-foreground leading-relaxed">
-                <strong>Kotiinkuljetus:</strong> Toimitusmaksu määräytyy kalastajan hinnaston mukaan. 
-                Toimitus tapahtuu sovittuna aikana annettuun osoitteeseen. Vastaanottajan tulee olla paikalla.
+                <strong>Kotiinkuljetus:</strong> Toimitus tapahtuu sovittuna aikana asiakkaan antamaan osoitteeseen. 
+                Asiakkaan tulee olla paikalla vastaanottamassa toimitusta.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">5. Tuotteen laatu ja tuoreus</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">5. Peruutusehdot</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Kalastaja takaa tuotteen tuoreuden ja laadun toimitushetkellä. 
-                Mahdolliset laatuun liittyvät huomautukset tulee esittää heti toimituksen yhteydessä.
+                Tilaus tulee peruuttaa viimeistään 2 tuntia ennen sovitun nouto- tai toimitusajan alkua 
+                ottamalla yhteyttä suoraan kalastajaan. Tämän aikarajan jälkeen tehtyjä peruutuksia ei hyväksytä.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">6. Peruutukset ja muutokset</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">6. Tuotteen laatu ja reklamaatiot</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Peruutukset ja muutokset tulee tehdä viimeistään 2 tuntia ennen sovittua nouto- tai toimitusaikaa. 
-                Peruutukset tehdään ottamalla yhteyttä suoraan kalastajaan.
+                Kalastaja takaa tuotteen tuoreuden ja laadun luovutushetkellä. 
+                Mahdolliset tuotteen laatuun liittyvät huomautukset tulee esittää välittömästi tuotetta vastaanotettaessa.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">7. Vastuunrajoitukset</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">7. Ylivoimainen este (Force Majeure)</h2>
               <p className="text-muted-foreground leading-relaxed">
-                Kotimaistakalaa-palvelu toimii välittäjänä kalastajan ja asiakkaan välillä. 
-                Kauppa syntyy suoraan asiakkaan ja kalastajan välille. Palveluntarjoaja ei vastaa 
-                tuotteen laadusta, toimituksesta tai muista kauppaan liittyvistä seikoista.
+                Kalastaja ei vastaa toimituksen viivästymisestä tai peruuntumisesta, jos se johtuu ylivoimaisesta esteestä, 
+                kuten poikkeuksellisista sääolosuhteista tai sairastumisesta. Tällaisessa tapauksessa kalastaja on yhteydessä 
+                asiakkaaseen sopiakseen uudesta toimitusajasta tai tilauksen perumisesta veloituksetta.
               </p>
             </section>
 
             <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">8. Yhteystiedot</h2>
+              <h2 className="text-xl font-semibold text-dark mb-3">8. Asiakkaan vastuu</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Asiakas vastaa antamiensa yhteystietojen ja toimitusosoitteen oikeellisuudesta sekä 
+                on velvollinen olemaan tavoitettavissa sovittuna toimitus- tai noutoaikana.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-dark mb-3">9. Palveluntarjoajan rooli</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Kotimaistakalaa-palvelu toimii ainoastaan välittäjänä kalastajan ja asiakkaan välillä. 
+                Kauppa syntyy suoraan asiakkaan ja kalastajan välille.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-dark mb-3">10. Ehtojen muuttaminen</h2>
+              <p className="text-muted-foreground leading-relaxed">
+                Palveluntarjoaja pidättää oikeuden muuttaa näitä toimitusehtoja.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-semibold text-dark mb-3">11. Yhteystiedot</h2>
               <p className="text-muted-foreground leading-relaxed">
                 Kysymykset ja yhteydenotot tulee ohjata suoraan kalastajalle, jonka yhteystiedot 
                 löytyvät tilausvahvistuksesta.
