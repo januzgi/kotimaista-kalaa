@@ -254,18 +254,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* Fish Entries Section */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-medium">Kalat *</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addFishEntry}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Lisää toinen kala
-                </Button>
-              </div>
+              <Label className="text-base font-medium">Kalat *</Label>
 
               {fields.map((field, index) => (
                 <Card key={field.id} className="p-4">
@@ -379,6 +368,19 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                   )}
                 </Card>
               ))}
+
+              {/* Add another fish button after all fish entries */}
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addFishEntry}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Lisää toinen kala
+                </Button>
+              </div>
             </div>
 
             {/* Catch Date Section */}
@@ -425,18 +427,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
             {/* Fulfillment Slots Section */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-base font-medium">Nouto- ja toimitusajat *</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addSlot}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Lisää aika
-                </Button>
-              </div>
+              <Label className="text-base font-medium">Nouto- ja toimitusajat *</Label>
 
               {slots.map((slot, index) => (
                 <Card key={index} className="p-4">
@@ -520,6 +511,19 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                   </div>
                 </Card>
               ))}
+
+              {/* Add another time slot button after all fulfillment slots */}
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addSlot}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Lisää aika
+                </Button>
+              </div>
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
