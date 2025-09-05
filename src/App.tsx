@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import Profiili from "./pages/Profiili";
 import Admin from "./pages/Admin";
 import Saatavilla from "./pages/Saatavilla";
+import Ostoskori from "./pages/Ostoskori";
 import Tilaa from "./pages/Tilaa";
 import Kiitos from "./pages/Kiitos";
 import Toimitusehdot from "./pages/Toimitusehdot";
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/profiili" element={<Profiili />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/saatavilla" element={<Saatavilla />} />
+          <Route path="/ostoskori" element={<Ostoskori />} />
           <Route path="/tilaa" element={<Tilaa />} />
           <Route path="/kiitos" element={<Kiitos />} />
           <Route path="/toimitusehdot" element={<Toimitusehdot />} />

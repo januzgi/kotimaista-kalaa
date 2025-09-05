@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/hooks/useCart';
 import { Fish, Package, Euro } from 'lucide-react';
 
 interface Product {
@@ -30,6 +31,7 @@ const Saatavilla = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { addItem } = useCart();
 
   useEffect(() => {
     fetchProducts();
@@ -71,8 +73,21 @@ const Saatavilla = () => {
     }
   };
 
-  const handleAddToOrder = (productId: string) => {
-    navigate(`/tilaa?product=${productId}`);
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      productId: product.id,
+      species: product.species,
+      form: product.form,
+      pricePerKg: product.price_per_kg,
+      quantity: 1,
+      fishermanName: product.fisherman_profile?.user?.full_name || 'Tuntematon',
+      availableQuantity: product.available_quantity
+    });
+
+    toast({
+      title: "Tuote lisätty ostoskoriin",
+      description: `${product.species} (${product.form}) lisätty ostoskoriin.`,
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -156,11 +171,11 @@ const Saatavilla = () => {
                   </div>
 
                   <Button 
-                    onClick={() => handleAddToOrder(product.id)}
+                    onClick={() => handleAddToCart(product)}
                     className="w-full"
                     size="sm"
                   >
-                    Lisää tilaukseen
+                    Lisää ostoskoriin
                   </Button>
                 </CardContent>
               </Card>

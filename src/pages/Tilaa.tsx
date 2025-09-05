@@ -402,7 +402,7 @@ const Tilaa = () => {
                   <div className="flex items-start space-x-2 mb-3">
                     <Home className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
-                      <p className="font-medium">Noutoosoite:</p>
+                      <p className="font-medium">Nouto-osoite:</p>
                       <p className="text-muted-foreground">{product.fisherman_profile.pickup_address}</p>
                     </div>
                   </div>

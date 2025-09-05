@@ -9,13 +9,17 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, LogOut, User } from "lucide-react";
+import { Menu, LogOut, User, ShoppingCart } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
+import { Badge } from "@/components/ui/badge";
 
 export const Header = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
+  const { getItemCount } = useCart();
   const navigate = useNavigate();
+  const cartItemCount = getItemCount();
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -62,6 +66,20 @@ export const Header = () => {
             className="text-muted-foreground hover:text-dark transition-colors font-medium"
           >
             Saatavilla
+          </Link>
+          <Link 
+            to="/ostoskori" 
+            className="relative text-muted-foreground hover:text-dark transition-colors font-medium"
+          >
+            <ShoppingCart className="h-5 w-5" />
+            {cartItemCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+              >
+                {cartItemCount}
+              </Badge>
+            )}
           </Link>
           {isAdmin && (
             <Link 
@@ -120,6 +138,18 @@ export const Header = () => {
                         className="text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
                       >
                         Saatavilla
+                      </Link>
+                      <Link 
+                        to="/ostoskori" 
+                        className="flex items-center space-x-2 text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        <span>Ostoskori</span>
+                        {cartItemCount > 0 && (
+                          <Badge variant="destructive" className="text-xs">
+                            {cartItemCount}
+                          </Badge>
+                        )}
                       </Link>
                       {isAdmin && (
                         <Link 
@@ -182,6 +212,18 @@ export const Header = () => {
                         className="text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
                       >
                         Saatavilla
+                      </Link>
+                      <Link 
+                        to="/ostoskori" 
+                        className="flex items-center space-x-2 text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                      >
+                        <ShoppingCart className="h-5 w-5" />
+                        <span>Ostoskori</span>
+                        {cartItemCount > 0 && (
+                          <Badge variant="destructive" className="text-xs">
+                            {cartItemCount}
+                          </Badge>
+                        )}
                       </Link>
                       <Separator />
                       <Button onClick={() => setShowAuthDialog(true)} variant="default">
