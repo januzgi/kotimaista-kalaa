@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
-import { Trash2, ShoppingBag, Truck } from 'lucide-react';
+import { Trash2, ShoppingBag, Truck, Edit, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,6 +57,8 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     title: string;
     description: string;
   } | null>(null);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [editingQuantity, setEditingQuantity] = useState<string>('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -173,6 +176,60 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
       description: 'Haluatko varmasti poistaa koko tämän päivän saaliin varastosta?'
     });
     setDeleteDialogOpen(true);
+  };
+
+  const handleEditQuantity = (product: Product) => {
+    setEditingProductId(product.id);
+    setEditingQuantity(product.available_quantity.toString());
+  };
+
+  const handleSaveQuantity = async (productId: string) => {
+    const newQuantity = parseFloat(editingQuantity);
+    
+    if (isNaN(newQuantity) || newQuantity < 0) {
+      toast({
+        variant: "destructive",
+        title: "Virhe",
+        description: "Määrä täytyy olla vähintään 0.",
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('products')
+        .update({ available_quantity: newQuantity })
+        .eq('id', productId);
+
+      if (error) throw error;
+
+      // Update the local state
+      setCatchGroups(prevGroups =>
+        prevGroups.map(group => ({
+          ...group,
+          products: group.products.map(product =>
+            product.id === productId
+              ? { ...product, available_quantity: newQuantity }
+              : product
+          )
+        }))
+      );
+
+      setEditingProductId(null);
+      setEditingQuantity('');
+
+      toast({
+        title: "Määrä päivitetty",
+        description: "Tuotteen määrä on päivitetty.",
+      });
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      toast({
+        variant: "destructive",
+        title: "Virhe",
+        description: "Määrän päivittäminen epäonnistui.",
+      });
+    }
   };
 
   const confirmDelete = async () => {
@@ -303,9 +360,43 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
                           <h3 className="font-semibold text-lg">{product.species}</h3>
                           <div className="flex flex-wrap gap-2 mt-1">
                             <Badge variant="secondary">{product.form}</Badge>
-                            <Badge variant="outline">
-                              {product.available_quantity} kg
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              {editingProductId === product.id ? (
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    value={editingQuantity}
+                                    onChange={(e) => setEditingQuantity(e.target.value)}
+                                    className="w-20 h-6 text-sm"
+                                  />
+                                  <span className="text-sm">kg</span>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleSaveQuantity(product.id)}
+                                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  >
+                                    <Check className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex items-center gap-2">
+                                  <Badge variant="outline">
+                                    {product.available_quantity} kg
+                                  </Badge>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleEditQuantity(product)}
+                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                  >
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                         
