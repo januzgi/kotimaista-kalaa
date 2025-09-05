@@ -2,3 +2,6 @@ project_id = "tjpqdldvrknwaybryzba"
 
 [functions.send-new-catch-notifications]
 verify_jwt = false
+
+[functions.create-order]
+verify_jwt = true

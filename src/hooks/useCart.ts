@@ -14,6 +14,7 @@ const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
 
 export const useCart = () => {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [removedItems, setRemovedItems] = useState<string[]>([]);
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -66,8 +67,21 @@ export const useCart = () => {
     );
   };
 
-  const removeItem = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.productId !== productId));
+  const removeItemsById = (productIds: string[]) => {
+    const removedItemNames: string[] = [];
+    
+    setItems(prevItems => {
+      const itemsToRemove = prevItems.filter(item => productIds.includes(item.productId));
+      removedItemNames.push(...itemsToRemove.map(item => `${item.species} (${item.form})`));
+      
+      return prevItems.filter(item => !productIds.includes(item.productId));
+    });
+    
+    setRemovedItems(removedItemNames);
+  };
+
+  const clearRemovedItems = () => {
+    setRemovedItems([]);
   };
 
   const clearCart = () => {
@@ -82,11 +96,18 @@ export const useCart = () => {
     return items.reduce((total, item) => total + (item.pricePerKg * item.quantity), 0);
   };
 
+  const removeItem = (productId: string) => {
+    setItems(prevItems => prevItems.filter(item => item.productId !== productId));
+  };
+
   return {
     items,
+    removedItems,
     addItem,
     updateQuantity,
     removeItem,
+    removeItemsById,
+    clearRemovedItems,
     clearCart,
     getItemCount,
     getTotalPrice

@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { useCart, CartItem } from '@/hooks/useCart';
-import { ShoppingCart, Fish, Trash2, AlertTriangle, Euro } from 'lucide-react';
+import { ShoppingCart, Fish, Trash2, AlertTriangle, Euro, X } from 'lucide-react';
 
 interface ProductAvailability {
   productId: string;
@@ -20,7 +20,7 @@ interface ProductAvailability {
 const Ostoskori = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { items, updateQuantity, removeItem, getTotalPrice } = useCart();
+  const { items, updateQuantity, removeItem, getTotalPrice, removedItems, clearRemovedItems } = useCart();
   const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -132,6 +132,30 @@ const Ostoskori = () => {
             Tarkista tilauksesi ja siirry kassalle
           </p>
         </div>
+
+        {removedItems.length > 0 && (
+          <Alert className="mb-6 border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
+            <X className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-1">
+                <p className="font-semibold">Huomio! Seuraavat tuotteet ehdittiin myydä loppuun ja ne on poistettu ostoskoristasi:</p>
+                <ul className="list-disc list-inside">
+                  {removedItems.map((itemName, index) => (
+                    <li key={index}>{itemName}</li>
+                  ))}
+                </ul>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={clearRemovedItems}
+                  className="mt-2 h-auto p-1 text-xs"
+                >
+                  Sulje ilmoitus
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {hasUnavailableItems() && (
           <Alert className="mb-6 border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">

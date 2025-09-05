@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useCart } from '@/hooks/useCart';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +47,7 @@ const Tilaa = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { items: cartItems, clearCart, removeItemsById } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [fulfillmentSlots, setFulfillmentSlots] = useState<FulfillmentSlot[]>([]);
@@ -62,12 +64,21 @@ const Tilaa = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
-    if (!productId) {
+    // If there's a productId, we're coming from the old single-product flow
+    // Redirect to cart page instead
+    if (productId) {
+      navigate('/ostoskori');
+      return;
+    }
+    
+    // If cart is empty, redirect to available products
+    if (cartItems.length === 0) {
       navigate('/saatavilla');
       return;
     }
+    
     fetchProductData();
-  }, [productId]);
+  }, [productId, cartItems.length]);
 
   useEffect(() => {
     if (user) {
@@ -82,7 +93,12 @@ const Tilaa = () => {
   }, [product, fulfillmentType]);
 
   const fetchProductData = async () => {
+    if (cartItems.length === 0) return;
+    
     try {
+      // Get unique product IDs from cart
+      const productIds = [...new Set(cartItems.map(item => item.productId))];
+      
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -100,17 +116,20 @@ const Tilaa = () => {
             )
           )
         `)
-        .eq('id', productId)
-        .single();
+        .in('id', productIds);
 
       if (error) throw error;
-      setProduct(data);
+      
+      if (data && data.length > 0) {
+        // Use the first product's fisherman profile for fulfillment details
+        setProduct(data[0]);
+      }
     } catch (error) {
-      console.error('Error fetching product:', error);
+      console.error('Error fetching products:', error);
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Tuotteen lataaminen epäonnistui.",
+        description: "Tuotteiden lataaminen epäonnistui.",
       });
       navigate('/saatavilla');
     }
@@ -158,18 +177,21 @@ const Tilaa = () => {
   };
 
   const calculateTotal = () => {
-    if (!product) return 0;
-    const itemsTotal = quantity * product.price_per_kg;
-    const deliveryFee = fulfillmentType === 'DELIVERY' ? product.fisherman_profile.default_delivery_fee : 0;
+    if (!cartItems.length) return 0;
+    
+    const itemsTotal = cartItems.reduce((sum, item) => sum + (item.quantity * item.pricePerKg), 0);
+    const deliveryFee = fulfillmentType === 'DELIVERY' && product 
+      ? product.fisherman_profile.default_delivery_fee 
+      : 0;
     return itemsTotal + deliveryFee;
   };
 
   const handleSubmitOrder = async () => {
-    if (!product || !user) {
+    if (!product || !user || cartItems.length === 0) {
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Kirjaudu sisään tehdäksesi tilauksen.",
+        description: "Kirjaudu sisään ja lisää tuotteita ostoskoriin tehdäksesi tilauksen.",
       });
       return;
     }
@@ -192,57 +214,63 @@ const Tilaa = () => {
       return;
     }
 
-    if (quantity > product.available_quantity) {
-      toast({
-        variant: "destructive",
-        title: "Liikaa määrä",
-        description: "Valittu määrä ylittää saatavilla olevan määrän.",
-      });
-      return;
-    }
-
     setSubmitting(true);
 
     try {
-      // Create order
-      const { data: orderData, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          customer_id: user.id,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          customer_address: fulfillmentType === 'DELIVERY' ? customerAddress : null,
-          fulfillment_type: fulfillmentType,
-          fulfillment_slot_id: selectedSlotId,
-          final_delivery_fee: fulfillmentType === 'DELIVERY' ? product.fisherman_profile.default_delivery_fee : 0,
-          status: 'NEW'
-        })
-        .select()
-        .single();
+      // Prepare cart data for the edge function
+      const cartData = cartItems.map(item => ({
+        productId: item.productId,
+        quantity: item.quantity
+      }));
 
-      if (orderError) throw orderError;
+      const orderData = {
+        cartItems: cartData,
+        customerName,
+        customerPhone,
+        customerAddress: fulfillmentType === 'DELIVERY' ? customerAddress : undefined,
+        fulfillmentType,
+        fulfillmentSlotId: selectedSlotId
+      };
 
-      // Create order item
-      const { error: itemError } = await supabase
-        .from('order_items')
-        .insert({
-          order_id: orderData.id,
-          product_id: product.id,
-          quantity: quantity
-        });
+      console.log('Calling create-order function with:', orderData);
 
-      if (itemError) throw itemError;
+      const { data, error } = await supabase.functions.invoke('create-order', {
+        body: orderData
+      });
 
-      // Update product quantity
-      const { error: updateError } = await supabase
-        .from('products')
-        .update({
-          available_quantity: product.available_quantity - quantity
-        })
-        .eq('id', product.id);
+      if (error) {
+        console.error('Edge function error:', error);
+        throw new Error(error.message || 'Failed to create order');
+      }
 
-      if (updateError) throw updateError;
+      if (data.error) {
+        if (data.error === 'Items sold out') {
+          // Handle sold out items
+          console.log('Items sold out:', data.soldOutItems);
+          
+          // Remove sold out items from cart
+          if (data.soldOutProductIds && data.soldOutProductIds.length > 0) {
+            removeItemsById(data.soldOutProductIds);
+          }
 
+          toast({
+            variant: "destructive",
+            title: "Tuotteet loppuunmyytyjä",
+            description: `Seuraavat tuotteet ehdittiin myydä loppuun: ${data.soldOutItems.join(', ')}`,
+          });
+
+          // Redirect to cart page
+          navigate('/ostoskori');
+          return;
+        } else {
+          throw new Error(data.error);
+        }
+      }
+
+      // Success - clear cart and redirect
+      console.log('Order created successfully:', data.orderId);
+      clearCart();
+      
       toast({
         title: "Tilaus lähetetty!",
         description: "Tilauksesi on vastaanotettu ja odottaa vahvistusta.",
@@ -254,14 +282,14 @@ const Tilaa = () => {
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Tilauksen lähettäminen epäonnistui.",
+        description: "Tilauksen lähettäminen epäonnistui. Yritä uudelleen.",
       });
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (loading || !product) {
+  if (loading || !product || cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -290,51 +318,34 @@ const Tilaa = () => {
         </div>
 
         <div className="space-y-6">
-          {/* Product Summary */}
+          {/* Cart Summary */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <Fish className="mr-2 h-5 w-5 text-primary" />
-                Tilattu tuote
+                Tilattavat tuotteet
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <div>
-                  <h3 className="font-semibold text-lg">{product.species}</h3>
-                  <p className="text-muted-foreground">{product.form}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Kalastaja: {product.fisherman_profile.user.full_name}
-                  </p>
+              {cartItems.map((item) => (
+                <div key={item.productId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg">
+                  <div>
+                    <h3 className="font-semibold">{item.species}</h3>
+                    <p className="text-muted-foreground text-sm">{item.form}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">{item.pricePerKg.toFixed(2)} €/kg</p>
+                    <p className="text-sm text-muted-foreground">
+                      {item.quantity} kg = {(item.quantity * item.pricePerKg).toFixed(2)} €
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold">{product.price_per_kg.toFixed(2)} €/kg</p>
-                  <p className="text-sm text-muted-foreground">
-                    Saatavilla: {product.available_quantity} kg
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="quantity">Määrä (kg)</Label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    step="0.1"
-                    min="0.1"
-                    max={product.available_quantity}
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-                    className="mt-1"
-                  />
-                </div>
-                <div className="text-right">
-                  <p className="text-sm text-muted-foreground">Yhteensä tuotteesta:</p>
-                  <p className="font-semibold text-lg">
-                    {(quantity * product.price_per_kg).toFixed(2)} €
-                  </p>
-                </div>
+              ))}
+              <div className="text-right pt-2 border-t">
+                <p className="text-sm text-muted-foreground">Tuotteet yhteensä:</p>
+                <p className="font-semibold text-lg">
+                  {cartItems.reduce((sum, item) => sum + (item.quantity * item.pricePerKg), 0).toFixed(2)} €
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -469,11 +480,13 @@ const Tilaa = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>{product.species} ({quantity} kg × {product.price_per_kg.toFixed(2)} €/kg)</span>
-                  <span>{(quantity * product.price_per_kg).toFixed(2)} €</span>
-                </div>
-                {fulfillmentType === 'DELIVERY' && (
+                {cartItems.map((item) => (
+                  <div key={item.productId} className="flex justify-between">
+                    <span>{item.species} ({item.quantity} kg × {item.pricePerKg.toFixed(2)} €/kg)</span>
+                    <span>{(item.quantity * item.pricePerKg).toFixed(2)} €</span>
+                  </div>
+                ))}
+                {fulfillmentType === 'DELIVERY' && product && (
                   <div className="flex justify-between">
                     <span>Toimitusmaksu</span>
                     <span>{product.fisherman_profile.default_delivery_fee.toFixed(2)} €</span>
@@ -513,7 +526,7 @@ const Tilaa = () => {
           {/* Submit Button */}
           <Button 
             onClick={handleSubmitOrder}
-            disabled={submitting || !selectedSlotId || availableSlots.length === 0 || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress)}
+            disabled={submitting || !selectedSlotId || availableSlots.length === 0 || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress) || cartItems.length === 0}
             className="w-full"
             size="lg"
           >
