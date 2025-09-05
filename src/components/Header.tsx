@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { AuthDialog } from "./AuthDialog";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, LogOut, User, ShoppingCart } from "lucide-react";
+import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,7 +19,10 @@ export const Header = () => {
   const { user, signOut } = useAuth();
   const { getItemCount } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
   const cartItemCount = getItemCount();
+
+  const isActivePage = (path: string) => location.pathname === path;
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -60,18 +63,28 @@ export const Header = () => {
           </Link>
         </div>
         
-        <nav className="hidden md:flex items-center space-x-6">
+        <nav className="hidden md:flex items-center space-x-8">
           <Link 
             to="/saatavilla" 
-            className="text-muted-foreground hover:text-dark transition-colors font-medium"
+            className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 ${
+              isActivePage('/saatavilla') 
+                ? 'border-[#0e43f2] text-dark' 
+                : 'border-transparent'
+            }`}
           >
-            Saatavilla
+            <Fish className="h-4 w-4" />
+            <span>Saatavilla</span>
           </Link>
           <Link 
             to="/ostoskori" 
-            className="relative text-muted-foreground hover:text-dark transition-colors font-medium"
+            className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 relative ${
+              isActivePage('/ostoskori') 
+                ? 'border-[#0e43f2] text-dark' 
+                : 'border-transparent'
+            }`}
           >
-            <ShoppingCart className="h-5 w-5" />
+            <ShoppingCart className="h-4 w-4" />
+            <span>Ostoskori</span>
             {cartItemCount > 0 && (
               <Badge 
                 variant="destructive" 
@@ -84,9 +97,14 @@ export const Header = () => {
           {isAdmin && (
             <Link 
               to="/admin" 
-              className="text-muted-foreground hover:text-dark transition-colors font-medium"
+              className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 ${
+                isActivePage('/admin') 
+                  ? 'border-[#0e43f2] text-dark' 
+                  : 'border-transparent'
+              }`}
             >
-              Ylläpito
+              <Settings className="h-4 w-4" />
+              <span>Ylläpito</span>
             </Link>
           )}
         </nav>
@@ -135,13 +153,22 @@ export const Header = () => {
                     <div className="flex flex-col space-y-4 mt-4">
                       <Link 
                         to="/saatavilla" 
-                        className="text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                        className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
+                          isActivePage('/saatavilla') 
+                            ? 'text-[#0e43f2]' 
+                            : 'text-muted-foreground hover:text-dark'
+                        }`}
                       >
-                        Saatavilla
+                        <Fish className="h-5 w-5" />
+                        <span>Saatavilla</span>
                       </Link>
                       <Link 
                         to="/ostoskori" 
-                        className="flex items-center space-x-2 text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                        className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
+                          isActivePage('/ostoskori') 
+                            ? 'text-[#0e43f2]' 
+                            : 'text-muted-foreground hover:text-dark'
+                        }`}
                       >
                         <ShoppingCart className="h-5 w-5" />
                         <span>Ostoskori</span>
@@ -154,9 +181,14 @@ export const Header = () => {
                       {isAdmin && (
                         <Link 
                           to="/admin" 
-                          className="text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                          className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
+                            isActivePage('/admin') 
+                              ? 'text-[#0e43f2]' 
+                              : 'text-muted-foreground hover:text-dark'
+                          }`}
                         >
-                          Ylläpito
+                          <Settings className="h-5 w-5" />
+                          <span>Ylläpito</span>
                         </Link>
                       )}
                       <Separator />
@@ -209,13 +241,22 @@ export const Header = () => {
                     <div className="flex flex-col space-y-4 mt-4">
                       <Link 
                         to="/saatavilla" 
-                        className="text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                        className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
+                          isActivePage('/saatavilla') 
+                            ? 'text-[#0e43f2]' 
+                            : 'text-muted-foreground hover:text-dark'
+                        }`}
                       >
-                        Saatavilla
+                        <Fish className="h-5 w-5" />
+                        <span>Saatavilla</span>
                       </Link>
                       <Link 
                         to="/ostoskori" 
-                        className="flex items-center space-x-2 text-lg font-medium text-muted-foreground hover:text-dark transition-colors"
+                        className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
+                          isActivePage('/ostoskori') 
+                            ? 'text-[#0e43f2]' 
+                            : 'text-muted-foreground hover:text-dark'
+                        }`}
                       >
                         <ShoppingCart className="h-5 w-5" />
                         <span>Ostoskori</span>
