@@ -198,12 +198,28 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
           .find(group => group.catch_date === deleteTarget.catchDate)
           ?.products.map(p => p.id) || [];
 
-        const { error } = await supabase
+        const { error: productsError } = await supabase
           .from('products')
           .delete()
           .in('id', productsToDelete);
 
-        if (error) throw error;
+        if (productsError) throw productsError;
+
+        // Also delete fulfillment slots for this catch date
+        const catchDate = new Date(deleteTarget.catchDate);
+        const startOfDay = new Date(catchDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(catchDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const { error: slotsError } = await supabase
+          .from('fulfillment_slots')
+          .delete()
+          .eq('fisherman_id', fishermanProfileId)
+          .gte('start_time', startOfDay.toISOString())
+          .lte('start_time', endOfDay.toISOString());
+
+        if (slotsError) throw slotsError;
 
         toast({
           title: "Saalis poistettu",
