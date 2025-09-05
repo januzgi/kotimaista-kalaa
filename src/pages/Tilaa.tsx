@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
 import { Fish, MapPin, Clock, Euro, User, Phone, Home } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface Product {
   id: string;
@@ -58,6 +59,7 @@ const Tilaa = () => {
   const [customerAddress, setCustomerAddress] = useState('');
   const [fulfillmentType, setFulfillmentType] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
   const [selectedSlotId, setSelectedSlotId] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     if (!productId) {
@@ -172,11 +174,11 @@ const Tilaa = () => {
       return;
     }
 
-    if (!customerName || !customerPhone || !selectedSlotId) {
+    if (!customerName || !customerPhone || !selectedSlotId || !acceptedTerms) {
       toast({
         variant: "destructive",
         title: "Puuttuvia tietoja",
-        description: "Täytä kaikki pakolliset kentät.",
+        description: "Täytä kaikki pakolliset kentät ja hyväksy toimitusehdot.",
       });
       return;
     }
@@ -423,7 +425,7 @@ const Tilaa = () => {
                     <div className="flex items-center justify-between">
                       <span>Toimitusmaksu:</span>
                       <span className="font-semibold">
-                        {product.fisherman_profile.default_delivery_fee.toFixed(2)} €
+                        alk. {product.fisherman_profile.default_delivery_fee.toFixed(2)} €
                       </span>
                     </div>
                   </div>
@@ -486,10 +488,32 @@ const Tilaa = () => {
             </CardContent>
           </Card>
 
+          {/* Terms and Conditions */}
+          <div className="flex items-start space-x-2 p-4 bg-muted/20 rounded-lg">
+            <Checkbox 
+              id="terms"
+              checked={acceptedTerms}
+              onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
+              Olen lukenut ja hyväksyn{' '}
+              <a 
+                href="/toimitusehdot" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary underline hover:no-underline"
+              >
+                toimitusehdot
+              </a>
+              . Ymmärrän, että tilaus on sitova.
+            </Label>
+          </div>
+
           {/* Submit Button */}
           <Button 
             onClick={handleSubmitOrder}
-            disabled={submitting || !selectedSlotId || availableSlots.length === 0}
+            disabled={submitting || !selectedSlotId || availableSlots.length === 0 || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress)}
             className="w-full"
             size="lg"
           >

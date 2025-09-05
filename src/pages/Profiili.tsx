@@ -29,6 +29,11 @@ const Profiili = () => {
   const [editedName, setEditedName] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
+  
+  // Fisherman profile editing states
+  const [pickupAddress, setPickupAddress] = useState('');
+  const [publicPhone, setPublicPhone] = useState('');
+  const [defaultDeliveryFee, setDefaultDeliveryFee] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -71,6 +76,9 @@ const Profiili = () => {
           } else {
             setFishermanProfile(profileData);
             setNoteContent(profileData?.fishermans_note || '');
+            setPickupAddress(profileData?.pickup_address || '');
+            setPublicPhone(profileData?.public_phone_number || '');
+            setDefaultDeliveryFee(profileData?.default_delivery_fee || 0);
           }
         }
       } catch (error) {
@@ -104,6 +112,21 @@ const Profiili = () => {
 
   const handleNoteChange = (value: string) => {
     setNoteContent(value);
+    setHasChanges(true);
+  };
+
+  const handlePickupAddressChange = (value: string) => {
+    setPickupAddress(value);
+    setHasChanges(true);
+  };
+
+  const handlePublicPhoneChange = (value: string) => {
+    setPublicPhone(value);
+    setHasChanges(true);
+  };
+
+  const handleDefaultDeliveryFeeChange = (value: number) => {
+    setDefaultDeliveryFee(value);
     setHasChanges(true);
   };
 
@@ -158,14 +181,19 @@ const Profiili = () => {
         });
       }
 
-      // Handle fisherman note update if user is ADMIN
+      // Handle fisherman profile updates if user is ADMIN
       if (userRole === 'ADMIN' && fishermanProfile) {
-        const { error: noteError } = await supabase
+        const { error: profileError } = await supabase
           .from('fisherman_profiles')
-          .update({ fishermans_note: noteContent })
+          .update({ 
+            fishermans_note: noteContent,
+            pickup_address: pickupAddress,
+            public_phone_number: publicPhone,
+            default_delivery_fee: defaultDeliveryFee
+          })
           .eq('user_id', user.id);
 
-        if (noteError) throw noteError;
+        if (profileError) throw profileError;
       }
 
       // Reset editing states
@@ -284,34 +312,80 @@ const Profiili = () => {
             </div>
 
             {userRole === 'ADMIN' && fishermanProfile && (
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-dark">Kalastajan muistio:</h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingNote(!isEditingNote)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                  Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi kirjoittaa ajatuksia mahdollisesta saaliista, terveiset sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa. Se on asiakkaillekin mielenkiintoista.
-                </p>
-                
-                {isEditingNote ? (
-                  <Textarea
-                    value={noteContent}
-                    onChange={(e) => handleNoteChange(e.target.value)}
-                    placeholder="Kirjoita muistiosi tähän..."
-                    rows={4}
-                  />
-                ) : (
-                  <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
-                    {noteContent || 'Ei muistiota lisätty.'}
+              <div className="pt-4 border-t space-y-6">
+                {/* Fisherman's Note Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-semibold text-dark">Kalastajan muistio:</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingNote(!isEditingNote)}
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  
+                  <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                    Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi kirjoittaa ajatuksia mahdollisesta saaliista, terveiset sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa. Se on asiakkaillekin mielenkiintoista.
                   </p>
-                )}
+                  
+                  {isEditingNote ? (
+                    <Textarea
+                      value={noteContent}
+                      onChange={(e) => handleNoteChange(e.target.value)}
+                      placeholder="Kirjoita muistiosi tähän..."
+                      rows={4}
+                    />
+                  ) : (
+                    <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
+                      {noteContent || 'Ei muistiota lisätty.'}
+                    </p>
+                  )}
+                </div>
+
+                {/* Pickup Address Section */}
+                <div>
+                  <h3 className="font-semibold text-dark mb-2">Nouto-osoite:</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Tämä osoite näytetään asiakkaille kun he valitsevat noutotoimituksen.
+                  </p>
+                  <Input
+                    value={pickupAddress}
+                    onChange={(e) => handlePickupAddressChange(e.target.value)}
+                    placeholder="Syötä noutoosoite..."
+                  />
+                </div>
+
+                {/* Public Phone Number Section */}
+                <div>
+                  <h3 className="font-semibold text-dark mb-2">Julkinen puhelinnumero:</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Tämä numero voi näkyä asiakkaille yhteystiedoissa.
+                  </p>
+                  <Input
+                    value={publicPhone}
+                    onChange={(e) => handlePublicPhoneChange(e.target.value)}
+                    placeholder="Syötä puhelinnumero..."
+                    type="tel"
+                  />
+                </div>
+
+                {/* Default Delivery Fee Section */}
+                <div>
+                  <h3 className="font-semibold text-dark mb-2">Kotiinkuljetuksen oletusmaksu (€):</h3>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Tämä on oletusmaksu kotiinkuljetukselle. Voit muokata sitä tilauskohtaisesti.
+                  </p>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={defaultDeliveryFee}
+                    onChange={(e) => handleDefaultDeliveryFeeChange(parseFloat(e.target.value) || 0)}
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
             )}
 
