@@ -15,7 +15,9 @@ interface Product {
   form: string;
   price_per_kg: number;
   available_quantity: number;
-  catch_date: string;
+  catch: {
+    catch_date: string;
+  };
   fisherman_profile: {
     user: {
       full_name: string;
@@ -43,7 +45,9 @@ const Saatavilla = () => {
           form,
           price_per_kg,
           available_quantity,
-          catch_date,
+          catch:catches(
+            catch_date
+          ),
           fisherman_profile:fisherman_profiles(
             user:users(
               full_name
@@ -51,7 +55,7 @@ const Saatavilla = () => {
           )
         `)
         .gt('available_quantity', 0)
-        .order('catch_date', { ascending: false });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setProducts(data || []);
@@ -120,7 +124,7 @@ const Saatavilla = () => {
                       {product.species}
                     </CardTitle>
                     <Badge variant="outline" className="text-xs">
-                      {formatDate(product.catch_date)}
+                      {formatDate(product.catch.catch_date)}
                     </Badge>
                   </div>
                   <div className="text-sm text-muted-foreground">

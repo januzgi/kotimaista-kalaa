@@ -155,17 +155,29 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
     setIsSubmitting(true);
     try {
-      // Create products for each fish entry
+      // First, create the catch record
+      const { data: catchData, error: catchError } = await supabase
+        .from('catches')
+        .insert({
+          fisherman_id: fishermanProfileId,
+          catch_date: values.catch_date.toISOString().split('T')[0] // Convert to date string
+        })
+        .select()
+        .single();
+
+      if (catchError) throw catchError;
+
+      // Create products for each fish entry using the catch_id
       const productPromises = values.fish_entries.map(async (fishEntry) => {
         const { data: productData, error: productError } = await supabase
           .from('products')
           .insert({
             fisherman_id: fishermanProfileId,
+            catch_id: catchData.id,
             species: fishEntry.species,
             form: fishEntry.form,
             price_per_kg: fishEntry.price_per_kg,
-            available_quantity: fishEntry.available_quantity,
-            catch_date: values.catch_date.toISOString()
+            available_quantity: fishEntry.available_quantity
           })
           .select()
           .single();
@@ -176,7 +188,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
       const products = await Promise.all(productPromises);
 
-      // Create fulfillment slots (shared across all fish)
+      // Create fulfillment slots using the same catch_id
       const fulfillmentSlots = slots.map(slot => {
         const startDateTime = new Date(slot.date);
         const [startHour, startMinute] = slot.start_time.split(':');
@@ -188,6 +200,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
         return {
           fisherman_id: fishermanProfileId,
+          catch_id: catchData.id,
           start_time: startDateTime.toISOString(),
           end_time: endDateTime.toISOString(),
           type: slot.type

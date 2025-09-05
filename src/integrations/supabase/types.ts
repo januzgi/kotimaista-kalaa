@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      catches: {
+        Row: {
+          catch_date: string
+          created_at: string
+          fisherman_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          catch_date: string
+          created_at?: string
+          fisherman_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          catch_date?: string
+          created_at?: string
+          fisherman_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       default_prices: {
         Row: {
           created_at: string
@@ -119,6 +143,7 @@ export type Database = {
       }
       fulfillment_slots: {
         Row: {
+          catch_id: string
           created_at: string
           end_time: string
           fisherman_id: string
@@ -127,6 +152,7 @@ export type Database = {
           type: Database["public"]["Enums"]["fulfillment_type"]
         }
         Insert: {
+          catch_id: string
           created_at?: string
           end_time: string
           fisherman_id: string
@@ -135,6 +161,7 @@ export type Database = {
           type: Database["public"]["Enums"]["fulfillment_type"]
         }
         Update: {
+          catch_id?: string
           created_at?: string
           end_time?: string
           fisherman_id?: string
@@ -143,6 +170,13 @@ export type Database = {
           type?: Database["public"]["Enums"]["fulfillment_type"]
         }
         Relationships: [
+          {
+            foreignKeyName: "fulfillment_slots_catch_id_fkey"
+            columns: ["catch_id"]
+            isOneToOne: false
+            referencedRelation: "catches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "fulfillment_slots_fisherman_id_fkey"
             columns: ["fisherman_id"]
@@ -286,7 +320,7 @@ export type Database = {
       products: {
         Row: {
           available_quantity: number
-          catch_date: string
+          catch_id: string
           created_at: string
           fisherman_id: string
           form: string
@@ -297,7 +331,7 @@ export type Database = {
         }
         Insert: {
           available_quantity?: number
-          catch_date: string
+          catch_id: string
           created_at?: string
           fisherman_id: string
           form: string
@@ -308,7 +342,7 @@ export type Database = {
         }
         Update: {
           available_quantity?: number
-          catch_date?: string
+          catch_id?: string
           created_at?: string
           fisherman_id?: string
           form?: string
@@ -318,6 +352,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "products_catch_id_fkey"
+            columns: ["catch_id"]
+            isOneToOne: false
+            referencedRelation: "catches"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "products_fisherman_id_fkey"
             columns: ["fisherman_id"]

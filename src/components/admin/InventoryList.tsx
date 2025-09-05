@@ -24,7 +24,6 @@ interface Product {
   form: string;
   price_per_kg: number;
   available_quantity: number;
-  catch_date: string;
   created_at: string;
 }
 
@@ -193,33 +192,14 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
           description: "Tuote on poistettu varastosta.",
         });
       } else if (deleteTarget.type === 'catch' && deleteTarget.catchDate) {
-        // Delete all products for this catch date
-        const productsToDelete = catchGroups
-          .find(group => group.catch_date === deleteTarget.catchDate)
-          ?.products.map(p => p.id) || [];
-
-        const { error: productsError } = await supabase
-          .from('products')
-          .delete()
-          .in('id', productsToDelete);
-
-        if (productsError) throw productsError;
-
-        // Also delete fulfillment slots for this catch date
-        const catchDate = new Date(deleteTarget.catchDate);
-        const startOfDay = new Date(catchDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(catchDate);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const { error: slotsError } = await supabase
-          .from('fulfillment_slots')
+        // Delete the catch record - this will cascade delete all associated products and fulfillment slots
+        const { error: catchError } = await supabase
+          .from('catches')
           .delete()
           .eq('fisherman_id', fishermanProfileId)
-          .gte('start_time', startOfDay.toISOString())
-          .lte('start_time', endOfDay.toISOString());
+          .eq('catch_date', deleteTarget.catchDate);
 
-        if (slotsError) throw slotsError;
+        if (catchError) throw catchError;
 
         toast({
           title: "Saalis poistettu",
