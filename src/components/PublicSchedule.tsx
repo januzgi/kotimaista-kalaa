@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { fi } from 'date-fns/locale';
@@ -55,11 +55,6 @@ export const PublicSchedule = () => {
           {/* Left Column - Calendar */}
           <div className="flex justify-center lg:justify-end">
             <Card className="w-full max-w-md">
-              <CardHeader>
-                <CardTitle className="text-center">
-                  {format(currentMonth, 'MMMM yyyy', { locale: fi })}
-                </CardTitle>
-              </CardHeader>
               <CardContent>
                 <div className="flex justify-center">
                   <Calendar
