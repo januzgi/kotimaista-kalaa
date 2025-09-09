@@ -485,6 +485,9 @@ const Tilaa = () => {
                         alk. {product.fisherman_profile.default_delivery_fee.toFixed(2)} €
                       </span>
                     </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Lopullinen toimitusmaksu vahvistetaan tilausvahvistuksessa.
+                    </p>
                   </div>
                 </div>
               )}
