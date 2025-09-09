@@ -20,7 +20,7 @@ interface Order {
   customer_phone: string;
   fulfillment_type: 'PICKUP' | 'DELIVERY';
   final_delivery_fee: number;
-  status: 'NEW' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: 'NEW' | 'CONFIRMED' | 'CANCELLED';
   created_at: string;
   fulfillment_slot: {
     start_time: string;
@@ -40,7 +40,7 @@ interface Order {
 
 interface OrdersListProps {
   fishermanProfileId: string;
-  status: 'NEW' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+  status: 'NEW' | 'CONFIRMED' | 'CANCELLED';
   defaultDeliveryFee: number;
 }
 
@@ -263,8 +263,6 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
         return 'destructive';
       case 'CONFIRMED':
         return 'default';
-      case 'COMPLETED':
-        return 'secondary';
       case 'CANCELLED':
         return 'outline';
       default:
@@ -287,7 +285,6 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
         <p className="text-muted-foreground">
           {status === 'NEW' && 'Ei uusia tilauksia.'}
           {status === 'CONFIRMED' && 'Ei vahvistettuja tilauksia.'}
-          {status === 'COMPLETED' && 'Ei valmistuneita tilauksia.'}
           {status === 'CANCELLED' && 'Ei peruttuja tilauksia.'}
         </p>
       </div>
@@ -316,7 +313,6 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
                 <Badge variant={getStatusBadgeVariant(order.status)}>
                   {order.status === 'NEW' && 'Uusi'}
                   {order.status === 'CONFIRMED' && 'Vahvistettu'}
-                  {order.status === 'COMPLETED' && 'Valmis'}
                   {order.status === 'CANCELLED' && 'Peruttu'}
                 </Badge>
               </div>
