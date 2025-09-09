@@ -135,10 +135,12 @@ const Admin = () => {
               </TabsTrigger>
             </TabsList>
             
-            <TabsTrigger value="prices" className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
-              <Euro className="h-4 w-4" />
-              Hallitse kilohintoja
-            </TabsTrigger>
+            <TabsList className="bg-transparent p-0">
+              <TabsTrigger value="prices" className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
+                <Euro className="h-4 w-4" />
+                Hallitse kilohintoja
+              </TabsTrigger>
+            </TabsList>
           </div>
 
           <TabsContent value="catch" className="space-y-6">
