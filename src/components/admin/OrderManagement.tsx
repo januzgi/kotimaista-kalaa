@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications } from '@/contexts/NotificationContext';
-import { Inbox, CheckCircle2, PackageCheck, XCircle } from 'lucide-react';
+import { Inbox, CheckCircle2, XCircle } from 'lucide-react';
 import { OrdersList } from './OrdersList';
 
 interface OrderManagementProps {
@@ -24,7 +24,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
       </div>
 
         <Tabs defaultValue="new" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="new" className="text-xs sm:text-sm relative">
               <Inbox className="mr-1 h-4 w-4" />
               Uudet
@@ -40,10 +40,6 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
             <TabsTrigger value="confirmed" className="text-xs sm:text-sm">
               <CheckCircle2 className="mr-1 h-4 w-4" />
               Vahvistetut
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="text-xs sm:text-sm">
-              <PackageCheck className="mr-1 h-4 w-4" />
-              Valmiit
             </TabsTrigger>
             <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
               <XCircle className="mr-1 h-4 w-4" />
@@ -63,14 +59,6 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
           <OrdersList 
             fishermanProfileId={fishermanProfile.id}
             status="CONFIRMED"
-            defaultDeliveryFee={fishermanProfile.default_delivery_fee}
-          />
-        </TabsContent>
-
-        <TabsContent value="completed">
-          <OrdersList 
-            fishermanProfileId={fishermanProfile.id}
-            status="COMPLETED"
             defaultDeliveryFee={fishermanProfile.default_delivery_fee}
           />
         </TabsContent>
