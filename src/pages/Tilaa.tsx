@@ -563,13 +563,13 @@ const Tilaa = () => {
                 ))}
                 {fulfillmentType === 'DELIVERY' && product && (
                   <div className="flex justify-between">
-                    <span>Toimitusmaksu</span>
+                    <span>Toimitusmaksu (alkaen)</span>
                     <span>{product.fisherman_profile.default_delivery_fee.toFixed(2)} €</span>
                   </div>
                 )}
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Yhteensä</span>
+                  <span>Yhteensä (alkaen)</span>
                   <span>{calculateTotal().toFixed(2)} €</span>
                 </div>
               </div>
