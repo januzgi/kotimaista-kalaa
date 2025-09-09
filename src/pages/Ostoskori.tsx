@@ -74,6 +74,18 @@ const Ostoskori = () => {
     return items.some(item => isSoldOut(item));
   };
 
+  const hasInvalidQuantities = () => {
+    return items.some(item => {
+      const availability = getItemAvailability(item.productId);
+      return availability && item.quantity > availability.currentAvailableQuantity;
+    });
+  };
+
+  const isQuantityInvalid = (item: CartItem) => {
+    const availability = getItemAvailability(item.productId);
+    return availability && item.quantity > availability.currentAvailableQuantity;
+  };
+
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
       removeItem(productId);
@@ -97,6 +109,15 @@ const Ostoskori = () => {
         variant: "destructive",
         title: "Loppuunmyyty tuotteita",
         description: "Poista loppuunmyydyt tuotteet ostoskorista ennen kassalle siirtymistä.",
+      });
+      return;
+    }
+
+    if (hasInvalidQuantities()) {
+      toast({
+        variant: "destructive",
+        title: "Virheellisiä määriä",
+        description: "Vähennä tuotteiden määriä saatavilla olevan määrän mukaisesti.",
       });
       return;
     }
@@ -166,6 +187,15 @@ const Ostoskori = () => {
           </Alert>
         )}
 
+        {hasInvalidQuantities() && (
+          <Alert className="mb-6 border-yellow-500/50 text-yellow-700 dark:border-yellow-500 [&>svg]:text-yellow-600">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Huomio! Joidenkin tuotteiden määrä ylittää saatavilla olevan määrän. Vähennä määriä jatkaaksesi.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {items.length === 0 ? (
           <div className="text-center py-12">
             <ShoppingCart className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
@@ -183,10 +213,11 @@ const Ostoskori = () => {
             <div className="space-y-4">
               {items.map((item) => {
                 const soldOut = isSoldOut(item);
+                const quantityInvalid = isQuantityInvalid(item);
                 const availability = getItemAvailability(item.productId);
                 
                 return (
-                  <Card key={item.productId} className={soldOut ? 'opacity-50' : ''}>
+                  <Card key={item.productId} className={soldOut ? 'opacity-50' : quantityInvalid ? 'border-yellow-500' : ''}>
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1">
@@ -195,6 +226,11 @@ const Ostoskori = () => {
                             <h3 className="font-semibold text-lg">{item.species}</h3>
                             {soldOut && (
                               <Badge variant="destructive">Loppuunmyyty</Badge>
+                            )}
+                            {quantityInvalid && !soldOut && (
+                              <Badge variant="outline" className="border-yellow-500 text-yellow-700">
+                                Liikaa valittu
+                              </Badge>
                             )}
                           </div>
                           <p className="text-muted-foreground mb-1">{item.form}</p>
@@ -205,7 +241,7 @@ const Ostoskori = () => {
                             {item.pricePerKg.toFixed(2)} €/kg
                           </p>
                           {availability && (
-                            <p className="text-xs text-muted-foreground mt-1">
+                            <p className={`text-xs mt-1 ${quantityInvalid && !soldOut ? 'text-yellow-700 font-medium' : 'text-muted-foreground'}`}>
                               Saatavilla: {availability.currentAvailableQuantity} kg
                             </p>
                           )}
@@ -224,7 +260,7 @@ const Ostoskori = () => {
                               max={availability?.currentAvailableQuantity || item.availableQuantity}
                               value={item.quantity}
                               onChange={(e) => handleQuantityChange(item.productId, parseFloat(e.target.value) || 0)}
-                              className="w-20"
+                              className={`w-20 ${quantityInvalid && !soldOut ? 'border-yellow-500 focus-visible:ring-yellow-500' : ''}`}
                               disabled={soldOut}
                             />
                             <span className="text-sm text-muted-foreground">kg</span>
@@ -299,7 +335,7 @@ const Ostoskori = () => {
               </Button>
               <Button
                 onClick={handleGoToCheckout}
-                disabled={items.length === 0 || hasUnavailableItems()}
+                disabled={items.length === 0 || hasUnavailableItems() || hasInvalidQuantities()}
                 className="flex-1"
                 size="lg"
               >
