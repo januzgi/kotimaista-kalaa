@@ -11,14 +11,17 @@ import { DefaultPricesManagement } from '@/components/admin/DefaultPricesManagem
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { Fish, Euro, ShoppingCart, Calendar } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { FishermanSchedule } from '@/components/admin/FishermanSchedule';
 
 const Admin = () => {
   const { loading, isAdmin, fishermanProfile, user } = useAdminAccess();
   const [refreshKey, setRefreshKey] = useState(0);
   const { toast } = useToast();
+  const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
 
   const handleCreateFishermanProfile = async () => {
@@ -117,9 +120,17 @@ const Admin = () => {
               <Euro className="h-4 w-4" />
               Hallitse kilohintoja
             </TabsTrigger>
-            <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2">
+            <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2 relative">
               <ShoppingCart className="h-4 w-4" />
               Tilaukset
+              {newOrderCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
+                >
+                  {newOrderCount}
+                </Badge>
+              )}
             </TabsTrigger>
             <TabsTrigger value="schedule" className="text-xs sm:text-sm flex items-center gap-2">
               <Calendar className="h-4 w-4" />
