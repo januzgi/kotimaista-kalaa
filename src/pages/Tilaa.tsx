@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/hooks/useCart';
+import { useCart } from '@/contexts/CartContext';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,6 +28,7 @@ interface Product {
     id: string;
     pickup_address: string;
     default_delivery_fee: number;
+    public_phone_number: string | null;
     user: {
       full_name: string;
     };
@@ -111,6 +112,7 @@ const Tilaa = () => {
             id,
             pickup_address,
             default_delivery_fee,
+            public_phone_number,
             user:users(
               full_name
             )
@@ -158,16 +160,29 @@ const Tilaa = () => {
     if (!product) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch all slots for this fisherman to check availability
+      const { data: allSlots, error } = await supabase
         .from('fulfillment_slots')
         .select('id, start_time, end_time, type')
         .eq('fisherman_id', product.fisherman_profile.id)
-        .eq('type', fulfillmentType)
         .gte('start_time', new Date().toISOString())
         .order('start_time', { ascending: true });
 
       if (error) throw error;
-      setFulfillmentSlots(data || []);
+      
+      const slots = allSlots || [];
+      const deliverySlots = slots.filter(slot => slot.type === 'DELIVERY');
+      const pickupSlots = slots.filter(slot => slot.type === 'PICKUP');
+      
+      // If there are no delivery slots but there are pickup slots, switch to pickup
+      if (fulfillmentType === 'DELIVERY' && deliverySlots.length === 0 && pickupSlots.length > 0) {
+        setFulfillmentType('PICKUP');
+        setFulfillmentSlots(pickupSlots);
+      } else {
+        // Filter by current fulfillment type
+        setFulfillmentSlots(slots.filter(slot => slot.type === fulfillmentType));
+      }
+      
       setSelectedSlotId('');
     } catch (error) {
       console.error('Error fetching fulfillment slots:', error);
@@ -305,6 +320,35 @@ const Tilaa = () => {
   }
 
   const availableSlots = fulfillmentSlots.filter(slot => slot.type === fulfillmentType);
+  
+  // Check if there are any slots at all for this fisherman
+  const [allSlots, setAllSlots] = useState<FulfillmentSlot[]>([]);
+  
+  useEffect(() => {
+    const fetchAllSlots = async () => {
+      if (!product) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('fulfillment_slots')
+          .select('id, start_time, end_time, type')
+          .eq('fisherman_id', product.fisherman_profile.id)
+          .gte('start_time', new Date().toISOString());
+          
+        if (!error) {
+          setAllSlots(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching all slots:', error);
+      }
+    };
+    
+    fetchAllSlots();
+  }, [product]);
+  
+  const hasDeliverySlots = allSlots.some(slot => slot.type === 'DELIVERY');
+  const hasPickupSlots = allSlots.some(slot => slot.type === 'PICKUP');
+  const hasAnySlots = allSlots.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -399,12 +443,16 @@ const Tilaa = () => {
                 onValueChange={(value: 'PICKUP' | 'DELIVERY') => setFulfillmentType(value)}
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="PICKUP" id="pickup" />
-                  <Label htmlFor="pickup">Nouto</Label>
+                  <RadioGroupItem value="PICKUP" id="pickup" disabled={!hasPickupSlots} />
+                  <Label htmlFor="pickup" className={!hasPickupSlots ? 'text-muted-foreground' : ''}>
+                    Nouto {!hasPickupSlots && '(ei saatavilla)'}
+                  </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="DELIVERY" id="delivery" />
-                  <Label htmlFor="delivery">Kotiinkuljetus</Label>
+                  <RadioGroupItem value="DELIVERY" id="delivery" disabled={!hasDeliverySlots} />
+                  <Label htmlFor="delivery" className={!hasDeliverySlots ? 'text-muted-foreground' : ''}>
+                    Kotiinkuljetus {!hasDeliverySlots && '(ei saatavilla)'}
+                  </Label>
                 </div>
               </RadioGroup>
 
@@ -444,29 +492,55 @@ const Tilaa = () => {
               )}
 
               {/* Time Slots */}
-              <div>
-                <Label htmlFor="timeslot" className="flex items-center">
-                  <Clock className="mr-1 h-4 w-4" />
-                  Valitse aika *
-                </Label>
-                <Select value={selectedSlotId} onValueChange={setSelectedSlotId}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Valitse aikaikkunan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableSlots.map((slot) => (
-                      <SelectItem key={slot.id} value={slot.id}>
-                        {format(new Date(slot.start_time), 'dd.MM.yyyy HH:mm', { locale: fi })} - {format(new Date(slot.end_time), 'HH:mm', { locale: fi })}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {availableSlots.length === 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Ei saatavilla olevia aikoja valitulle toimitstavalle.
-                  </p>
-                )}
-              </div>
+              {hasAnySlots ? (
+                <div>
+                  <Label htmlFor="timeslot" className="flex items-center">
+                    <Clock className="mr-1 h-4 w-4" />
+                    Valitse aika *
+                  </Label>
+                  <Select value={selectedSlotId} onValueChange={setSelectedSlotId}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Valitse aikaväli" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableSlots.map((slot) => (
+                        <SelectItem key={slot.id} value={slot.id}>
+                          {format(new Date(slot.start_time), 'dd.MM.yyyy HH:mm', { locale: fi })} - {format(new Date(slot.end_time), 'HH:mm', { locale: fi })}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {availableSlots.length === 0 && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Ei saatavilla olevia aikoja valitulle toimitustavalle.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 bg-muted/30 rounded-lg">
+                  <div className="flex items-start space-x-2">
+                    <Phone className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
+                    <div>
+                      <p className="text-sm">
+                        <strong>Nouto- tai kotiinkuljetusaikoja ei ole määritelty.</strong>
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Sovi suoraan kalastajan kanssa noutoajasta: {' '}
+                        {product.fisherman_profile.public_phone_number ? (
+                          <a 
+                            href={`tel:${product.fisherman_profile.public_phone_number}`} 
+                            className="text-primary hover:underline font-medium"
+                          >
+                            {product.fisherman_profile.public_phone_number}
+                          </a>
+                        ) : (
+                          <span className="text-muted-foreground">Puhelinnumeroa ei ole saatavilla</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -526,7 +600,7 @@ const Tilaa = () => {
           {/* Submit Button */}
           <Button 
             onClick={handleSubmitOrder}
-            disabled={submitting || !selectedSlotId || availableSlots.length === 0 || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress) || cartItems.length === 0}
+            disabled={submitting || (!hasAnySlots && !selectedSlotId) || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress) || cartItems.length === 0}
             className="w-full"
             size="lg"
           >

@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { useCart, CartItem } from '@/hooks/useCart';
+import { useCart, CartItem } from '@/contexts/CartContext';
 import { ShoppingCart, Fish, Trash2, AlertTriangle, Euro, X } from 'lucide-react';
 
 interface ProductAvailability {

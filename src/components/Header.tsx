@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
-import { useCart } from "@/hooks/useCart";
+import { useCart } from '@/contexts/CartContext';
 import { Badge } from "@/components/ui/badge";
 
 export const Header = () => {
