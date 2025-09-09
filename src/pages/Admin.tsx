@@ -110,33 +110,36 @@ const Admin = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="catch" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="catch" className="text-xs sm:text-sm flex items-center gap-2">
-              <Fish className="h-4 w-4" />
-              Hallitse saalista
-            </TabsTrigger>
-            <TabsTrigger value="prices" className="text-xs sm:text-sm flex items-center gap-2">
+        <Tabs defaultValue="orders" className="space-y-6">
+          <div className="flex items-center justify-between gap-4">
+            <TabsList className="grid w-full grid-cols-3 flex-1">
+              <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2 relative">
+                <ShoppingCart className="h-4 w-4" />
+                Tilaukset
+                {newOrderCount > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
+                  >
+                    {newOrderCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="catch" className="text-xs sm:text-sm flex items-center gap-2">
+                <Fish className="h-4 w-4" />
+                Hallitse saalista
+              </TabsTrigger>
+              <TabsTrigger value="fishing-days" className="text-xs sm:text-sm flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Kalastuspäivät
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsTrigger value="prices" className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground">
               <Euro className="h-4 w-4" />
               Hallitse kilohintoja
             </TabsTrigger>
-            <TabsTrigger value="orders" className="text-xs sm:text-sm flex items-center gap-2 relative">
-              <ShoppingCart className="h-4 w-4" />
-              Tilaukset
-              {newOrderCount > 0 && (
-                <Badge 
-                  variant="destructive" 
-                  className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
-                >
-                  {newOrderCount}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="schedule" className="text-xs sm:text-sm flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Kalastajan aikataulu
-            </TabsTrigger>
-          </TabsList>
+          </div>
 
           <TabsContent value="catch" className="space-y-6">
             <AddCatchForm
@@ -157,7 +160,7 @@ const Admin = () => {
             <OrderManagement fishermanProfile={fishermanProfile} />
           </TabsContent>
 
-          <TabsContent value="schedule">
+          <TabsContent value="fishing-days">
             <FishermanSchedule fishermanProfile={fishermanProfile} />
           </TabsContent>
         </Tabs>
