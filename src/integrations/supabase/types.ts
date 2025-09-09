@@ -421,7 +421,7 @@ export type Database = {
     }
     Enums: {
       fulfillment_type: "PICKUP" | "DELIVERY"
-      order_status: "NEW" | "CONFIRMED" | "COMPLETED" | "CANCELLED"
+      order_status: "NEW" | "CONFIRMED" | "CANCELLED"
       user_role: "ADMIN" | "CUSTOMER"
     }
     CompositeTypes: {
@@ -551,7 +551,7 @@ export const Constants = {
   public: {
     Enums: {
       fulfillment_type: ["PICKUP", "DELIVERY"],
-      order_status: ["NEW", "CONFIRMED", "COMPLETED", "CANCELLED"],
+      order_status: ["NEW", "CONFIRMED", "CANCELLED"],
       user_role: ["ADMIN", "CUSTOMER"],
     },
   },
