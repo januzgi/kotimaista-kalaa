@@ -52,6 +52,7 @@ const Tilaa = () => {
 
   const [product, setProduct] = useState<Product | null>(null);
   const [fulfillmentSlots, setFulfillmentSlots] = useState<FulfillmentSlot[]>([]);
+  const [allSlots, setAllSlots] = useState<FulfillmentSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -92,6 +93,28 @@ const Tilaa = () => {
       fetchFulfillmentSlots();
     }
   }, [product, fulfillmentType]);
+
+  useEffect(() => {
+    const fetchAllSlots = async () => {
+      if (!product) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('fulfillment_slots')
+          .select('id, start_time, end_time, type')
+          .eq('fisherman_id', product.fisherman_profile.id)
+          .gte('start_time', new Date().toISOString());
+          
+        if (!error) {
+          setAllSlots(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching all slots:', error);
+      }
+    };
+    
+    fetchAllSlots();
+  }, [product]);
 
   const fetchProductData = async () => {
     if (cartItems.length === 0) return;
@@ -320,31 +343,6 @@ const Tilaa = () => {
   }
 
   const availableSlots = fulfillmentSlots.filter(slot => slot.type === fulfillmentType);
-  
-  // Check if there are any slots at all for this fisherman
-  const [allSlots, setAllSlots] = useState<FulfillmentSlot[]>([]);
-  
-  useEffect(() => {
-    const fetchAllSlots = async () => {
-      if (!product) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('fulfillment_slots')
-          .select('id, start_time, end_time, type')
-          .eq('fisherman_id', product.fisherman_profile.id)
-          .gte('start_time', new Date().toISOString());
-          
-        if (!error) {
-          setAllSlots(data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching all slots:', error);
-      }
-    };
-    
-    fetchAllSlots();
-  }, [product]);
   
   const hasDeliverySlots = allSlots.some(slot => slot.type === 'DELIVERY');
   const hasPickupSlots = allSlots.some(slot => slot.type === 'PICKUP');
