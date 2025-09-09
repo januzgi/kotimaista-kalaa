@@ -216,37 +216,39 @@ const Ostoskori = () => {
                           <p className="text-sm text-muted-foreground">
                             {item.pricePerKg.toFixed(2)} €/kg
                           </p>
-                          {availability && (
-                            <p className="text-xs mt-1 text-muted-foreground">
-                              Saatavilla: {availability.currentAvailableQuantity} kg
-                            </p>
-                          )}
                         </div>
 
                         <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <label htmlFor={`quantity-${item.productId}`} className="text-sm font-medium">
-                              Määrä:
-                            </label>
-                            <Input
-                              id={`quantity-${item.productId}`}
-                              type="number"
-                              step="0.1"
-                              min="0.1"
-                              max={availability?.currentAvailableQuantity || item.availableQuantity}
-                              value={item.quantity}
-                              onChange={(e) => {
-                                const newQuantity = parseFloat(e.target.value) || 0;
-                                handleQuantityChange(item.productId, newQuantity);
-                              }}
-                              onBlur={(e) => {
-                                const currentValue = parseFloat(e.target.value);
-                                handleQuantityBlur(item.productId, currentValue);
-                              }}
-                              className="w-20"
-                              disabled={soldOut}
-                            />
-                            <span className="text-sm text-muted-foreground">kg</span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <label htmlFor={`quantity-${item.productId}`} className="text-sm font-medium">
+                                Määrä:
+                              </label>
+                              <Input
+                                id={`quantity-${item.productId}`}
+                                type="number"
+                                step="0.1"
+                                min="0.1"
+                                max={availability?.currentAvailableQuantity || item.availableQuantity}
+                                value={item.quantity}
+                                onChange={(e) => {
+                                  const newQuantity = parseFloat(e.target.value) || 0;
+                                  handleQuantityChange(item.productId, newQuantity);
+                                }}
+                                onBlur={(e) => {
+                                  const currentValue = parseFloat(e.target.value);
+                                  handleQuantityBlur(item.productId, currentValue);
+                                }}
+                                className="w-20"
+                                disabled={soldOut}
+                              />
+                              <span className="text-sm text-muted-foreground">kg</span>
+                            </div>
+                            {availability && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Saatavilla: {availability.currentAvailableQuantity} kg
+                              </p>
+                            )}
                           </div>
 
                           <div className="text-right min-w-[80px]">
