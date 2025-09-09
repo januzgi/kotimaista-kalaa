@@ -36,6 +36,7 @@ interface FulfillmentSlot {
 }
 
 interface CatchGroup {
+  catch_id: string;
   catch_date: string;
   products: Product[];
   fulfillment_slots: FulfillmentSlot[];
