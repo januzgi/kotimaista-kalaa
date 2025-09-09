@@ -75,6 +75,7 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
 
         // Transform the RPC result to match our interface
         const transformedGroups: CatchGroup[] = (catchGroupsData || []).map((group: any) => ({
+          catch_id: group.catch_id,
           catch_date: group.catch_date,
           products: group.products || [],
           fulfillment_slots: group.fulfillment_slots || []
@@ -276,6 +277,7 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
 
         // Transform the RPC result to match our interface
         const transformedGroups: CatchGroup[] = (catchGroupsData || []).map((group: any) => ({
+          catch_id: group.catch_id,
           catch_date: group.catch_date,
           products: group.products || [],
           fulfillment_slots: group.fulfillment_slots || []
@@ -326,7 +328,7 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
         ) : (
           <div className="space-y-8">
             {catchGroups.map((group) => (
-              <div key={group.catch_date} className="space-y-4">
+              <div key={group.catch_id} className="space-y-4">
                 {/* Catch Date Header */}
                 <div className="border-b pb-2">
                   <div className="flex items-center justify-between">
