@@ -141,7 +141,7 @@ Deno.serve(async (req) => {
     const fishermanProfile = order.order_items[0]?.product?.fisherman_profile || {};
 
     // Create email content
-    const subject = `Tilauksesi on vahvistettu! (Tilaus #${order.id.slice(0, 8)})`;
+    const subject = `Kotimaistakalaa: Tilauksesi #${order.id.slice(0, 8)} on vahvistettu`;
     
     const itemsHtml = order.order_items.map((item: any) => `
       <tr>
