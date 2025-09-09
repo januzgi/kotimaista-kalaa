@@ -6,6 +6,7 @@ import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { Fish, Package, Euro } from 'lucide-react';
@@ -29,6 +30,7 @@ interface Product {
 const Saatavilla = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [quantities, setQuantities] = useState<{ [productId: string]: number }>({});
   const navigate = useNavigate();
   const { toast } = useToast();
   const { addItem, isInCart } = useCart();
@@ -60,7 +62,15 @@ const Saatavilla = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setProducts(data || []);
+      const productsData = data || [];
+      setProducts(productsData);
+      
+      // Initialize quantities with default value of 1 for each product
+      const initialQuantities: { [productId: string]: number } = {};
+      productsData.forEach(product => {
+        initialQuantities[product.id] = 1;
+      });
+      setQuantities(initialQuantities);
     } catch (error) {
       console.error('Error fetching products:', error);
       toast({
@@ -74,20 +84,32 @@ const Saatavilla = () => {
   };
 
   const handleAddToCart = (product: Product) => {
+    const selectedQuantity = quantities[product.id] || 1;
     addItem({
       productId: product.id,
       species: product.species,
       form: product.form,
       pricePerKg: product.price_per_kg,
-      quantity: 1,
+      quantity: selectedQuantity,
       fishermanName: product.fisherman_profile?.user?.full_name || 'Tuntematon',
       availableQuantity: product.available_quantity
     });
 
     toast({
       title: "Tuote lisätty ostoskoriin",
-      description: `${product.species} (${product.form}) lisätty ostoskoriin.`,
+      description: `${selectedQuantity} kg ${product.species} (${product.form}) lisätty ostoskoriin.`,
     });
+  };
+
+  const handleQuantityChange = (productId: string, value: string) => {
+    const numValue = parseFloat(value);
+    const product = products.find(p => p.id === productId);
+    if (product && numValue >= 0.1 && numValue <= product.available_quantity) {
+      setQuantities(prev => ({
+        ...prev,
+        [productId]: numValue
+      }));
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -170,15 +192,34 @@ const Saatavilla = () => {
                     </div>
                   </div>
 
-                  <Button 
-                    onClick={() => handleAddToCart(product)}
-                    disabled={isInCart(product.id)}
-                    className="w-full"
-                    size="sm"
-                    variant={isInCart(product.id) ? "secondary" : "default"}
-                  >
-                    {isInCart(product.id) ? 'Korissa' : 'Lisää ostoskoriin'}
-                  </Button>
+                  <div className="space-y-3">
+                    <div>
+                      <label htmlFor={`quantity-${product.id}`} className="block text-sm font-medium mb-1">
+                        Määrä (kg)
+                      </label>
+                      <Input
+                        id={`quantity-${product.id}`}
+                        type="number"
+                        min={0.1}
+                        max={product.available_quantity}
+                        step={0.1}
+                        value={quantities[product.id] || 1}
+                        onChange={(e) => handleQuantityChange(product.id, e.target.value)}
+                        disabled={isInCart(product.id)}
+                        className="w-full"
+                      />
+                    </div>
+
+                    <Button 
+                      onClick={() => handleAddToCart(product)}
+                      disabled={isInCart(product.id)}
+                      className="w-full"
+                      size="sm"
+                      variant={isInCart(product.id) ? "secondary" : "default"}
+                    >
+                      {isInCart(product.id) ? 'Korissa' : 'Lisää ostoskoriin'}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
