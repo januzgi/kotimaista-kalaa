@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
@@ -8,15 +7,6 @@ import { CheckCircle, Home, Fish } from 'lucide-react';
 
 const Kiitos = () => {
   const navigate = useNavigate();
-
-  useEffect(() => {
-    // Auto-redirect after 10 seconds
-    const timer = setTimeout(() => {
-      navigate('/');
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -67,10 +57,6 @@ const Kiitos = () => {
                   <Fish className="mr-2 h-4 w-4" />
                   Selaa muita kaloja
                 </Button>
-              </div>
-
-              <div className="text-xs text-muted-foreground pt-4">
-                Sinut ohjataan automaattisesti etusivulle 10 sekunnin kuluttua.
               </div>
             </CardContent>
           </Card>
