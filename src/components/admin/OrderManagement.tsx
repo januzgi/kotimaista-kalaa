@@ -19,10 +19,11 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
       </div>
 
         <Tabs defaultValue="new" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="new" className="text-xs sm:text-sm">Uudet</TabsTrigger>
             <TabsTrigger value="confirmed" className="text-xs sm:text-sm">Vahvistetut</TabsTrigger>
             <TabsTrigger value="completed" className="text-xs sm:text-sm">Valmiit</TabsTrigger>
+            <TabsTrigger value="cancelled" className="text-xs sm:text-sm">Perutut</TabsTrigger>
           </TabsList>
 
         <TabsContent value="new">
@@ -45,6 +46,14 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
           <OrdersList 
             fishermanProfileId={fishermanProfile.id}
             status="COMPLETED"
+            defaultDeliveryFee={fishermanProfile.default_delivery_fee}
+          />
+        </TabsContent>
+
+        <TabsContent value="cancelled">
+          <OrdersList 
+            fishermanProfileId={fishermanProfile.id}
+            status="CANCELLED"
             defaultDeliveryFee={fishermanProfile.default_delivery_fee}
           />
         </TabsContent>

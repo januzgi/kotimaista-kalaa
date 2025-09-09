@@ -9,7 +9,8 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
-import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User, XCircle } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Order {
   id: string;
@@ -48,6 +49,7 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [deliveryFee, setDeliveryFee] = useState<number>(defaultDeliveryFee);
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchOrders = async () => {
@@ -145,6 +147,67 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
       });
     } finally {
       setConfirming(null);
+    }
+  };
+
+  const handleCancelOrder = async (order: Order) => {
+    setCancelling(order.id);
+    try {
+      // Start by updating the order status to CANCELLED
+      const { error: orderError } = await supabase
+        .from('orders')
+        .update({ status: 'CANCELLED' })
+        .eq('id', order.id);
+
+      if (orderError) throw orderError;
+
+      // Restore inventory for each order item
+      for (const item of order.order_items) {
+        // Get the product ID from the order_items table
+        const { data: orderItemData, error: orderItemError } = await supabase
+          .from('order_items')
+          .select('product_id')
+          .eq('id', item.id)
+          .single();
+
+        if (orderItemError) throw orderItemError;
+
+        // Get current product quantity and restore the ordered amount
+        const { data: currentProduct, error: fetchError } = await supabase
+          .from('products')
+          .select('available_quantity')
+          .eq('id', orderItemData.product_id)
+          .single();
+
+        if (fetchError) throw fetchError;
+
+        // Update the product quantity by adding back the cancelled amount
+        const { error: updateError } = await supabase
+          .from('products')
+          .update({ 
+            available_quantity: currentProduct.available_quantity + item.quantity 
+          })
+          .eq('id', orderItemData.product_id);
+
+        if (updateError) throw updateError;
+      }
+
+      toast({
+        title: "Tilaus peruttu",
+        description: "Tilaus on peruttu ja tuotteet palautettu varastoon.",
+      });
+
+      fetchOrders();
+      setExpandedOrder(null);
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      toast({
+        variant: "destructive",
+        title: "Virhe",
+        description: "Tilauksen peruuttaminen epäonnistui.",
+      });
+    } finally {
+      setCancelling(null);
     }
   };
 
@@ -335,13 +398,45 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
                     </div>
                   )}
                   
-                  <Button
-                    onClick={() => handleConfirmOrder(order.id)}
-                    disabled={confirming === order.id}
-                    className="w-full"
-                  >
-                    {confirming === order.id ? 'Vahvistetaan...' : 'Vahvista tilaus'}
-                  </Button>
+                  <div className="space-y-3">
+                    <Button
+                      onClick={() => handleConfirmOrder(order.id)}
+                      disabled={confirming === order.id || cancelling === order.id}
+                      className="w-full"
+                    >
+                      {confirming === order.id ? 'Vahvistetaan...' : 'Vahvista tilaus'}
+                    </Button>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          disabled={confirming === order.id || cancelling === order.id}
+                          className="w-full"
+                        >
+                          <XCircle className="mr-2 h-4 w-4" />
+                          {cancelling === order.id ? 'Peruutetaan...' : 'Peruuta tilaus'}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Peruuta tilaus</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Haluatko varmasti peruuttaa tämän tilauksen? Tilatut tuotteet palautetaan automaattisesti varastoon.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Älä peruuta</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleCancelOrder(order)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Kyllä, peruuta tilaus
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               )}
             </CardContent>
