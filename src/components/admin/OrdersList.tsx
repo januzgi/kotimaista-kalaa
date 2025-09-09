@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/contexts/NotificationContext';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
-import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User, XCircle } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User, XCircle, Truck, ShoppingBag } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 interface Order {
@@ -362,7 +362,20 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
                     Toimitustiedot
                   </h4>
                   <div className="space-y-2 text-sm">
-                    <p><strong>Tyyppi:</strong> {order.fulfillment_type === 'PICKUP' ? 'Nouto' : 'Kotiinkuljetus'}</p>
+                    <p className="flex items-center">
+                      <strong className="mr-2">Tyyppi:</strong> 
+                      {order.fulfillment_type === 'PICKUP' ? (
+                        <span className="flex items-center">
+                          <ShoppingBag className="mr-1 h-4 w-4" />
+                          Nouto
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <Truck className="mr-1 h-4 w-4" />
+                          Kotiinkuljetus
+                        </span>
+                      )}
+                    </p>
                     <p><strong>Aika:</strong> {format(new Date(order.fulfillment_slot.start_time), 'dd.MM.yyyy HH:mm', { locale: fi })} - {format(new Date(order.fulfillment_slot.end_time), 'HH:mm', { locale: fi })}</p>
                   </div>
                 </div>
@@ -414,7 +427,7 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
                       <Input
                         id={`delivery-fee-${order.id}`}
                         type="number"
-                        step="0.01"
+                        step="1"
                         min="0"
                         value={deliveryFee}
                         onChange={(e) => setDeliveryFee(parseFloat(e.target.value) || 0)}
