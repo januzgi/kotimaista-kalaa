@@ -320,7 +320,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             sender: {
               name: 'Kotimaistakalaa Järjestelmä',
-              email: 'noreply@kotimaistakalaa.fi'
+              email: 'suorantacoding@gmail.com'
             },
             to: [{
               email: fishermanUser.user.email,
