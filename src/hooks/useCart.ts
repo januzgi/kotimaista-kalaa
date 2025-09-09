@@ -13,20 +13,18 @@ export interface CartItem {
 const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
 
 export const useCart = () => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    try {
+      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
+      return savedCart ? JSON.parse(savedCart) : [];
+    } catch (error) {
+      console.error('Error parsing cart from localStorage:', error);
+      return [];
+    }
+  });
   const [removedItems, setRemovedItems] = useState<string[]>([]);
 
-  // Load cart from localStorage on mount
-  useEffect(() => {
-    const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-    if (savedCart) {
-      try {
-        setItems(JSON.parse(savedCart));
-      } catch (error) {
-        console.error('Error parsing cart from localStorage:', error);
-      }
-    }
-  }, []);
+  // Cart is initialized from localStorage in useState initializer
 
   // Save cart to localStorage whenever items change
   useEffect(() => {
