@@ -414,6 +414,10 @@ export type Database = {
           products: Json
         }[]
       }
+      get_new_order_count: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       fulfillment_type: "PICKUP" | "DELIVERY"

@@ -91,7 +91,8 @@ Deno.serve(async (req) => {
         available_quantity,
         fisherman_profile:fisherman_profiles(
           id,
-          default_delivery_fee
+          default_delivery_fee,
+          user_id
         )
       `)
       .in('id', productIds);
@@ -244,6 +245,102 @@ Deno.serve(async (req) => {
     }
 
     console.log('Order processing completed successfully');
+
+    // Send notification email to fisherman
+    try {
+      // Get fisherman email
+      const { data: fishermanUser, error: fishermanError } = await supabaseClient.auth.admin.getUserById(
+        firstProduct.fisherman_profile.user_id
+      );
+
+      if (!fishermanError && fishermanUser.user) {
+        // Create order summary for email
+        const itemsList = validItems.map(item => 
+          `${item.product.species} (${item.product.form}) - ${item.requestedQuantity} kg`
+        ).join('\n');
+
+        const fulfillmentDate = new Date(orderData.fulfillmentSlotId);
+        const dateStr = fulfillmentDate.toLocaleDateString('fi-FI');
+
+        const subject = `Uusi tilaus saapunut! (Tilaus #${orderResult.id.slice(0, 8)})`;
+        
+        const emailHtml = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>Uusi tilaus</title>
+          </head>
+          <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+              <h1 style="color: #000a43; margin: 0;">Uusi tilaus saapunut!</h1>
+              <p style="margin: 10px 0 0 0; color: #666;">Tilaus #${orderResult.id.slice(0, 8)}</p>
+            </div>
+
+            <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h2 style="color: #000a43; margin-top: 0;">Asiakkaan tiedot</h2>
+              <p><strong>Nimi:</strong> ${orderData.customerName}</p>
+              <p><strong>Puhelin:</strong> ${orderData.customerPhone}</p>
+              ${orderData.customerAddress ? `<p><strong>Osoite:</strong> ${orderData.customerAddress}</p>` : ''}
+              
+              <h3 style="color: #000a43;">Tilatut tuotteet</h3>
+              <pre style="background: #f8f9fa; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${itemsList}</pre>
+              
+              <p><strong>Toimitustapa:</strong> ${orderData.fulfillmentType === 'PICKUP' ? 'Nouto' : 'Kotiinkuljetus'}</p>
+              ${deliveryFee > 0 ? `<p><strong>Toimitusmaksu:</strong> ${deliveryFee.toFixed(2)} €</p>` : ''}
+            </div>
+
+            <div style="background: #e3f2fd; border-left: 4px solid #027bff; padding: 15px; margin: 20px 0;">
+              <p style="margin: 0; color: #1565c0;"><strong>Toimenpide:</strong> Kirjaudu ylläpitoon vahvistaaksesi tilauksen ja lähettääksesi asiakkaalle lopulliset tiedot.</p>
+            </div>
+
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="https://kotimaistakalaa.fi/admin" 
+                 style="background: #027bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                Siirry ylläpitoon
+              </a>
+            </div>
+
+            <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
+            <p style="text-align: center; color: #666; font-size: 14px;">
+              <strong>Kotimaistakalaa</strong><br>
+              Ylläpitojärjestelmä
+            </p>
+          </body>
+          </html>
+        `;
+
+        // Send email using Brevo
+        const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
+          },
+          body: JSON.stringify({
+            sender: {
+              name: 'Kotimaistakalaa Järjestelmä',
+              email: 'noreply@kotimaistakalaa.fi'
+            },
+            to: [{
+              email: fishermanUser.user.email,
+              name: fishermanUser.user.user_metadata?.full_name || 'Kalastaja'
+            }],
+            subject: subject,
+            htmlContent: emailHtml
+          })
+        });
+
+        if (!brevoResponse.ok) {
+          console.error('Failed to send fisherman notification email');
+        } else {
+          console.log('Fisherman notification email sent successfully');
+        }
+      }
+    } catch (emailError) {
+      console.error('Error sending fisherman notification email:', emailError);
+      // Don't fail the order creation if email fails
+    }
 
     return new Response(
       JSON.stringify({ 

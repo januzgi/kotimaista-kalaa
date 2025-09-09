@@ -12,12 +12,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
 import { useCart } from '@/contexts/CartContext';
 import { Badge } from "@/components/ui/badge";
+import { useNotifications } from '@/contexts/NotificationContext';
 
 export const Header = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { user, signOut } = useAuth();
   const { getItemCount } = useCart();
+  const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const cartItemCount = getItemCount();
@@ -97,7 +99,7 @@ export const Header = () => {
           {isAdmin && (
             <Link 
               to="/admin" 
-              className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 ${
+              className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 relative ${
                 isActivePage('/admin') 
                   ? 'border-[#0e43f2] text-dark' 
                   : 'border-transparent'
@@ -105,6 +107,14 @@ export const Header = () => {
             >
               <Settings className="h-4 w-4" />
               <span>Ylläpito</span>
+              {newOrderCount > 0 && (
+                <Badge 
+                  variant="destructive" 
+                  className="absolute -top-2 -right-2 h-5 w-5 p-0 flex items-center justify-center text-xs"
+                >
+                  {newOrderCount}
+                </Badge>
+              )}
             </Link>
           )}
         </nav>
@@ -189,6 +199,11 @@ export const Header = () => {
                         >
                           <Settings className="h-5 w-5" />
                           <span>Ylläpito</span>
+                          {newOrderCount > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {newOrderCount}
+                            </Badge>
+                          )}
                         </Link>
                       )}
                       <Separator />

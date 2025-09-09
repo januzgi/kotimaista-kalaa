@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/contexts/NotificationContext';
 import { format } from 'date-fns';
 import { fi } from 'date-fns/locale';
 import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User, XCircle } from 'lucide-react';
@@ -51,6 +52,7 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
   const [confirming, setConfirming] = useState<string | null>(null);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const { toast } = useToast();
+  const { refreshNotifications } = useNotifications();
 
   const fetchOrders = async () => {
     try {
@@ -121,6 +123,7 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
   const handleConfirmOrder = async (orderId: string) => {
     setConfirming(orderId);
     try {
+      // Update order status to CONFIRMED
       const { error } = await supabase
         .from('orders')
         .update({
@@ -131,12 +134,33 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
 
       if (error) throw error;
 
+      // Send confirmation email to customer
+      try {
+        const { data, error: functionError } = await supabase.functions.invoke('send-order-confirmation', {
+          body: { orderId }
+        });
+
+        if (functionError) {
+          console.error('Error sending confirmation email:', functionError);
+          toast({
+            variant: "destructive",
+            title: "Varoitus",
+            description: "Tilaus vahvistettiin, mutta vahvistussähköpostin lähetys epäonnistui.",
+          });
+        } else {
+          console.log('Confirmation email sent successfully');
+        }
+      } catch (emailError) {
+        console.error('Error with confirmation email function:', emailError);
+      }
+
       toast({
         title: "Tilaus vahvistettu",
-        description: "Tilaus on vahvistettu onnistuneesti.",
+        description: "Tilaus on vahvistettu ja asiakas on saanut vahvistussähköpostin.",
       });
 
       fetchOrders();
+      refreshNotifications();
       setExpandedOrder(null);
     } catch (error) {
       console.error('Error confirming order:', error);
@@ -198,6 +222,7 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
       });
 
       fetchOrders();
+      refreshNotifications();
       setExpandedOrder(null);
     } catch (error) {
       console.error('Error cancelling order:', error);
