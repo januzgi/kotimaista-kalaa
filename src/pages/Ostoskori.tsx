@@ -75,18 +75,23 @@ const Ostoskori = () => {
   };
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    
     // Cap the quantity at available quantity
     const availability = getItemAvailability(productId);
     if (availability && newQuantity > availability.currentAvailableQuantity) {
       newQuantity = availability.currentAvailableQuantity;
     }
     
-    updateQuantity(productId, newQuantity);
+    // Only update if the quantity is valid (greater than 0)
+    if (newQuantity > 0) {
+      updateQuantity(productId, newQuantity);
+    }
+  };
+
+  const handleQuantityBlur = (productId: string, currentValue: number) => {
+    // If the value is invalid or less than minimum, reset to 0.1
+    if (!currentValue || currentValue < 0.1) {
+      updateQuantity(productId, 0.1);
+    }
   };
 
   const handleGoToCheckout = () => {
@@ -233,6 +238,10 @@ const Ostoskori = () => {
                               onChange={(e) => {
                                 const newQuantity = parseFloat(e.target.value) || 0;
                                 handleQuantityChange(item.productId, newQuantity);
+                              }}
+                              onBlur={(e) => {
+                                const currentValue = parseFloat(e.target.value);
+                                handleQuantityBlur(item.productId, currentValue);
                               }}
                               className="w-20"
                               disabled={soldOut}
