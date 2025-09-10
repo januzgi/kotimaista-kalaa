@@ -5,6 +5,21 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Home, Fish } from 'lucide-react';
 
+/**
+ * Thank you page component displayed after successful order submission.
+ * 
+ * Features:
+ * - Success confirmation with visual checkmark
+ * - Clear explanation of next steps in the order process
+ * - Navigation options back to homepage or product browsing
+ * - Professional and reassuring messaging
+ * - Responsive design
+ * 
+ * This page provides closure to the order process and sets proper
+ * expectations about order confirmation and fulfillment timing.
+ * 
+ * @returns The thank you page component
+ */
 const Kiitos = () => {
   const navigate = useNavigate();
 

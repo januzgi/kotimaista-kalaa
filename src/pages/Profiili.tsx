@@ -12,6 +12,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Camera, Edit2 } from 'lucide-react';
 
+/**
+ * User profile management page component.
+ * 
+ * Features:
+ * - Profile picture upload and management
+ * - Name editing with real-time updates
+ * - User role detection (ADMIN/CUSTOMER)
+ * - Fisherman-specific profile management for admins:
+ *   - Personal note/memo for homepage display
+ *   - Pickup address configuration
+ *   - Public phone number setting
+ *   - Default delivery fee setting
+ * - Batch save functionality for all changes
+ * - Sign out functionality
+ * - Responsive design with form validation
+ * 
+ * Admin users (fishermen) get additional profile fields that affect
+ * their business operations and customer-facing information.
+ * 
+ * @returns The user profile management page
+ */
 const Profiili = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();

@@ -2,6 +2,22 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ProductCard } from "./ProductCard";
 
+/**
+ * Component that displays available fish species with example pricing.
+ * 
+ * Features:
+ * - Grid layout of fish products (responsive: 1-3 columns)
+ * - Example fish species with starting prices
+ * - Call-to-action button linking to full fish listing
+ * - Informative description about pricing
+ * - Consistent styling with primary colors
+ * 
+ * This component serves as a preview of available fish species on the homepage,
+ * encouraging users to explore the full catalog. Prices shown are indicative
+ * starting prices and may vary based on preparation method.
+ * 
+ * @returns The available fish showcase component
+ */
 export const AvailableFish = () => {
   const fishProducts = [
     { fishName: "Ahven", price: "alkaen 15€/kg", fishIcon: "🐟" },

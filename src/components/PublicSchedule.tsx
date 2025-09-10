@@ -6,11 +6,29 @@ import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { fi } from 'date-fns/locale';
 import { FishermanNote } from '@/components/FishermanNote';
 
+/**
+ * Public schedule component that displays fisherman's planned fishing trips and notes.
+ * 
+ * Features:
+ * - Calendar view showing planned fishing dates
+ * - Month navigation to view different months
+ * - Trip count display for current month
+ * - Fisherman's personal notes display
+ * - Responsive layout (side-by-side on desktop, stacked on mobile)
+ * 
+ * The calendar highlights planned fishing dates in blue and shows today's date
+ * with a special border. Fishing dates are read-only for customers.
+ * 
+ * @returns The public schedule component with calendar and fisherman notes
+ */
 export const PublicSchedule = () => {
   const [plannedTrips, setPlannedTrips] = useState<Date[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Fetch all planned trips for the current month
+  /**
+   * Fetches all planned fishing trips for the specified month from the database
+   * @param month - The month to fetch trips for
+   */
   const fetchPlannedTrips = async (month: Date) => {
     try {
       const startDate = startOfMonth(month);
@@ -35,6 +53,10 @@ export const PublicSchedule = () => {
     fetchPlannedTrips(currentMonth);
   }, [currentMonth]);
 
+  /**
+   * Handles month change events from the calendar component
+   * @param month - The new month to display
+   */
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
   };

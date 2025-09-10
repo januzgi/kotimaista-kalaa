@@ -14,6 +14,26 @@ import { useCart } from '@/contexts/CartContext';
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from '@/contexts/NotificationContext';
 
+/**
+ * Application header component with navigation, authentication, and shopping cart.
+ * 
+ * Features:
+ * - Responsive navigation (desktop and mobile)
+ * - User authentication status display
+ * - Shopping cart with item count badge
+ * - Admin access for fishermen
+ * - Notification badges for new orders (admin only)
+ * - User profile dropdown menu
+ * 
+ * The header adapts its content based on:
+ * - User authentication status
+ * - User role (admin/customer)
+ * - Current route highlighting
+ * - Shopping cart item count
+ * - Pending order notifications
+ * 
+ * @returns The header component with navigation and user controls
+ */
 export const Header = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -26,6 +46,9 @@ export const Header = () => {
 
   const isActivePage = (path: string) => location.pathname === path;
 
+  /**
+   * Checks if the current user has admin role by querying the database
+   */
   useEffect(() => {
     const checkUserRole = async () => {
       if (user) {
@@ -46,6 +69,11 @@ export const Header = () => {
     checkUserRole();
   }, [user]);
 
+  /**
+   * Generates user initials from full name for avatar fallback
+   * @param name - User's full name
+   * @returns Initials string (max 2 characters)
+   */
   const getUserInitials = (name?: string) => {
     if (!name) return 'K';
     return name

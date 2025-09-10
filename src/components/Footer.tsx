@@ -1,5 +1,20 @@
 import { ExternalLink } from 'lucide-react';
 
+/**
+ * Footer component that appears at the bottom of every page.
+ * 
+ * Features:
+ * - Copyright information with current year
+ * - Tagline describing the service
+ * - Credits with external link to developer's LinkedIn
+ * - Consistent styling with primary colors
+ * - External link indicator icon
+ * 
+ * The footer maintains brand consistency and provides proper attribution
+ * while staying minimal and unobtrusive.
+ * 
+ * @returns The footer component with site information and credits
+ */
 export const Footer = () => {
   return (
     <footer className="bg-primary text-primary-foreground py-8 px-4">

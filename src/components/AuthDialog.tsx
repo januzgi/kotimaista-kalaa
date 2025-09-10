@@ -8,11 +8,33 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 
+/**
+ * Props for the AuthDialog component
+ */
 interface AuthDialogProps {
+  /** Whether the dialog is open */
   open: boolean;
+  /** Callback function called when dialog open state changes */
   onOpenChange: (open: boolean) => void;
 }
 
+/**
+ * Authentication dialog component that provides sign-in and sign-up functionality.
+ * 
+ * Features:
+ * - Tabbed interface for login and signup
+ * - Email/password authentication
+ * - Google OAuth integration
+ * - Form validation and error handling
+ * - Success confirmation for signup
+ * 
+ * The dialog supports both existing users (login) and new users (signup) with
+ * email verification. It automatically closes after successful login and shows
+ * a confirmation message after successful signup.
+ * 
+ * @param props - The component props
+ * @returns The authentication dialog component
+ */
 export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const { signInWithProvider, signInWithEmail, signUpWithEmail } = useAuth();
   const [loginEmail, setLoginEmail] = useState("");
@@ -23,11 +45,18 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [signupSuccess, setSignupSuccess] = useState(false);
 
+  /**
+   * Handles sign-in with OAuth providers (Google, Facebook, Apple)
+   * @param provider - The OAuth provider to use for authentication
+   */
   const handleProviderSignIn = async (provider: 'google') => {
     await signInWithProvider(provider);
     onOpenChange(false);
   };
 
+  /**
+   * Handles email/password login authentication
+   */
   const handleLogin = async () => {
     if (!loginEmail || !loginPassword) return;
     
@@ -42,6 +71,9 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     }
   };
 
+  /**
+   * Handles user registration with email and password
+   */
   const handleSignup = async () => {
     if (!signupEmail || !signupPassword || !confirmPassword) return;
     

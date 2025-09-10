@@ -13,8 +13,32 @@ import Kiitos from "./pages/Kiitos";
 import Toimitusehdot from "./pages/Toimitusehdot";
 import NotFound from "./pages/NotFound";
 
+/**
+ * React Query client instance for managing server state and caching
+ */
 const queryClient = new QueryClient();
 
+/**
+ * Main App component that provides the root routing and global providers for the application.
+ * 
+ * This component sets up the following providers:
+ * - QueryClientProvider: For server state management with React Query
+ * - TooltipProvider: For tooltip functionality across the app
+ * - BrowserRouter: For client-side routing
+ * 
+ * Routes included:
+ * - `/` - Homepage with hero section, available fish, and schedule
+ * - `/profiili` - User profile management
+ * - `/admin` - Admin dashboard for fishermen
+ * - `/saatavilla` - Available fish listing page
+ * - `/ostoskori` - Shopping cart page
+ * - `/tilaa` - Order placement page
+ * - `/kiitos` - Thank you page after order
+ * - `/toimitusehdot` - Delivery terms page
+ * - `*` - 404 not found page
+ * 
+ * @returns The main application component with routing and providers
+ */
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>

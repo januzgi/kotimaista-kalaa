@@ -11,6 +11,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart } from '@/contexts/CartContext';
 import { Fish, Package, Euro } from 'lucide-react';
 
+/**
+ * Interface defining the structure of a product from the database
+ */
 interface Product {
   id: string;
   species: string;
@@ -27,6 +30,23 @@ interface Product {
   };
 }
 
+/**
+ * Available fish products page component.
+ * 
+ * Features:
+ * - Lists all available fish products from all fishermen
+ * - Shows product details (species, form, price, availability)
+ * - Quantity selection with min/max validation
+ * - Add to cart functionality
+ * - Real-time inventory checking
+ * - Responsive grid layout
+ * - Loading and empty states
+ * 
+ * Products are filtered to only show items with available quantity > 0
+ * and sorted by creation date (newest first).
+ * 
+ * @returns The available fish products listing page
+ */
 const Saatavilla = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,10 +55,17 @@ const Saatavilla = () => {
   const { toast } = useToast();
   const { addItem, isInCart } = useCart();
 
+  /**
+   * Effect to fetch products when component mounts
+   */
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  /**
+   * Fetches all available products from the database
+   * Includes related fisherman and catch information
+   */
   const fetchProducts = async () => {
     try {
       const { data, error } = await supabase
@@ -83,6 +110,10 @@ const Saatavilla = () => {
     }
   };
 
+  /**
+   * Handles adding a product to the shopping cart
+   * @param product - The product to add to the cart
+   */
   const handleAddToCart = (product: Product) => {
     const selectedQuantity = quantities[product.id] || 1;
     addItem({
@@ -101,6 +132,11 @@ const Saatavilla = () => {
     });
   };
 
+  /**
+   * Handles quantity input changes with validation
+   * @param productId - ID of the product
+   * @param value - New quantity value as string
+   */
   const handleQuantityChange = (productId: string, value: string) => {
     const numValue = parseFloat(value);
     const product = products.find(p => p.id === productId);
@@ -112,6 +148,11 @@ const Saatavilla = () => {
     }
   };
 
+  /**
+   * Formats a date string to Finnish locale format
+   * @param dateString - ISO date string
+   * @returns Formatted date string (DD.MM.YYYY)
+   */
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('fi-FI');
   };

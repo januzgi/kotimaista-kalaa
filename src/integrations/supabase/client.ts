@@ -8,6 +8,40 @@ const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiO
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Supabase client instance configured for the Kotimaistakalaa application.
+ * 
+ * This client provides access to:
+ * - Authentication (Google OAuth, email/password)
+ * - Database operations (CRUD operations on all tables)
+ * - Real-time subscriptions
+ * - Storage for file uploads
+ * - Edge functions for business logic
+ * 
+ * Configuration:
+ * - Uses localStorage for auth token persistence
+ * - Automatically refreshes auth tokens
+ * - Maintains session across browser sessions
+ * 
+ * @example
+ * ```tsx
+ * // Query data
+ * const { data, error } = await supabase
+ *   .from('products')
+ *   .select('*')
+ *   .eq('fisherman_id', userId);
+ * 
+ * // Listen to real-time changes
+ * supabase
+ *   .channel('order_changes')
+ *   .on('postgres_changes', { 
+ *     event: 'INSERT', 
+ *     schema: 'public', 
+ *     table: 'orders' 
+ *   }, handleNewOrder)
+ *   .subscribe();
+ * ```
+ */
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,

@@ -17,6 +17,26 @@ import { Fish, Euro, ShoppingCart, Calendar } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { FishermanSchedule } from '@/components/admin/FishermanSchedule';
 
+/**
+ * Admin dashboard component for fishermen to manage their business.
+ * 
+ * Features:
+ * - Order management with new order notifications
+ * - Catch inventory management (add, update, remove fish)
+ * - Price management for different fish species
+ * - Fishing schedule planning
+ * - Admin access control and fisherman profile setup
+ * 
+ * The component uses tabs to organize different admin functions:
+ * - Tilaukset (Orders): View and manage customer orders
+ * - Hallitse saalista (Manage Catch): Add new catch and manage inventory
+ * - Kalastuspäivät (Fishing Days): Plan and manage fishing schedule
+ * - Hallitse kilohintoja (Manage Prices): Set default prices for fish species
+ * 
+ * Access is restricted to users with ADMIN role and requires a fisherman profile.
+ * 
+ * @returns The admin dashboard component
+ */
 const Admin = () => {
   const { loading, isAdmin, fishermanProfile, user } = useAdminAccess();
   const [refreshKey, setRefreshKey] = useState(0);
@@ -24,6 +44,9 @@ const Admin = () => {
   const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
 
+  /**
+   * Creates a new fisherman profile for the current admin user
+   */
   const handleCreateFishermanProfile = async () => {
     if (!user) return;
 

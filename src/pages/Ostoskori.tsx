@@ -12,11 +12,32 @@ import { useToast } from '@/hooks/use-toast';
 import { useCart, CartItem } from '@/contexts/CartContext';
 import { ShoppingCart, Fish, Trash2, AlertTriangle, Euro, X } from 'lucide-react';
 
+/**
+ * Interface for product availability data
+ */
 interface ProductAvailability {
   productId: string;
   currentAvailableQuantity: number;
 }
 
+/**
+ * Shopping cart page component.
+ * 
+ * Features:
+ * - Displays all items in the shopping cart
+ * - Real-time inventory checking to detect sold-out items
+ * - Quantity adjustment with validation
+ * - Item removal functionality
+ * - Order total calculation
+ * - Alerts for sold-out or removed items
+ * - Cart validation before checkout
+ * - Responsive layout
+ * 
+ * The component continuously monitors product availability and alerts users
+ * if items become unavailable, preventing checkout with sold-out items.
+ * 
+ * @returns The shopping cart page component
+ */
 const Ostoskori = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -24,10 +45,17 @@ const Ostoskori = () => {
   const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /**
+   * Effect to check inventory whenever cart items change
+   */
   useEffect(() => {
     checkInventory();
   }, [items]);
 
+  /**
+   * Checks current inventory levels for all cart items
+   * Updates product availability state with current stock levels
+   */
   const checkInventory = async () => {
     if (items.length === 0) {
       setLoading(false);
@@ -61,19 +89,38 @@ const Ostoskori = () => {
     }
   };
 
+  /**
+   * Gets availability information for a specific product
+   * @param productId - The product ID to check
+   * @returns Product availability object or undefined
+   */
   const getItemAvailability = (productId: string) => {
     return productAvailability.find(p => p.productId === productId);
   };
 
+  /**
+   * Checks if a cart item is sold out
+   * @param item - The cart item to check
+   * @returns True if the item is sold out
+   */
   const isSoldOut = (item: CartItem) => {
     const availability = getItemAvailability(item.productId);
     return availability && availability.currentAvailableQuantity === 0;
   };
 
+  /**
+   * Checks if cart has any unavailable items
+   * @returns True if any items are sold out
+   */
   const hasUnavailableItems = () => {
     return items.some(item => isSoldOut(item));
   };
 
+  /**
+   * Handles quantity changes for cart items with validation
+   * @param productId - ID of the product to update
+   * @param newQuantity - New quantity value
+   */
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     // Cap the quantity at available quantity
     const availability = getItemAvailability(productId);
@@ -87,6 +134,11 @@ const Ostoskori = () => {
     }
   };
 
+  /**
+   * Handles quantity input blur events with minimum value validation
+   * @param productId - ID of the product
+   * @param currentValue - Current input value
+   */
   const handleQuantityBlur = (productId: string, currentValue: number) => {
     // If the value is invalid or less than minimum, reset to 0.1
     if (!currentValue || currentValue < 0.1) {
@@ -94,6 +146,10 @@ const Ostoskori = () => {
     }
   };
 
+  /**
+   * Handles navigation to checkout page with validation
+   * Prevents checkout if cart is empty or has unavailable items
+   */
   const handleGoToCheckout = () => {
     if (items.length === 0) {
       toast({

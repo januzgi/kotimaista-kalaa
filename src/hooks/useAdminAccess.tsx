@@ -4,6 +4,21 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Custom hook for managing admin access control and fisherman profile data.
+ * 
+ * Features:
+ * - Verifies user has ADMIN role in the database
+ * - Fetches fisherman profile data
+ * - Automatic redirection for unauthorized users
+ * - Loading states for auth and data fetching
+ * - Error handling with toast notifications
+ * 
+ * This hook ensures that only authorized fishermen can access admin features
+ * and provides the necessary profile data for admin operations.
+ * 
+ * @returns Object containing loading state, admin status, profile data, and user info
+ */
 export const useAdminAccess = () => {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -12,6 +27,10 @@ export const useAdminAccess = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  /**
+   * Effect that checks admin access and fetches fisherman profile data
+   * Redirects unauthorized users to homepage
+   */
   useEffect(() => {
     const checkAdminAccess = async () => {
       if (authLoading) return;
@@ -64,9 +83,13 @@ export const useAdminAccess = () => {
   }, [user, authLoading, navigate, toast]);
 
   return {
+    /** Loading state for the access check */
     loading,
+    /** Whether the user has admin privileges */
     isAdmin,
+    /** Fisherman profile data (null if none exists) */
     fishermanProfile,
+    /** Current authenticated user */
     user
   };
 };

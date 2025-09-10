@@ -18,6 +18,9 @@ import { fi } from 'date-fns/locale';
 import { Fish, MapPin, Clock, Euro, User, Phone, Home } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
+/**
+ * Interface for product data from database
+ */
 interface Product {
   id: string;
   species: string;
@@ -35,6 +38,9 @@ interface Product {
   };
 }
 
+/**
+ * Interface for fulfillment time slots
+ */
 interface FulfillmentSlot {
   id: string;
   start_time: string;
@@ -42,6 +48,26 @@ interface FulfillmentSlot {
   type: 'PICKUP' | 'DELIVERY';
 }
 
+/**
+ * Order placement page component.
+ * 
+ * Features:
+ * - Cart items summary and pricing
+ * - Customer information form (auto-filled for logged users)
+ * - Fulfillment method selection (pickup/delivery)
+ * - Time slot selection for order fulfillment
+ * - Address input for delivery orders
+ * - Terms acceptance checkbox
+ * - Order validation and submission
+ * - Real-time inventory checking during order placement
+ * - Sold-out item handling with cart updates
+ * 
+ * The component handles both single-product orders (legacy) and multi-item
+ * cart orders, with automatic validation and error handling throughout
+ * the order process.
+ * 
+ * @returns The order placement page component
+ */
 const Tilaa = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get('product');
