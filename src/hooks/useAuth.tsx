@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useEffect, useState } from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Custom hook for handling user authentication with Supabase.
- * 
+ *
  * Features:
  * - Manages authentication state (user, session, loading)
  * - OAuth provider sign-in (Google, Facebook, Apple)
@@ -13,10 +13,10 @@ import { useToast } from '@/hooks/use-toast';
  * - User registration with email verification
  * - Automatic session persistence and token refresh
  * - Toast notifications for auth events
- * 
+ *
  * The hook sets up real-time auth state listeners and automatically
  * manages the authentication lifecycle.
- * 
+ *
  * @returns Object containing user state and authentication methods
  */
 export const useAuth = () => {
@@ -30,13 +30,25 @@ export const useAuth = () => {
    */
   useEffect(() => {
     // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
+
+      // This checks if the user has just successfully logged in via a redirect
+      // from an external provider like Google.
+      if (
+        event === "SIGNED_IN" &&
+        window.location.hash.includes("access_token")
+      ) {
+        toast({
+          title: "Kirjauduit sisään onnistuneesti",
+          description: "Tervetuloa takaisin!",
+        });
       }
-    );
+    });
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -52,28 +64,26 @@ export const useAuth = () => {
    * Signs in user with OAuth provider (Google, Facebook, Apple)
    * @param provider - The OAuth provider to use
    */
-  const signInWithProvider = async (provider: 'google' | 'facebook' | 'apple') => {
+  const signInWithProvider = async (
+    provider: "google" | "facebook" | "apple"
+  ) => {
     try {
-      const redirectUrl = `${window.location.origin}/profiili`;
-      
+      const redirectUrl = `${window.location.origin}/`;
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: redirectUrl
-        }
+          redirectTo: redirectUrl,
+        },
       });
-      
+
       if (error) throw error;
-      
-      toast({
-        title: "Kirjauduit sisään onnistuneesti",
-        description: "Tervetuloa takaisin!",
-      });
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Kirjautuminen epäonnistui",
-        description: error instanceof Error ? error.message : "Tuntematon virhe",
+        description:
+          error instanceof Error ? error.message : "Tuntematon virhe",
       });
     }
   };
@@ -89,22 +99,24 @@ export const useAuth = () => {
         email,
         password,
       });
-      
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Kirjautuminen epäonnistui",
-          description: "Sähköposti tai salasana on virheellinen",
-        });
-        throw error;
-      }
-      
+
+      // If Supabase returns an error, throw it so our catch block can handle it.
+      if (error) throw error;
+
+      // If there was no error, show the success message.
       toast({
         title: "Kirjauduit sisään onnistuneesti",
         description: "Tervetuloa takaisin!",
       });
     } catch (error) {
-      throw error;
+      // The catch block's only job is to handle the error by showing a message.
+      // No need to throw again.
+      toast({
+        variant: "destructive",
+        title: "Kirjautuminen epäonnistui",
+        description: "Sähköposti tai salasana on virheellinen.",
+      });
+      console.error("Sign in error:", error); // It's good practice to log the actual error
     }
   };
 
@@ -116,21 +128,22 @@ export const useAuth = () => {
   const signUpWithEmail = async (email: string, password: string) => {
     try {
       const redirectUrl = `${window.location.origin}/`;
-      
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl
-        }
+          emailRedirectTo: redirectUrl,
+        },
       });
-      
+
       if (error) throw error;
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Rekisteröityminen epäonnistui",
-        description: error instanceof Error ? error.message : "Tuntematon virhe",
+        description:
+          error instanceof Error ? error.message : "Tuntematon virhe",
       });
       throw error;
     }
@@ -143,7 +156,7 @@ export const useAuth = () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       toast({
         title: "Kirjauduit ulos onnistuneesti",
         description: "Nähdään pian!",
@@ -152,7 +165,8 @@ export const useAuth = () => {
       toast({
         variant: "destructive",
         title: "Uloskirjautuminen epäonnistui",
-        description: error instanceof Error ? error.message : "Tuntematon virhe",
+        description:
+          error instanceof Error ? error.message : "Tuntematon virhe",
       });
     }
   };
@@ -164,6 +178,6 @@ export const useAuth = () => {
     signInWithProvider,
     signInWithEmail,
     signUpWithEmail,
-    signOut
+    signOut,
   };
 };

@@ -1,11 +1,16 @@
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /**
  * Props for the EmailSubscriptionModal component
@@ -19,7 +24,7 @@ interface EmailSubscriptionModalProps {
 
 /**
  * Modal component for email subscription to new catch notifications.
- * 
+ *
  * Features:
  * - Auto-fills email if user is logged in
  * - Calls subscribe-and-welcome Edge Function for subscription
@@ -27,15 +32,18 @@ interface EmailSubscriptionModalProps {
  * - Loading states and error handling
  * - Form validation for email input
  * - Success feedback and modal auto-close
- * 
+ *
  * The modal integrates with the authentication system to streamline
  * the subscription process for logged-in users.
- * 
+ *
  * @param props - The component props
  * @returns The email subscription modal component
  */
-export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscriptionModalProps) => {
-  const [email, setEmail] = useState('');
+export const EmailSubscriptionModal = ({
+  open,
+  onOpenChange,
+}: EmailSubscriptionModalProps) => {
+  const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -52,12 +60,12 @@ export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscription
    */
   const handleSubscribe = async () => {
     const emailToSubscribe = user?.email || email;
-    
+
     if (!emailToSubscribe) {
       toast({
         title: "Virhe",
         description: "Syötä sähköpostiosoite",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -65,33 +73,47 @@ export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscription
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('subscribe-and-welcome', {
-        body: { email: emailToSubscribe }
-      });
+      const { data, error } = await supabase.functions.invoke(
+        "subscribe-and-welcome",
+        {
+          body: { email: emailToSubscribe },
+        }
+      );
 
       if (error) {
-        console.error('Subscription error:', error);
+        console.error("Subscription error:", error);
         toast({
           title: "Virhe",
           description: "Tilauksen lisääminen epäonnistui. Yritä uudelleen.",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
 
-      toast({
-        title: "Kiitos!",
-        description: "Saat jatkossa ilmoituksia sähköpostiisi. Tarkista myös roskaposti!",
-      });
-      
+      console.log("data.message: ", data.message);
+
+      if (data.message === "Already subscribed") {
+        toast({
+          title: "Olet jo listalla!",
+          description:
+            "Kiitos mielenkiinnostasi, olet jo postituslistallamme :')",
+        });
+      } else {
+        toast({
+          title: "Kiitos!",
+          description:
+            "Saat jatkossa ilmoituksia sähköpostiisi. Tarkista myös roskaposti!",
+        });
+      }
+
       onOpenChange(false);
-      setEmail('');
+      setEmail("");
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error("Unexpected error:", error);
       toast({
         title: "Virhe",
         description: "Jotain meni pieleen. Yritä uudelleen.",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -121,9 +143,9 @@ export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscription
               placeholder="anna@example.com"
             />
           </div>
-          <Button 
-            onClick={handleSubscribe} 
-            className="w-full" 
+          <Button
+            onClick={handleSubscribe}
+            className="w-full"
             disabled={isLoading}
             size="lg"
           >

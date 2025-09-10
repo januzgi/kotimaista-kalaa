@@ -1,87 +1,81 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-
-interface SubscriptionData {
-  email: string;
-}
-
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders,
+    });
   }
-
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
-
-    // Parse request body
-    const subscriptionData: SubscriptionData = await req.json();
-    console.log("Subscription data received:", subscriptionData);
-
-    if (!subscriptionData.email) {
-      return new Response(JSON.stringify({ error: "Email is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const { email } = await req.json();
+    if (!email) {
+      return new Response(
+        JSON.stringify({
+          error: "Email is required",
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
-    // Check if email already exists
+    // Use .maybeSingle() which is cleaner for checking existence.
+    // It returns { data: null } if not found, instead of an error.
     const { data: existingSubscription, error: checkError } =
       await supabaseClient
         .from("email_subscriptions")
         .select("email")
-        .eq("email", subscriptionData.email)
-        .single();
-
-    if (checkError && checkError.code !== "PGRST116") {
-      // PGRST116 = no rows returned
-      console.error("Error checking existing subscription:", checkError);
+        .eq("email", email)
+        .maybeSingle();
+    if (checkError) {
+      throw checkError;
+    }
+    // If the user is NOT new, we can return a success message early.
+    if (existingSubscription) {
+      console.log("Email already subscribed, skipping actions.");
       return new Response(
-        JSON.stringify({ error: "Failed to check subscription status" }),
+        JSON.stringify({
+          success: true,
+          message: "Already subscribed",
+        }),
         {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
       );
     }
-
-    // If email already exists, still send success (but don't create duplicate)
-    const isNewSubscription = !existingSubscription;
-
-    if (isNewSubscription) {
-      // Save email to database
-      const { error: insertError } = await supabaseClient
-        .from("email_subscriptions")
-        .insert([{ email: subscriptionData.email }]);
-
-      if (insertError) {
-        console.error("Error saving subscription:", insertError);
-        return new Response(
-          JSON.stringify({ error: "Failed to save subscription" }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
-      }
-
-      console.log("Email subscription saved successfully");
-    } else {
-      console.log("Email already subscribed, skipping database insert");
+    // --- If we reach this point, the user is NEW ---
+    // 1. Save the new email to the database
+    const { error: insertError } = await supabaseClient
+      .from("email_subscriptions")
+      .insert([
+        {
+          email: email,
+        },
+      ]);
+    if (insertError) {
+      throw insertError;
     }
-
-    // Send welcome email using Brevo
-    const subject = "Tervetuloa Kotimaista kalaa-postituslistalle! 🐟";
-
-    const emailHtml = `
+    console.log("Email subscription saved successfully");
+    // 2. Send the welcome email
+    try {
+      const subject = "Tervetuloa Kotimaista kalaa-postituslistalle! 🐟";
+      const emailHtml = `
       <!DOCTYPE html>
       <html>
       <head>
@@ -142,9 +136,6 @@ Deno.serve(async (req) => {
       </body>
       </html>
     `;
-
-    // Send welcome email using Brevo
-    try {
       const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
         method: "POST",
         headers: {
@@ -158,56 +149,50 @@ Deno.serve(async (req) => {
           },
           to: [
             {
-              email: subscriptionData.email,
-              name: "Kalaharrastaja",
+              email: email,
             },
           ],
           subject: subject,
           htmlContent: emailHtml,
         }),
       });
-
       if (!brevoResponse.ok) {
         const errorDetails = await brevoResponse.text();
         console.error("Failed to send welcome email:", errorDetails);
-        return new Response(
-          JSON.stringify({ error: "Failed to send welcome email" }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          }
-        );
+        // Don't fail the whole request, just log the error
       } else {
         console.log("Welcome email sent successfully");
       }
     } catch (emailError) {
       console.error("Error sending welcome email:", emailError);
-      return new Response(
-        JSON.stringify({ error: "Failed to send welcome email" }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
+      // Also don't fail the request if the email part fails
     }
-
     return new Response(
       JSON.stringify({
         success: true,
-        message: isNewSubscription
-          ? "Subscription created and welcome email sent"
-          : "Welcome email sent to existing subscriber",
+        message: "Subscription created and welcome email sent",
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {
     console.error("Unexpected error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 });

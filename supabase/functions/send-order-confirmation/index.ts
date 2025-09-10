@@ -18,64 +18,76 @@
  * Returns:
  * - Success: {success: true, message: string}
  * - Error: {error: string}
- */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+ */ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
-interface OrderConfirmationRequest {
-  orderId: string;
-}
-
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: corsHeaders,
+    });
   }
-
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
-
     // Get the authorization header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
       console.error("No authorization header provided");
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+        }),
+        {
+          status: 401,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
     // Verify user authentication
     const { data: userData, error: userError } =
       await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
-
     if (userError || !userData.user) {
       console.error("Authentication failed:", userError);
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Unauthorized",
+        }),
+        {
+          status: 401,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
     // Parse request body
-    const { orderId }: OrderConfirmationRequest = await req.json();
+    const { orderId } = await req.json();
     console.log("Sending confirmation for order:", orderId);
-
     if (!orderId) {
-      return new Response(JSON.stringify({ error: "Order ID is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Order ID is required",
+        }),
+        {
+          status: 400,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
     // Fetch complete order details
     const { data: order, error: orderError } = await supabaseClient
       .from("orders")
@@ -112,35 +124,46 @@ Deno.serve(async (req) => {
       )
       .eq("id", orderId)
       .single();
-
     if (orderError || !order) {
       console.error("Error fetching order:", orderError);
-      return new Response(JSON.stringify({ error: "Order not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Order not found",
+        }),
+        {
+          status: 404,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
     // Get customer email
     const { data: customerData, error: customerError } =
       await supabaseClient.auth.admin.getUserById(order.customer_id);
-
     if (customerError || !customerData.user) {
       console.error("Error fetching customer:", customerError);
-      return new Response(JSON.stringify({ error: "Customer not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Customer not found",
+        }),
+        {
+          status: 404,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
-
     // Calculate order total
-    const itemsTotal = order.order_items.reduce((sum: number, item: any) => {
+    const itemsTotal = order.order_items.reduce((sum, item) => {
       return sum + item.quantity * item.product.price_per_kg;
     }, 0);
     const deliveryFee =
       order.fulfillment_type === "DELIVERY" ? order.final_delivery_fee || 0 : 0;
     const totalPrice = itemsTotal + deliveryFee;
-
     // Format date and time
     const fulfillmentDate = new Date(order.fulfillment_slot.start_time);
     const startTime = fulfillmentDate.toLocaleTimeString("fi-FI", {
@@ -149,22 +172,22 @@ Deno.serve(async (req) => {
     });
     const endTime = new Date(
       order.fulfillment_slot.end_time
-    ).toLocaleTimeString("fi-FI", { hour: "2-digit", minute: "2-digit" });
+    ).toLocaleTimeString("fi-FI", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
     const dateStr = fulfillmentDate.toLocaleDateString("fi-FI");
-
     // Get fisherman info
     const fishermanProfile =
       order.order_items[0]?.product?.fisherman_profile || {};
-
     // Create email content
     const subject = `Kotimaistakalaa.fi: Tilauksesi #${order.id.slice(
       0,
       8
     )} on vahvistettu`;
-
     const itemsHtml = order.order_items
       .map(
-        (item: any) => `
+        (item) => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #eee;">${
           item.product.species
@@ -182,7 +205,6 @@ Deno.serve(async (req) => {
     `
       )
       .join("");
-
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -284,13 +306,12 @@ Deno.serve(async (req) => {
 
         <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
         <p style="text-align: center; color: #666; font-size: 14px;">
-          <strong>© Kotimaista kalaa</strong><br>
+           <strong>© Kotimaista kalaa</strong><br>
           <i>Tuoretta kalaa suoraan kalastajalta</i>
         </p>
       </body>
       </html>
     `;
-
     // Send email using Brevo
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -300,7 +321,7 @@ Deno.serve(async (req) => {
       },
       body: JSON.stringify({
         sender: {
-          name: "Kotimaistakalaa",
+          name: "Kotimaistakalaa.fi",
           email: "suorantacoding@gmail.com",
         },
         to: [
@@ -313,21 +334,23 @@ Deno.serve(async (req) => {
         htmlContent: emailHtml,
       }),
     });
-
     if (!brevoResponse.ok) {
       const errorText = await brevoResponse.text();
       console.error("Brevo email error:", errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to send confirmation email" }),
+        JSON.stringify({
+          error: "Failed to send confirmation email",
+        }),
         {
           status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+          },
         }
       );
     }
-
     console.log("Order confirmation email sent successfully");
-
     return new Response(
       JSON.stringify({
         success: true,
@@ -335,14 +358,25 @@ Deno.serve(async (req) => {
       }),
       {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
       }
     );
   } catch (error) {
     console.error("Unexpected error:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Internal server error",
+      }),
+      {
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+        },
+      }
+    );
   }
 });

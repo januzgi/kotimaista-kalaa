@@ -31,7 +31,7 @@ export const AvailableFish = () => {
 
   return (
     <section className="py-12 px-4 bg-card">
-      <div className="container mx-auto max-w-6xl">
+      <div className="sm:container px-0 mx-auto max-w-6xl">
         <h2 className="text-2xl sm:text-3xl font-bold text-center text-primary mb-4">
           Saatavilla olevat kalat
         </h2>
@@ -40,7 +40,7 @@ export const AvailableFish = () => {
           Todellinen hinta riippuu kalan muodosta (esim. fileoitu).
         </p>
 
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {fishProducts.map((fish, index) => (
             <ProductCard
               key={index}

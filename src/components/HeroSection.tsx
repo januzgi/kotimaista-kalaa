@@ -1,8 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import heroImage from "@/assets/images/Rubai.jpg";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Hero section component for the homepage.
@@ -23,10 +25,35 @@ import heroImage from "@/assets/images/Rubai.jpg";
  */
 export const HeroSection = () => {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const { user } = useAuth();
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
+  useEffect(() => {
+    const checkSubscription = async () => {
+      if (user?.email) {
+        const { data, error } = await supabase
+          .from("email_subscriptions")
+          .select("email")
+          .eq("email", user.email)
+          .maybeSingle();
+
+        if (error) {
+          console.error("Error checking subscription status:", error);
+          return;
+        }
+
+        if (data) {
+          setIsSubscribed(true);
+        }
+      }
+    };
+
+    checkSubscription();
+  }, [user]);
 
   return (
     <section className="py-8 sm:py-12 px-4">
-      <div className="container mx-auto max-w-4xl">
+      <div className="sm:container px-0 mx-auto max-w-4xl">
         <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8">
           {/* Hero Image Placeholder */}
           <div className="w-full lg:w-1/2">
@@ -64,8 +91,11 @@ export const HeroSection = () => {
                 size="lg"
                 className="w-full sm:w-auto"
                 onClick={() => setIsSubscriptionModalOpen(true)}
+                disabled={isSubscribed}
               >
-                Tilaa sähköposti-ilmoitukset
+                {isSubscribed
+                  ? "Olet jo listalla"
+                  : "Tilaa sähköposti-ilmoitukset"}
               </Button>
             </div>
           </div>
