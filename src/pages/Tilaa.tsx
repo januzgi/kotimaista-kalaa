@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/useAuth';
-import { useCart } from '@/contexts/CartContext';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Separator } from '@/components/ui/separator';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import { fi } from 'date-fns/locale';
-import { Fish, MapPin, Clock, Euro, User, Phone, Home } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/contexts/CartContext";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { fi } from "date-fns/locale";
+import { Fish, MapPin, Clock, Euro, User, Phone, Home } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FishIcon } from "@/components/FishIcon";
 
 /**
  * Interface for product data from database
@@ -45,12 +52,12 @@ interface FulfillmentSlot {
   id: string;
   start_time: string;
   end_time: string;
-  type: 'PICKUP' | 'DELIVERY';
+  type: "PICKUP" | "DELIVERY";
 }
 
 /**
  * Order placement page component.
- * 
+ *
  * Features:
  * - Cart items summary and pricing
  * - Customer information form (auto-filled for logged users)
@@ -61,50 +68,54 @@ interface FulfillmentSlot {
  * - Order validation and submission
  * - Real-time inventory checking during order placement
  * - Sold-out item handling with cart updates
- * 
+ *
  * The component handles both single-product orders (legacy) and multi-item
  * cart orders, with automatic validation and error handling throughout
  * the order process.
- * 
+ *
  * @returns The order placement page component
  */
 const Tilaa = () => {
   const [searchParams] = useSearchParams();
-  const productId = searchParams.get('product');
+  const productId = searchParams.get("product");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
   const { items: cartItems, clearCart, removeItemsById } = useCart();
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [fulfillmentSlots, setFulfillmentSlots] = useState<FulfillmentSlot[]>([]);
+  const [fulfillmentSlots, setFulfillmentSlots] = useState<FulfillmentSlot[]>(
+    []
+  );
   const [allSlots, setAllSlots] = useState<FulfillmentSlot[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
   // Form state
   const [quantity, setQuantity] = useState<number>(1);
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [fulfillmentType, setFulfillmentType] = useState<'PICKUP' | 'DELIVERY'>('PICKUP');
-  const [selectedSlotId, setSelectedSlotId] = useState('');
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
+  const [fulfillmentType, setFulfillmentType] = useState<"PICKUP" | "DELIVERY">(
+    "PICKUP"
+  );
+  const [selectedSlotId, setSelectedSlotId] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   useEffect(() => {
     // If there's a productId, we're coming from the old single-product flow
     // Redirect to cart page instead
     if (productId) {
-      navigate('/ostoskori');
+      navigate("/ostoskori");
       return;
     }
-    
+
     // If cart is empty, redirect to available products
     if (cartItems.length === 0) {
-      navigate('/saatavilla');
+      navigate("/saatavilla");
       return;
     }
-    
+
     fetchProductData();
   }, [productId, cartItems.length]);
 
@@ -123,35 +134,36 @@ const Tilaa = () => {
   useEffect(() => {
     const fetchAllSlots = async () => {
       if (!product) return;
-      
+
       try {
         const { data, error } = await supabase
-          .from('fulfillment_slots')
-          .select('id, start_time, end_time, type')
-          .eq('fisherman_id', product.fisherman_profile.id)
-          .gte('start_time', new Date().toISOString());
-          
+          .from("fulfillment_slots")
+          .select("id, start_time, end_time, type")
+          .eq("fisherman_id", product.fisherman_profile.id)
+          .gte("start_time", new Date().toISOString());
+
         if (!error) {
           setAllSlots(data || []);
         }
       } catch (error) {
-        console.error('Error fetching all slots:', error);
+        console.error("Error fetching all slots:", error);
       }
     };
-    
+
     fetchAllSlots();
   }, [product]);
 
   const fetchProductData = async () => {
     if (cartItems.length === 0) return;
-    
+
     try {
       // Get unique product IDs from cart
-      const productIds = [...new Set(cartItems.map(item => item.productId))];
-      
+      const productIds = [...new Set(cartItems.map((item) => item.productId))];
+
       const { data, error } = await supabase
-        .from('products')
-        .select(`
+        .from("products")
+        .select(
+          `
           id,
           species,
           form,
@@ -166,23 +178,24 @@ const Tilaa = () => {
               full_name
             )
           )
-        `)
-        .in('id', productIds);
+        `
+        )
+        .in("id", productIds);
 
       if (error) throw error;
-      
+
       if (data && data.length > 0) {
         // Use the first product's fisherman profile for fulfillment details
         setProduct(data[0]);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
         description: "Tuotteiden lataaminen epäonnistui.",
       });
-      navigate('/saatavilla');
+      navigate("/saatavilla");
     }
   };
 
@@ -191,17 +204,17 @@ const Tilaa = () => {
 
     try {
       const { data, error } = await supabase
-        .from('users')
-        .select('full_name, phone_number')
-        .eq('id', user.id)
+        .from("users")
+        .select("full_name, phone_number")
+        .eq("id", user.id)
         .single();
 
       if (!error && data) {
-        setCustomerName(data.full_name || '');
-        setCustomerPhone(data.phone_number || '');
+        setCustomerName(data.full_name || "");
+        setCustomerPhone(data.phone_number || "");
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error("Error fetching user profile:", error);
     }
   };
 
@@ -211,30 +224,36 @@ const Tilaa = () => {
     try {
       // Fetch all slots for this fisherman to check availability
       const { data: allSlots, error } = await supabase
-        .from('fulfillment_slots')
-        .select('id, start_time, end_time, type')
-        .eq('fisherman_id', product.fisherman_profile.id)
-        .gte('start_time', new Date().toISOString())
-        .order('start_time', { ascending: true });
+        .from("fulfillment_slots")
+        .select("id, start_time, end_time, type")
+        .eq("fisherman_id", product.fisherman_profile.id)
+        .gte("start_time", new Date().toISOString())
+        .order("start_time", { ascending: true });
 
       if (error) throw error;
-      
+
       const slots = allSlots || [];
-      const deliverySlots = slots.filter(slot => slot.type === 'DELIVERY');
-      const pickupSlots = slots.filter(slot => slot.type === 'PICKUP');
-      
+      const deliverySlots = slots.filter((slot) => slot.type === "DELIVERY");
+      const pickupSlots = slots.filter((slot) => slot.type === "PICKUP");
+
       // If there are no delivery slots but there are pickup slots, switch to pickup
-      if (fulfillmentType === 'DELIVERY' && deliverySlots.length === 0 && pickupSlots.length > 0) {
-        setFulfillmentType('PICKUP');
+      if (
+        fulfillmentType === "DELIVERY" &&
+        deliverySlots.length === 0 &&
+        pickupSlots.length > 0
+      ) {
+        setFulfillmentType("PICKUP");
         setFulfillmentSlots(pickupSlots);
       } else {
         // Filter by current fulfillment type
-        setFulfillmentSlots(slots.filter(slot => slot.type === fulfillmentType));
+        setFulfillmentSlots(
+          slots.filter((slot) => slot.type === fulfillmentType)
+        );
       }
-      
-      setSelectedSlotId('');
+
+      setSelectedSlotId("");
     } catch (error) {
-      console.error('Error fetching fulfillment slots:', error);
+      console.error("Error fetching fulfillment slots:", error);
     } finally {
       setLoading(false);
     }
@@ -242,11 +261,15 @@ const Tilaa = () => {
 
   const calculateTotal = () => {
     if (!cartItems.length) return 0;
-    
-    const itemsTotal = cartItems.reduce((sum, item) => sum + (item.quantity * item.pricePerKg), 0);
-    const deliveryFee = fulfillmentType === 'DELIVERY' && product 
-      ? product.fisherman_profile.default_delivery_fee 
-      : 0;
+
+    const itemsTotal = cartItems.reduce(
+      (sum, item) => sum + item.quantity * item.pricePerKg,
+      0
+    );
+    const deliveryFee =
+      fulfillmentType === "DELIVERY" && product
+        ? product.fisherman_profile.default_delivery_fee
+        : 0;
     return itemsTotal + deliveryFee;
   };
 
@@ -255,7 +278,8 @@ const Tilaa = () => {
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Kirjaudu sisään ja lisää tuotteita ostoskoriin tehdäksesi tilauksen.",
+        description:
+          "Kirjaudu sisään ja lisää tuotteita ostoskoriin tehdäksesi tilauksen.",
       });
       return;
     }
@@ -269,7 +293,7 @@ const Tilaa = () => {
       return;
     }
 
-    if (fulfillmentType === 'DELIVERY' && !customerAddress) {
+    if (fulfillmentType === "DELIVERY" && !customerAddress) {
       toast({
         variant: "destructive",
         title: "Puuttuvia tietoja",
@@ -282,36 +306,37 @@ const Tilaa = () => {
 
     try {
       // Prepare cart data for the edge function
-      const cartData = cartItems.map(item => ({
+      const cartData = cartItems.map((item) => ({
         productId: item.productId,
-        quantity: item.quantity
+        quantity: item.quantity,
       }));
 
       const orderData = {
         cartItems: cartData,
         customerName,
         customerPhone,
-        customerAddress: fulfillmentType === 'DELIVERY' ? customerAddress : undefined,
+        customerAddress:
+          fulfillmentType === "DELIVERY" ? customerAddress : undefined,
         fulfillmentType,
-        fulfillmentSlotId: selectedSlotId
+        fulfillmentSlotId: selectedSlotId,
       };
 
-      console.log('Calling create-order function with:', orderData);
+      console.log("Calling create-order function with:", orderData);
 
-      const { data, error } = await supabase.functions.invoke('create-order', {
-        body: orderData
+      const { data, error } = await supabase.functions.invoke("create-order", {
+        body: orderData,
       });
 
       if (error) {
-        console.error('Edge function error:', error);
-        throw new Error(error.message || 'Failed to create order');
+        console.error("Edge function error:", error);
+        throw new Error(error.message || "Failed to create order");
       }
 
       if (data.error) {
-        if (data.error === 'Items sold out') {
+        if (data.error === "Items sold out") {
           // Handle sold out items
-          console.log('Items sold out:', data.soldOutItems);
-          
+          console.log("Items sold out:", data.soldOutItems);
+
           // Remove sold out items from cart
           if (data.soldOutProductIds && data.soldOutProductIds.length > 0) {
             removeItemsById(data.soldOutProductIds);
@@ -320,11 +345,13 @@ const Tilaa = () => {
           toast({
             variant: "destructive",
             title: "Tuotteet loppuunmyytyjä",
-            description: `Seuraavat tuotteet ehdittiin myydä loppuun: ${data.soldOutItems.join(', ')}`,
+            description: `Seuraavat tuotteet ehdittiin myydä loppuun: ${data.soldOutItems.join(
+              ", "
+            )}`,
           });
 
           // Redirect to cart page
-          navigate('/ostoskori');
+          navigate("/ostoskori");
           return;
         } else {
           throw new Error(data.error);
@@ -332,17 +359,17 @@ const Tilaa = () => {
       }
 
       // Success - clear cart and redirect
-      console.log('Order created successfully:', data.orderId);
+      console.log("Order created successfully:", data.orderId);
       clearCart();
-      
+
       toast({
         title: "Tilaus lähetetty!",
         description: "Tilauksesi on vastaanotettu ja odottaa vahvistusta.",
       });
 
-      navigate('/kiitos');
+      navigate("/kiitos");
     } catch (error) {
-      console.error('Error submitting order:', error);
+      console.error("Error submitting order:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -368,10 +395,12 @@ const Tilaa = () => {
     );
   }
 
-  const availableSlots = fulfillmentSlots.filter(slot => slot.type === fulfillmentType);
-  
-  const hasDeliverySlots = allSlots.some(slot => slot.type === 'DELIVERY');
-  const hasPickupSlots = allSlots.some(slot => slot.type === 'PICKUP');
+  const availableSlots = fulfillmentSlots.filter(
+    (slot) => slot.type === fulfillmentType
+  );
+
+  const hasDeliverySlots = allSlots.some((slot) => slot.type === "DELIVERY");
+  const hasPickupSlots = allSlots.some((slot) => slot.type === "PICKUP");
   const hasAnySlots = allSlots.length > 0;
 
   return (
@@ -379,7 +408,9 @@ const Tilaa = () => {
       <Header />
       <main className="container mx-auto px-4 py-8 max-w-2xl">
         <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">Tee tilaus</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
+            Tee tilaus
+          </h1>
           <p className="text-muted-foreground">
             Täytä tiedot ja valitse toimitustapa
           </p>
@@ -396,23 +427,43 @@ const Tilaa = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {cartItems.map((item) => (
-                <div key={item.productId} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg">
+                <div
+                  key={item.productId}
+                  className="flex flex-col relative sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg"
+                >
                   <div>
-                    <h3 className="font-semibold">{item.species}</h3>
+                    <h3 className="font-semibold">
+                      <FishIcon
+                        species={item.species}
+                        className="absolute top-[-16px] left-[-16px] mr-2 h-8 w-8"
+                      />
+                      {item.species}
+                    </h3>
                     <p className="text-muted-foreground text-sm">{item.form}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">{item.pricePerKg.toFixed(2)} €/kg</p>
+                    <p className="font-semibold">
+                      {item.pricePerKg.toFixed(2)} €/kg
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {item.quantity} kg = {(item.quantity * item.pricePerKg).toFixed(2)} €
+                      {item.quantity} kg ={" "}
+                      {(item.quantity * item.pricePerKg).toFixed(2)} €
                     </p>
                   </div>
                 </div>
               ))}
               <div className="text-right pt-2 border-t">
-                <p className="text-sm text-muted-foreground">Tuotteet yhteensä:</p>
+                <p className="text-sm text-muted-foreground">
+                  Tuotteet yhteensä:
+                </p>
                 <p className="font-semibold text-lg">
-                  {cartItems.reduce((sum, item) => sum + (item.quantity * item.pricePerKg), 0).toFixed(2)} €
+                  {cartItems
+                    .reduce(
+                      (sum, item) => sum + item.quantity * item.pricePerKg,
+                      0
+                    )
+                    .toFixed(2)}{" "}
+                  €
                 </p>
               </div>
             </CardContent>
@@ -462,37 +513,55 @@ const Tilaa = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <RadioGroup 
-                value={fulfillmentType} 
-                onValueChange={(value: 'PICKUP' | 'DELIVERY') => setFulfillmentType(value)}
+              <RadioGroup
+                value={fulfillmentType}
+                onValueChange={(value: "PICKUP" | "DELIVERY") =>
+                  setFulfillmentType(value)
+                }
               >
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="PICKUP" id="pickup" disabled={!hasPickupSlots} />
-                  <Label htmlFor="pickup" className={!hasPickupSlots ? 'text-muted-foreground' : ''}>
-                    Nouto {!hasPickupSlots && '(ei saatavilla)'}
+                  <RadioGroupItem
+                    value="PICKUP"
+                    id="pickup"
+                    disabled={!hasPickupSlots}
+                  />
+                  <Label
+                    htmlFor="pickup"
+                    className={!hasPickupSlots ? "text-muted-foreground" : ""}
+                  >
+                    Nouto {!hasPickupSlots && "(ei saatavilla)"}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="DELIVERY" id="delivery" disabled={!hasDeliverySlots} />
-                  <Label htmlFor="delivery" className={!hasDeliverySlots ? 'text-muted-foreground' : ''}>
-                    Kotiinkuljetus {!hasDeliverySlots && '(ei saatavilla)'}
+                  <RadioGroupItem
+                    value="DELIVERY"
+                    id="delivery"
+                    disabled={!hasDeliverySlots}
+                  />
+                  <Label
+                    htmlFor="delivery"
+                    className={!hasDeliverySlots ? "text-muted-foreground" : ""}
+                  >
+                    Kotiinkuljetus {!hasDeliverySlots && "(ei saatavilla)"}
                   </Label>
                 </div>
               </RadioGroup>
 
-              {fulfillmentType === 'PICKUP' && (
+              {fulfillmentType === "PICKUP" && (
                 <div className="p-4 bg-muted/30 rounded-lg">
                   <div className="flex items-start space-x-2 mb-3">
                     <Home className="h-4 w-4 mt-1 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Nouto-osoite:</p>
-                      <p className="text-muted-foreground">{product.fisherman_profile.pickup_address}</p>
+                      <p className="text-muted-foreground">
+                        {product.fisherman_profile.pickup_address}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
 
-              {fulfillmentType === 'DELIVERY' && (
+              {fulfillmentType === "DELIVERY" && (
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="address">Toimitusosoite *</Label>
@@ -508,11 +577,16 @@ const Tilaa = () => {
                     <div className="flex items-center justify-between">
                       <span>Toimitusmaksu:</span>
                       <span className="font-semibold">
-                        alk. {product.fisherman_profile.default_delivery_fee.toFixed(2)} €
+                        alk.{" "}
+                        {product.fisherman_profile.default_delivery_fee.toFixed(
+                          2
+                        )}{" "}
+                        €
                       </span>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Lopullinen toimitusmaksu vahvistetaan tilausvahvistuksessa.
+                      Lopullinen toimitusmaksu vahvistetaan
+                      tilausvahvistuksessa.
                     </p>
                   </div>
                 </div>
@@ -525,14 +599,25 @@ const Tilaa = () => {
                     <Clock className="mr-1 h-4 w-4" />
                     Valitse aika *
                   </Label>
-                  <Select value={selectedSlotId} onValueChange={setSelectedSlotId}>
+                  <Select
+                    value={selectedSlotId}
+                    onValueChange={setSelectedSlotId}
+                  >
                     <SelectTrigger className="mt-1">
                       <SelectValue placeholder="Valitse aikaväli" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableSlots.map((slot) => (
                         <SelectItem key={slot.id} value={slot.id}>
-                          {format(new Date(slot.start_time), 'dd.MM.yyyy HH:mm', { locale: fi })} - {format(new Date(slot.end_time), 'HH:mm', { locale: fi })}
+                          {format(
+                            new Date(slot.start_time),
+                            "dd.MM.yyyy HH:mm",
+                            { locale: fi }
+                          )}{" "}
+                          -{" "}
+                          {format(new Date(slot.end_time), "HH:mm", {
+                            locale: fi,
+                          })}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -549,19 +634,23 @@ const Tilaa = () => {
                     <Phone className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
                     <div>
                       <p className="text-sm">
-                        <strong>Nouto- tai kotiinkuljetusaikoja ei ole määritelty.</strong>
+                        <strong>
+                          Nouto- tai kotiinkuljetusaikoja ei ole määritelty.
+                        </strong>
                       </p>
                       <p className="text-sm text-muted-foreground mt-1">
-                        Sovi suoraan kalastajan kanssa noutoajasta: {' '}
+                        Sovi suoraan kalastajan kanssa noutoajasta:{" "}
                         {product.fisherman_profile.public_phone_number ? (
-                          <a 
-                            href={`tel:${product.fisherman_profile.public_phone_number}`} 
+                          <a
+                            href={`tel:${product.fisherman_profile.public_phone_number}`}
                             className="text-primary hover:underline font-medium"
                           >
                             {product.fisherman_profile.public_phone_number}
                           </a>
                         ) : (
-                          <span className="text-muted-foreground">Puhelinnumeroa ei ole saatavilla</span>
+                          <span className="text-muted-foreground">
+                            Puhelinnumeroa ei ole saatavilla
+                          </span>
                         )}
                       </p>
                     </div>
@@ -583,14 +672,24 @@ const Tilaa = () => {
               <div className="space-y-2">
                 {cartItems.map((item) => (
                   <div key={item.productId} className="flex justify-between">
-                    <span>{item.species} ({item.quantity} kg × {item.pricePerKg.toFixed(2)} €/kg)</span>
-                    <span>{(item.quantity * item.pricePerKg).toFixed(2)} €</span>
+                    <span>
+                      {item.species} ({item.quantity} kg ×{" "}
+                      {item.pricePerKg.toFixed(2)} €/kg)
+                    </span>
+                    <span>
+                      {(item.quantity * item.pricePerKg).toFixed(2)} €
+                    </span>
                   </div>
                 ))}
-                {fulfillmentType === 'DELIVERY' && product && (
+                {fulfillmentType === "DELIVERY" && product && (
                   <div className="flex justify-between">
                     <span>Toimitusmaksu (alkaen)</span>
-                    <span>{product.fisherman_profile.default_delivery_fee.toFixed(2)} €</span>
+                    <span>
+                      {product.fisherman_profile.default_delivery_fee.toFixed(
+                        2
+                      )}{" "}
+                      €
+                    </span>
                   </div>
                 )}
                 <Separator />
@@ -604,17 +703,20 @@ const Tilaa = () => {
 
           {/* Terms and Conditions */}
           <div className="flex items-start space-x-2 p-4 bg-muted/20 rounded-lg">
-            <Checkbox 
+            <Checkbox
               id="terms"
               checked={acceptedTerms}
               onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
               className="mt-0.5"
             />
-            <Label htmlFor="terms" className="text-sm leading-relaxed cursor-pointer">
-              Olen lukenut ja hyväksyn{' '}
-              <a 
-                href="/toimitusehdot" 
-                target="_blank" 
+            <Label
+              htmlFor="terms"
+              className="text-sm leading-relaxed cursor-pointer"
+            >
+              Olen lukenut ja hyväksyn{" "}
+              <a
+                href="/toimitusehdot"
+                target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary underline hover:no-underline"
               >
@@ -625,13 +727,21 @@ const Tilaa = () => {
           </div>
 
           {/* Submit Button */}
-          <Button 
+          <Button
             onClick={handleSubmitOrder}
-            disabled={submitting || (!hasAnySlots && !selectedSlotId) || !customerName || !customerPhone || !acceptedTerms || (fulfillmentType === 'DELIVERY' && !customerAddress) || cartItems.length === 0}
+            disabled={
+              submitting ||
+              (!hasAnySlots && !selectedSlotId) ||
+              !customerName ||
+              !customerPhone ||
+              !acceptedTerms ||
+              (fulfillmentType === "DELIVERY" && !customerAddress) ||
+              cartItems.length === 0
+            }
             className="w-full"
             size="lg"
           >
-            {submitting ? 'Lähetetään...' : 'Tee tilaus'}
+            {submitting ? "Lähetetään..." : "Tee tilaus"}
           </Button>
         </div>
       </main>

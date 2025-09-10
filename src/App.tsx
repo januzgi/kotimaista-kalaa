@@ -12,6 +12,7 @@ import Tilaa from "./pages/Tilaa";
 import Kiitos from "./pages/Kiitos";
 import Toimitusehdot from "./pages/Toimitusehdot";
 import NotFound from "./pages/NotFound";
+import Tietosuoja from "./pages/Tietosuoja";
 
 /**
  * React Query client instance for managing server state and caching
@@ -20,12 +21,12 @@ const queryClient = new QueryClient();
 
 /**
  * Main App component that provides the root routing and global providers for the application.
- * 
+ *
  * This component sets up the following providers:
  * - QueryClientProvider: For server state management with React Query
  * - TooltipProvider: For tooltip functionality across the app
  * - BrowserRouter: For client-side routing
- * 
+ *
  * Routes included:
  * - `/` - Homepage with hero section, available fish, and schedule
  * - `/profiili` - User profile management
@@ -35,8 +36,9 @@ const queryClient = new QueryClient();
  * - `/tilaa` - Order placement page
  * - `/kiitos` - Thank you page after order
  * - `/toimitusehdot` - Delivery terms page
+ * - `/tietosuoja` - Privacy policy
  * - `*` - 404 not found page
- * 
+ *
  * @returns The main application component with routing and providers
  */
 const App = () => (
@@ -54,6 +56,7 @@ const App = () => (
           <Route path="/tilaa" element={<Tilaa />} />
           <Route path="/kiitos" element={<Kiitos />} />
           <Route path="/toimitusehdot" element={<Toimitusehdot />} />
+          <Route path="/tietosuoja" element={<Tietosuoja />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

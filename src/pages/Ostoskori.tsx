@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { useCart, CartItem } from '@/contexts/CartContext';
-import { ShoppingCart, Fish, Trash2, AlertTriangle, Euro, X } from 'lucide-react';
+import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { useCart, CartItem } from "@/contexts/CartContext";
+import { ShoppingCart, Trash2, AlertTriangle, Euro, X } from "lucide-react";
+import { FishIcon } from "@/components/FishIcon";
 
 /**
  * Interface for product availability data
@@ -22,7 +23,7 @@ interface ProductAvailability {
 
 /**
  * Shopping cart page component.
- * 
+ *
  * Features:
  * - Displays all items in the shopping cart
  * - Real-time inventory checking to detect sold-out items
@@ -32,53 +33,55 @@ interface ProductAvailability {
  * - Alerts for sold-out or removed items
  * - Cart validation before checkout
  * - Responsive layout
- * 
+ *
  * The component continuously monitors product availability and alerts users
  * if items become unavailable, preventing checkout with sold-out items.
- * 
+ *
  * @returns The shopping cart page component
  */
 const Ostoskori = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { items, updateQuantity, removeItem, getTotalPrice, removedItems, clearRemovedItems } = useCart();
-  const [productAvailability, setProductAvailability] = useState<ProductAvailability[]>([]);
+  const {
+    items,
+    updateQuantity,
+    removeItem,
+    getTotalPrice,
+    removedItems,
+    clearRemovedItems,
+  } = useCart();
+  const [productAvailability, setProductAvailability] = useState<
+    ProductAvailability[]
+  >([]);
   const [loading, setLoading] = useState(true);
-
-  /**
-   * Effect to check inventory whenever cart items change
-   */
-  useEffect(() => {
-    checkInventory();
-  }, [items]);
 
   /**
    * Checks current inventory levels for all cart items
    * Updates product availability state with current stock levels
    */
-  const checkInventory = async () => {
+  const checkInventory = useCallback(async () => {
     if (items.length === 0) {
       setLoading(false);
       return;
     }
 
     try {
-      const productIds = items.map(item => item.productId);
+      const productIds = items.map((item) => item.productId);
       const { data, error } = await supabase
-        .from('products')
-        .select('id, available_quantity')
-        .in('id', productIds);
+        .from("products")
+        .select("id, available_quantity")
+        .in("id", productIds);
 
       if (error) throw error;
 
-      const availability = data.map(product => ({
+      const availability = data.map((product) => ({
         productId: product.id,
-        currentAvailableQuantity: product.available_quantity
+        currentAvailableQuantity: product.available_quantity,
       }));
 
       setProductAvailability(availability);
     } catch (error) {
-      console.error('Error checking inventory:', error);
+      console.error("Error checking inventory:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -87,7 +90,14 @@ const Ostoskori = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast, items]);
+
+  /**
+   * Effect to check inventory whenever cart items change
+   */
+  useEffect(() => {
+    checkInventory();
+  }, [checkInventory]);
 
   /**
    * Gets availability information for a specific product
@@ -95,7 +105,7 @@ const Ostoskori = () => {
    * @returns Product availability object or undefined
    */
   const getItemAvailability = (productId: string) => {
-    return productAvailability.find(p => p.productId === productId);
+    return productAvailability.find((p) => p.productId === productId);
   };
 
   /**
@@ -113,7 +123,7 @@ const Ostoskori = () => {
    * @returns True if any items are sold out
    */
   const hasUnavailableItems = () => {
-    return items.some(item => isSoldOut(item));
+    return items.some((item) => isSoldOut(item));
   };
 
   /**
@@ -127,7 +137,7 @@ const Ostoskori = () => {
     if (availability && newQuantity > availability.currentAvailableQuantity) {
       newQuantity = availability.currentAvailableQuantity;
     }
-    
+
     // Only update if the quantity is valid (greater than 0)
     if (newQuantity > 0) {
       updateQuantity(productId, newQuantity);
@@ -164,12 +174,13 @@ const Ostoskori = () => {
       toast({
         variant: "destructive",
         title: "Loppuunmyyty tuotteita",
-        description: "Poista loppuunmyydyt tuotteet ostoskorista ennen kassalle siirtymistä.",
+        description:
+          "Poista loppuunmyydyt tuotteet ostoskorista ennen kassalle siirtymistä.",
       });
       return;
     }
 
-    navigate('/tilaa');
+    navigate("/tilaa");
   };
 
   if (loading) {
@@ -179,7 +190,9 @@ const Ostoskori = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Tarkistetaan varastotilannetta...</p>
+            <p className="text-muted-foreground">
+              Tarkistetaan varastotilannetta...
+            </p>
           </div>
         </main>
         <Footer />
@@ -206,15 +219,18 @@ const Ostoskori = () => {
             <X className="h-4 w-4" />
             <AlertDescription>
               <div className="space-y-1">
-                <p className="font-semibold">Huomio! Seuraavat tuotteet ehdittiin myydä loppuun ja ne on poistettu ostoskoristasi:</p>
+                <p className="font-semibold">
+                  Huomio! Seuraavat tuotteet ehdittiin myydä loppuun ja ne on
+                  poistettu ostoskoristasi:
+                </p>
                 <ul className="list-disc list-inside">
                   {removedItems.map((itemName, index) => (
                     <li key={index}>{itemName}</li>
                   ))}
                 </ul>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={clearRemovedItems}
                   className="mt-2 h-auto p-1 text-xs"
                 >
@@ -229,7 +245,8 @@ const Ostoskori = () => {
           <Alert className="mb-6 border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              Huomio! Jotkin ostoskorisi tuotteet ovat valitettavasti loppuunmyyty.
+              Huomio! Jotkin ostoskorisi tuotteet ovat valitettavasti
+              loppuunmyyty.
             </AlertDescription>
           </Alert>
         )}
@@ -241,7 +258,7 @@ const Ostoskori = () => {
             <p className="text-muted-foreground mb-6">
               Lisää tuotteita ostoskoriin aloittaaksesi ostokset.
             </p>
-            <Button onClick={() => navigate('/saatavilla')}>
+            <Button onClick={() => navigate("/saatavilla")}>
               Selaa tuotteita
             </Button>
           </div>
@@ -252,20 +269,27 @@ const Ostoskori = () => {
               {items.map((item) => {
                 const soldOut = isSoldOut(item);
                 const availability = getItemAvailability(item.productId);
-                
+
                 return (
-                  <Card key={item.productId} className={soldOut ? 'opacity-50' : ''}>
+                  <Card
+                    key={item.productId}
+                    className={soldOut ? "opacity-50" : ""}
+                  >
                     <CardContent className="p-6">
                       <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Fish className="h-5 w-5 text-primary" />
-                            <h3 className="font-semibold text-lg">{item.species}</h3>
+                            <FishIcon species={item.species} />
+                            <h3 className="font-semibold text-lg">
+                              {item.species}
+                            </h3>
                             {soldOut && (
                               <Badge variant="destructive">Loppuunmyyty</Badge>
                             )}
                           </div>
-                          <p className="text-muted-foreground mb-1">{item.form}</p>
+                          <p className="text-muted-foreground mb-1">
+                            {item.form}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             Kalastaja: {item.fishermanName}
                           </p>
@@ -277,7 +301,10 @@ const Ostoskori = () => {
                         <div className="flex items-center gap-4">
                           <div>
                             <div className="flex items-center gap-2">
-                              <label htmlFor={`quantity-${item.productId}`} className="text-sm font-medium">
+                              <label
+                                htmlFor={`quantity-${item.productId}`}
+                                className="text-sm font-medium"
+                              >
                                 Määrä:
                               </label>
                               <Input
@@ -285,24 +312,39 @@ const Ostoskori = () => {
                                 type="number"
                                 step="0.1"
                                 min="0.1"
-                                max={availability?.currentAvailableQuantity || item.availableQuantity}
+                                max={
+                                  availability?.currentAvailableQuantity ||
+                                  item.availableQuantity
+                                }
                                 value={item.quantity}
                                 onChange={(e) => {
-                                  const newQuantity = parseFloat(e.target.value) || 0;
-                                  handleQuantityChange(item.productId, newQuantity);
+                                  const newQuantity =
+                                    parseFloat(e.target.value) || 0;
+                                  handleQuantityChange(
+                                    item.productId,
+                                    newQuantity
+                                  );
                                 }}
                                 onBlur={(e) => {
-                                  const currentValue = parseFloat(e.target.value);
-                                  handleQuantityBlur(item.productId, currentValue);
+                                  const currentValue = parseFloat(
+                                    e.target.value
+                                  );
+                                  handleQuantityBlur(
+                                    item.productId,
+                                    currentValue
+                                  );
                                 }}
                                 className="w-20"
                                 disabled={soldOut}
                               />
-                              <span className="text-sm text-muted-foreground">kg</span>
+                              <span className="text-sm text-muted-foreground">
+                                kg
+                              </span>
                             </div>
                             {availability && (
                               <p className="text-xs text-muted-foreground mt-1">
-                                Saatavilla: {availability.currentAvailableQuantity} kg
+                                Saatavilla:{" "}
+                                {availability.currentAvailableQuantity} kg
                               </p>
                             )}
                           </div>
@@ -342,11 +384,19 @@ const Ostoskori = () => {
                   {items.map((item) => {
                     const soldOut = isSoldOut(item);
                     return (
-                      <div key={item.productId} className={`flex justify-between ${soldOut ? 'line-through opacity-50' : ''}`}>
+                      <div
+                        key={item.productId}
+                        className={`flex justify-between ${
+                          soldOut ? "line-through opacity-50" : ""
+                        }`}
+                      >
                         <span>
-                          {item.species} ({item.quantity} kg × {item.pricePerKg.toFixed(2)} €/kg)
+                          {item.species} ({item.quantity} kg ×{" "}
+                          {item.pricePerKg.toFixed(2)} €/kg)
                         </span>
-                        <span>{(item.pricePerKg * item.quantity).toFixed(2)} €</span>
+                        <span>
+                          {(item.pricePerKg * item.quantity).toFixed(2)} €
+                        </span>
                       </div>
                     );
                   })}
@@ -355,9 +405,14 @@ const Ostoskori = () => {
                       <span>Yhteensä</span>
                       <span>
                         {items
-                          .filter(item => !isSoldOut(item))
-                          .reduce((total, item) => total + (item.pricePerKg * item.quantity), 0)
-                          .toFixed(2)} €
+                          .filter((item) => !isSoldOut(item))
+                          .reduce(
+                            (total, item) =>
+                              total + item.pricePerKg * item.quantity,
+                            0
+                          )
+                          .toFixed(2)}{" "}
+                        €
                       </span>
                     </div>
                   </div>
@@ -369,7 +424,7 @@ const Ostoskori = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 variant="outline"
-                onClick={() => navigate('/saatavilla')}
+                onClick={() => navigate("/saatavilla")}
                 className="flex-1"
               >
                 Jatka ostoksia

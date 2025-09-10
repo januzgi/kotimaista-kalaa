@@ -1,20 +1,37 @@
-import { useState } from 'react';
-import { useForm, useFieldArray } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { format } from 'date-fns';
-import { CalendarIcon, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar } from '@/components/ui/calendar';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { cn } from '@/lib/utils';
+import { useState } from "react";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 /**
  * Interface for fulfillment time slots
@@ -23,20 +40,20 @@ interface FulfillmentSlot {
   date: Date;
   start_time: string;
   end_time: string;
-  type: 'PICKUP' | 'DELIVERY';
+  type: "PICKUP" | "DELIVERY";
 }
 
 /**
  * Available fish species options for the form
  */
 const SPECIES_OPTIONS = [
-  { value: 'muikku', label: 'Muikku' },
-  { value: 'kuha', label: 'Kuha' },
-  { value: 'ahven', label: 'Ahven' },
-  { value: 'hauki', label: 'Hauki' },
-  { value: 'siika', label: 'Siika' },
-  { value: 'taimen', label: 'Taimen' },
-  { value: 'lohi', label: 'Lohi' }
+  { value: "muikku", label: "Muikku" },
+  { value: "kuha", label: "Kuha" },
+  { value: "ahven", label: "Ahven" },
+  { value: "hauki", label: "Hauki" },
+  { value: "siika", label: "Siika" },
+  { value: "taimen", label: "Taimen" },
+  { value: "lohi", label: "Lohi" },
 ];
 
 /**
@@ -46,20 +63,24 @@ const SPECIES_OPTIONS = [
  * @param form - Fish preparation form (whole, filleted, etc.)
  * @returns Default price per kg or null if not found
  */
-const fetchDefaultPrice = async (fishermanId: string, species: string, form: string): Promise<number | null> => {
+const fetchDefaultPrice = async (
+  fishermanId: string,
+  species: string,
+  form: string
+): Promise<number | null> => {
   try {
     const { data, error } = await supabase
-      .from('default_prices')
-      .select('price_per_kg')
-      .eq('fisherman_id', fishermanId)
-      .eq('species', species)
-      .eq('form', form)
+      .from("default_prices")
+      .select("price_per_kg")
+      .eq("fisherman_id", fishermanId)
+      .eq("species", species)
+      .eq("form", form)
       .maybeSingle();
 
     if (error) throw error;
     return data?.price_per_kg || null;
   } catch (error) {
-    console.error('Error fetching default price:', error);
+    console.error("Error fetching default price:", error);
     return null;
   }
 };
@@ -68,15 +89,15 @@ const fetchDefaultPrice = async (fishermanId: string, species: string, form: str
  * Zod schemas for form validation
  */
 const fishEntrySchema = z.object({
-  species: z.string().min(1, 'Laji on pakollinen'),
-  form: z.string().min(1, 'Muoto on pakollinen'),
-  price_per_kg: z.number().min(0.01, 'Kilohinta on pakollinen'),
-  available_quantity: z.number().min(0.01, 'Määrä on pakollinen'),
+  species: z.string().min(1, "Laji on pakollinen"),
+  form: z.string().min(1, "Muoto on pakollinen"),
+  price_per_kg: z.number().min(0.01, "Kilohinta on pakollinen"),
+  available_quantity: z.number().min(0.01, "Määrä on pakollinen"),
 });
 
 const catchFormSchema = z.object({
-  fish_entries: z.array(fishEntrySchema).min(1, 'Lisää vähintään yksi kala'),
-  catch_date: z.date({ required_error: 'Pyyntipäivä on pakollinen' })
+  fish_entries: z.array(fishEntrySchema).min(1, "Lisää vähintään yksi kala"),
+  catch_date: z.date({ required_error: "Pyyntipäivä on pakollinen" }),
 });
 
 /**
@@ -91,7 +112,7 @@ interface AddCatchFormProps {
 
 /**
  * Form component for adding new fish catch with products and fulfillment slots.
- * 
+ *
  * Features:
  * - Multi-fish entry form with dynamic add/remove functionality
  * - Automatic default price lookup based on species/form combination
@@ -101,16 +122,24 @@ interface AddCatchFormProps {
  * - Database integration for creating catches, products, and slots
  * - Email notification sending to subscribers
  * - Success feedback and form reset
- * 
+ *
  * The component handles the complete workflow from catch entry to making
  * products available for sale with appropriate fulfillment options.
- * 
+ *
  * @param props - The component props
  * @returns The add catch form component
  */
-export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProps) => {
+export const AddCatchForm = ({
+  fishermanProfileId,
+  onSuccess,
+}: AddCatchFormProps) => {
   const [slots, setSlots] = useState<FulfillmentSlot[]>([
-    { date: new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }
+    {
+      date: new Date(),
+      start_time: "09:00",
+      end_time: "17:00",
+      type: "PICKUP",
+    },
   ]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -118,19 +147,21 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
   const form = useForm<z.infer<typeof catchFormSchema>>({
     resolver: zodResolver(catchFormSchema),
     defaultValues: {
-      fish_entries: [{
-        species: '',
-        form: '',
-        price_per_kg: 0,
-        available_quantity: 0
-      }],
-      catch_date: new Date()
-    }
+      fish_entries: [
+        {
+          species: "",
+          form: "",
+          price_per_kg: 0,
+          available_quantity: 0,
+        },
+      ],
+      catch_date: new Date(),
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: 'fish_entries'
+    name: "fish_entries",
   });
 
   /**
@@ -139,16 +170,28 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
    * @param field - Field name being changed (species or form)
    * @param value - New field value
    */
-  const handleFieldChange = async (index: number, field: 'species' | 'form', value: string) => {
+  const handleFieldChange = async (
+    index: number,
+    field: "species" | "form",
+    value: string
+  ) => {
     form.setValue(`fish_entries.${index}.${field}`, value);
-    
+
     // Get current values
-    const currentSpecies = field === 'species' ? value : form.getValues(`fish_entries.${index}.species`);
-    const currentForm = field === 'form' ? value : form.getValues(`fish_entries.${index}.form`);
-    
+    const currentSpecies =
+      field === "species"
+        ? value
+        : form.getValues(`fish_entries.${index}.species`);
+    const currentForm =
+      field === "form" ? value : form.getValues(`fish_entries.${index}.form`);
+
     // If both species and form are selected, fetch default price
     if (currentSpecies && currentForm) {
-      const defaultPrice = await fetchDefaultPrice(fishermanProfileId, currentSpecies, currentForm);
+      const defaultPrice = await fetchDefaultPrice(
+        fishermanProfileId,
+        currentSpecies,
+        currentForm
+      );
       if (defaultPrice !== null) {
         form.setValue(`fish_entries.${index}.price_per_kg`, defaultPrice);
       }
@@ -160,10 +203,10 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
    */
   const addFishEntry = () => {
     append({
-      species: '',
-      form: '',
+      species: "",
+      form: "",
       price_per_kg: 0,
-      available_quantity: 0
+      available_quantity: 0,
     });
   };
 
@@ -181,8 +224,16 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
    * Adds a new fulfillment slot with default values
    */
   const addSlot = () => {
-    const catchDate = form.getValues('catch_date');
-    setSlots([...slots, { date: catchDate || new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
+    const catchDate = form.getValues("catch_date");
+    setSlots([
+      ...slots,
+      {
+        date: catchDate || new Date(),
+        start_time: "09:00",
+        end_time: "17:00",
+        type: "PICKUP",
+      },
+    ]);
   };
 
   /**
@@ -201,7 +252,11 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
    * @param field - Field name to update
    * @param value - New field value
    */
-  const updateSlot = (index: number, field: keyof FulfillmentSlot, value: string | Date) => {
+  const updateSlot = (
+    index: number,
+    field: keyof FulfillmentSlot,
+    value: string | Date
+  ) => {
     const updatedSlots = [...slots];
     updatedSlots[index] = { ...updatedSlots[index], [field]: value };
     setSlots(updatedSlots);
@@ -225,10 +280,10 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     try {
       // First, create the catch record
       const { data: catchData, error: catchError } = await supabase
-        .from('catches')
+        .from("catches")
         .insert({
           fisherman_id: fishermanProfileId,
-          catch_date: values.catch_date.toISOString().split('T')[0] // Convert to date string
+          catch_date: values.catch_date.toISOString().split("T")[0], // Convert to date string
         })
         .select()
         .single();
@@ -238,14 +293,14 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
       // Create products for each fish entry using the catch_id
       const productPromises = values.fish_entries.map(async (fishEntry) => {
         const { data: productData, error: productError } = await supabase
-          .from('products')
+          .from("products")
           .insert({
             fisherman_id: fishermanProfileId,
             catch_id: catchData.id,
             species: fishEntry.species,
             form: fishEntry.form,
             price_per_kg: fishEntry.price_per_kg,
-            available_quantity: fishEntry.available_quantity
+            available_quantity: fishEntry.available_quantity,
           })
           .select()
           .single();
@@ -257,13 +312,18 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
       const products = await Promise.all(productPromises);
 
       // Create fulfillment slots using the same catch_id
-      const fulfillmentSlots = slots.map(slot => {
+      const fulfillmentSlots = slots.map((slot) => {
         const startDateTime = new Date(slot.date);
-        const [startHour, startMinute] = slot.start_time.split(':');
-        startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+        const [startHour, startMinute] = slot.start_time.split(":");
+        startDateTime.setHours(
+          parseInt(startHour),
+          parseInt(startMinute),
+          0,
+          0
+        );
 
         const endDateTime = new Date(slot.date);
-        const [endHour, endMinute] = slot.end_time.split(':');
+        const [endHour, endMinute] = slot.end_time.split(":");
         endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
         return {
@@ -271,18 +331,18 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
           catch_id: catchData.id,
           start_time: startDateTime.toISOString(),
           end_time: endDateTime.toISOString(),
-          type: slot.type
+          type: slot.type,
         };
       });
 
       const { error: slotsError } = await supabase
-        .from('fulfillment_slots')
+        .from("fulfillment_slots")
         .insert(fulfillmentSlots);
 
       if (slotsError) throw slotsError;
 
       const fishCount = values.fish_entries.length;
-      const speciesList = values.fish_entries.map(f => f.species).join(', ');
+      const speciesList = values.fish_entries.map((f) => f.species).join(", ");
 
       toast({
         title: "Saalis lisätty onnistuneesti",
@@ -291,30 +351,41 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
       // Send email notifications to subscribers
       try {
-        const { error: emailError } = await supabase.functions.invoke('send-new-catch-notifications');
+        const { error: emailError } = await supabase.functions.invoke(
+          "send-new-catch-notifications"
+        );
         if (emailError) {
-          console.error('Email notification error:', emailError);
+          console.error("Email notification error:", emailError);
         } else {
-          console.log('Email notifications sent successfully');
+          console.log("Email notifications sent successfully");
         }
       } catch (emailError) {
         // Don't fail the whole operation if emails fail
-        console.error('Failed to send email notifications:', emailError);
+        console.error("Failed to send email notifications:", emailError);
       }
 
       form.reset({
-        fish_entries: [{
-          species: '',
-          form: '',
-          price_per_kg: 0,
-          available_quantity: 0
-        }],
-        catch_date: new Date()
+        fish_entries: [
+          {
+            species: "",
+            form: "",
+            price_per_kg: 0,
+            available_quantity: 0,
+          },
+        ],
+        catch_date: new Date(),
       });
-      setSlots([{ date: new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
+      setSlots([
+        {
+          date: new Date(),
+          start_time: "09:00",
+          end_time: "17:00",
+          type: "PICKUP",
+        },
+      ]);
       onSuccess();
     } catch (error) {
-      console.error('Error adding catch:', error);
+      console.error("Error adding catch:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -346,18 +417,23 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Laji *</FormLabel>
-                           <Select 
-                             onValueChange={(value) => handleFieldChange(index, 'species', value)} 
-                             defaultValue={field.value}
-                           >
+                          <Select
+                            onValueChange={(value) =>
+                              handleFieldChange(index, "species", value)
+                            }
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Valitse laji" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {SPECIES_OPTIONS.map(option => (
-                                <SelectItem key={option.value} value={option.value}>
+                              {SPECIES_OPTIONS.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
                                   {option.label}
                                 </SelectItem>
                               ))}
@@ -374,18 +450,25 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Muoto *</FormLabel>
-                           <Select onValueChange={(value) => handleFieldChange(index, 'form', value)} defaultValue={field.value}>
-                             <FormControl>
-                               <SelectTrigger>
-                                 <SelectValue placeholder="Valitse muoto" />
-                               </SelectTrigger>
-                             </FormControl>
-                             <SelectContent>
-                               <SelectItem value="kokonainen">Kokonainen</SelectItem>
-                               <SelectItem value="fileoitu">Fileoitu</SelectItem>
-                               <SelectItem value="perattu">Perattu</SelectItem>
-                             </SelectContent>
-                           </Select>
+                          <Select
+                            onValueChange={(value) =>
+                              handleFieldChange(index, "form", value)
+                            }
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Valitse muoto" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="kokonainen">
+                                Kokonainen
+                              </SelectItem>
+                              <SelectItem value="fileoitu">Fileoitu</SelectItem>
+                              <SelectItem value="perattu">Perattu</SelectItem>
+                            </SelectContent>
+                          </Select>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -403,8 +486,10 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                               step="0.01"
                               placeholder="0.00"
                               {...field}
-                              value={field.value || ''}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              value={field.value || ""}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -424,8 +509,10 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                               step="0.1"
                               placeholder="0.0"
                               {...field}
-                              value={field.value || ''}
-                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              value={field.value || ""}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -433,7 +520,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                       )}
                     />
                   </div>
-                  
+
                   {fields.length > 1 && (
                     <div className="mt-4 flex justify-end">
                       <Button
@@ -508,7 +595,9 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
 
             {/* Fulfillment Slots Section */}
             <div className="space-y-4">
-              <Label className="text-base font-medium">Nouto- ja toimitusajat *</Label>
+              <Label className="text-base font-medium">
+                Nouto- ja toimitusajat *
+              </Label>
 
               {slots.map((slot, index) => (
                 <Card key={index} className="p-4">
@@ -536,8 +625,15 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                           <Calendar
                             mode="single"
                             selected={slot.date}
-                            onSelect={(date) => date && updateSlot(index, 'date', date)}
-                            disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
+                            onSelect={(date) =>
+                              date && updateSlot(index, "date", date)
+                            }
+                            disabled={(date) =>
+                              date <
+                              new Date(
+                                new Date().setDate(new Date().getDate() - 1)
+                              )
+                            }
                             initialFocus
                             className={cn("p-3 pointer-events-auto")}
                           />
@@ -550,7 +646,9 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                         id={`start-${index}`}
                         type="time"
                         value={slot.start_time}
-                        onChange={(e) => updateSlot(index, 'start_time', e.target.value)}
+                        onChange={(e) =>
+                          updateSlot(index, "start_time", e.target.value)
+                        }
                       />
                     </div>
                     <div>
@@ -559,21 +657,27 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
                         id={`end-${index}`}
                         type="time"
                         value={slot.end_time}
-                        onChange={(e) => updateSlot(index, 'end_time', e.target.value)}
+                        onChange={(e) =>
+                          updateSlot(index, "end_time", e.target.value)
+                        }
                       />
                     </div>
                     <div>
                       <Label htmlFor={`type-${index}`}>Tyyppi</Label>
                       <Select
                         value={slot.type}
-                        onValueChange={(value) => updateSlot(index, 'type', value)}
+                        onValueChange={(value) =>
+                          updateSlot(index, "type", value)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="PICKUP">Nouto</SelectItem>
-                          <SelectItem value="DELIVERY">Kotiinkuljetus</SelectItem>
+                          <SelectItem value="DELIVERY">
+                            Kotiinkuljetus
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -608,7 +712,7 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
             </div>
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Lisätään...' : 'Lisää saalis myyntiin'}
+              {isSubmitting ? "Lisätään..." : "Lisää saalis myyntiin"}
             </Button>
           </form>
         </Form>

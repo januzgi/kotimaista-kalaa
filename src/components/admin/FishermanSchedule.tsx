@@ -1,23 +1,30 @@
-import { useState, useEffect } from 'react';
-import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
-import { fi } from 'date-fns/locale';
+import { useState, useEffect, useCallback } from "react";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { format, startOfMonth, endOfMonth } from "date-fns";
+import { fi } from "date-fns/locale";
+import { FishermanProfile } from "@/lib/types";
 
 /**
  * Props for the FishermanSchedule component
  */
 interface FishermanScheduleProps {
   /** Fisherman profile data */
-  fishermanProfile: any;
+  fishermanProfile: FishermanProfile | null;
 }
 
 /**
  * Component for managing fisherman's planned fishing schedule.
- * 
+ *
  * Features:
  * - Interactive calendar for selecting fishing dates
  * - Month-by-month schedule management
@@ -26,14 +33,16 @@ interface FishermanScheduleProps {
  * - Visual feedback for selected and saved dates
  * - Integration with public schedule display
  * - Finnish locale support
- * 
+ *
  * The schedule is displayed on the public homepage to inform customers
  * about when fresh fish might be available based on planned fishing trips.
- * 
+ *
  * @param props - The component props
  * @returns The fisherman schedule management component
  */
-export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) => {
+export const FishermanSchedule = ({
+  fishermanProfile,
+}: FishermanScheduleProps) => {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [currentPlannedTrips, setCurrentPlannedTrips] = useState<Date[]>([]);
   const [loading, setLoading] = useState(false);
@@ -44,36 +53,41 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
    * Fetches planned trips for the specified month from the database
    * @param month - The month to fetch trips for
    */
-  const fetchPlannedTrips = async (month: Date) => {
-    try {
-      const startDate = startOfMonth(month);
-      const endDate = endOfMonth(month);
+  const fetchPlannedTrips = useCallback(
+    async (month: Date) => {
+      if (!fishermanProfile?.id) return;
 
-      const { data, error } = await supabase
-        .from('planned_trips')
-        .select('trip_date')
-        .eq('fisherman_id', fishermanProfile.id)
-        .gte('trip_date', format(startDate, 'yyyy-MM-dd'))
-        .lte('trip_date', format(endDate, 'yyyy-MM-dd'));
+      try {
+        const startDate = startOfMonth(month);
+        const endDate = endOfMonth(month);
 
-      if (error) throw error;
+        const { data, error } = await supabase
+          .from("planned_trips")
+          .select("trip_date")
+          .eq("fisherman_id", fishermanProfile.id)
+          .gte("trip_date", format(startDate, "yyyy-MM-dd"))
+          .lte("trip_date", format(endDate, "yyyy-MM-dd"));
 
-      const tripDates = data?.map(trip => new Date(trip.trip_date)) || [];
-      setCurrentPlannedTrips(tripDates);
-      setSelectedDates(tripDates);
-    } catch (error) {
-      console.error('Error fetching planned trips:', error);
-      toast({
-        variant: "destructive",
-        title: "Virhe",
-        description: "Aikataulun lataaminen epäonnistui.",
-      });
-    }
-  };
+        if (error) throw error;
+
+        const tripDates = data?.map((trip) => new Date(trip.trip_date)) || [];
+        setCurrentPlannedTrips(tripDates);
+        setSelectedDates(tripDates);
+      } catch (error) {
+        console.error("Error fetching planned trips:", error);
+        toast({
+          variant: "destructive",
+          title: "Virhe",
+          description: "Aikataulun lataaminen epäonnistui.",
+        });
+      }
+    },
+    [fishermanProfile?.id, toast]
+  );
 
   useEffect(() => {
     fetchPlannedTrips(currentMonth);
-  }, [currentMonth, fishermanProfile.id]);
+  }, [currentMonth, fetchPlannedTrips]);
 
   /**
    * Handles date selection/deselection with validation
@@ -85,7 +99,7 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
     // Only allow future dates to be selected
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     if (date < today) {
       toast({
         variant: "destructive",
@@ -95,14 +109,14 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
       return;
     }
 
-    setSelectedDates(prev => {
-      const isAlreadySelected = prev.some(selectedDate => 
-        selectedDate.toDateString() === date.toDateString()
+    setSelectedDates((prev) => {
+      const isAlreadySelected = prev.some(
+        (selectedDate) => selectedDate.toDateString() === date.toDateString()
       );
 
       if (isAlreadySelected) {
-        return prev.filter(selectedDate => 
-          selectedDate.toDateString() !== date.toDateString()
+        return prev.filter(
+          (selectedDate) => selectedDate.toDateString() !== date.toDateString()
         );
       } else {
         return [...prev, date];
@@ -123,21 +137,21 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
 
       // Delete existing trips for this month
       await supabase
-        .from('planned_trips')
+        .from("planned_trips")
         .delete()
-        .eq('fisherman_id', fishermanProfile.id)
-        .gte('trip_date', format(startDate, 'yyyy-MM-dd'))
-        .lte('trip_date', format(endDate, 'yyyy-MM-dd'));
+        .eq("fisherman_id", fishermanProfile.id)
+        .gte("trip_date", format(startDate, "yyyy-MM-dd"))
+        .lte("trip_date", format(endDate, "yyyy-MM-dd"));
 
       // Insert new selected trips
       if (selectedDates.length > 0) {
-        const tripsToInsert = selectedDates.map(date => ({
+        const tripsToInsert = selectedDates.map((date) => ({
           fisherman_id: fishermanProfile.id,
-          trip_date: format(date, 'yyyy-MM-dd')
+          trip_date: format(date, "yyyy-MM-dd"),
         }));
 
         const { error } = await supabase
-          .from('planned_trips')
+          .from("planned_trips")
           .insert(tripsToInsert);
 
         if (error) throw error;
@@ -151,7 +165,7 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
       // Refresh the data
       await fetchPlannedTrips(currentMonth);
     } catch (error) {
-      console.error('Error saving schedule:', error);
+      console.error("Error saving schedule:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -175,7 +189,9 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
       <CardHeader>
         <CardTitle>Kalastajan aikataulu</CardTitle>
         <CardDescription>
-          Tämä aikataulu näkyy sivuston etusivulla, josta vierailijat näkevät koska he voivat odottaa saalista kalastuspäivien mukaisesti ja koska ei vesillä edes käydä.
+          Tämä aikataulu näkyy sivuston etusivulla, josta vierailijat näkevät
+          koska he voivat odottaa saalista kalastuspäivien mukaisesti ja koska
+          ei vesillä edes käydä.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -202,14 +218,15 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
 
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Valittu {selectedDates.length} kalastuspäivää kuulle {format(currentMonth, 'MMMM yyyy', { locale: fi })}
+            Valittu {selectedDates.length} kalastuspäivää kuulle{" "}
+            {format(currentMonth, "MMMM yyyy", { locale: fi })}
           </div>
-          <Button 
-            onClick={handleSaveSchedule} 
+          <Button
+            onClick={handleSaveSchedule}
             disabled={loading}
             className="w-full sm:w-auto"
           >
-            {loading ? 'Tallennetaan...' : 'Tallenna aikataulu'}
+            {loading ? "Tallennetaan..." : "Tallenna aikataulu"}
           </Button>
         </div>
       </CardContent>

@@ -1,20 +1,21 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { useAuth } from '@/hooks/useAuth';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { Camera, Edit2 } from 'lucide-react';
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { useAuth } from "@/hooks/useAuth";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Edit2 } from "lucide-react";
+import { FishermanProfile } from "@/lib/types";
 
 /**
  * User profile management page component.
- * 
+ *
  * Features:
  * - Profile picture upload and management
  * - Name editing with real-time updates
@@ -27,10 +28,10 @@ import { Camera, Edit2 } from 'lucide-react';
  * - Batch save functionality for all changes
  * - Sign out functionality
  * - Responsive design with form validation
- * 
+ *
  * Admin users (fishermen) get additional profile fields that affect
  * their business operations and customer-facing information.
- * 
+ *
  * @returns The user profile management page
  */
 const Profiili = () => {
@@ -38,27 +39,28 @@ const Profiili = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [fishermanProfile, setFishermanProfile] = useState<any>(null);
+  const [fishermanProfile, setFishermanProfile] =
+    useState<FishermanProfile | null>(null);
   const [isEditingNote, setIsEditingNote] = useState(false);
-  const [noteContent, setNoteContent] = useState('');
+  const [noteContent, setNoteContent] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Profile editing states
   const [isEditingName, setIsEditingName] = useState(false);
-  const [editedName, setEditedName] = useState('');
+  const [editedName, setEditedName] = useState("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-  
+
   // Fisherman profile editing states
-  const [pickupAddress, setPickupAddress] = useState('');
-  const [publicPhone, setPublicPhone] = useState('');
+  const [pickupAddress, setPickupAddress] = useState("");
+  const [publicPhone, setPublicPhone] = useState("");
   const [defaultDeliveryFee, setDefaultDeliveryFee] = useState(0);
 
   useEffect(() => {
     if (!loading && !user) {
-      navigate('/');
+      navigate("/");
     }
   }, [user, loading, navigate]);
 
@@ -69,41 +71,41 @@ const Profiili = () => {
       try {
         // Fetch user role
         const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
+          .from("users")
+          .select("role")
+          .eq("id", user.id)
           .single();
 
         if (userError) {
-          console.error('Error fetching user role:', userError);
+          console.error("Error fetching user role:", userError);
           return;
         }
 
         setUserRole(userData.role);
-        
+
         // Initialize name editing state
-        setEditedName(user.user_metadata?.full_name || '');
+        setEditedName(user.user_metadata?.full_name || "");
 
         // If user is ADMIN, fetch fisherman profile
-        if (userData.role === 'ADMIN') {
+        if (userData.role === "ADMIN") {
           const { data: profileData, error: profileError } = await supabase
-            .from('fisherman_profiles')
-            .select('*')
-            .eq('user_id', user.id)
+            .from("fisherman_profiles")
+            .select("*")
+            .eq("user_id", user.id)
             .maybeSingle();
 
           if (profileError) {
-            console.error('Error fetching fisherman profile:', profileError);
+            console.error("Error fetching fisherman profile:", profileError);
           } else {
             setFishermanProfile(profileData);
-            setNoteContent(profileData?.fishermans_note || '');
-            setPickupAddress(profileData?.pickup_address || '');
-            setPublicPhone(profileData?.public_phone_number || '');
+            setNoteContent(profileData?.fishermans_note || "");
+            setPickupAddress(profileData?.pickup_address || "");
+            setPublicPhone(profileData?.public_phone_number || "");
             setDefaultDeliveryFee(profileData?.default_delivery_fee || 0);
           }
         }
       } catch (error) {
-        console.error('Error in fetchUserData:', error);
+        console.error("Error in fetchUserData:", error);
       }
     };
 
@@ -159,60 +161,60 @@ const Profiili = () => {
     try {
       // Handle profile picture upload if a new file was selected
       if (selectedFile) {
-        const fileExt = selectedFile.name.split('.').pop();
+        const fileExt = selectedFile.name.split(".").pop();
         const fileName = `${user.id}/avatar.${fileExt}`;
-        
+
         const { error: uploadError } = await supabase.storage
-          .from('avatars')
+          .from("avatars")
           .upload(fileName, selectedFile, { upsert: true });
 
         if (uploadError) throw uploadError;
 
         // Get public URL
         const { data } = supabase.storage
-          .from('avatars')
+          .from("avatars")
           .getPublicUrl(fileName);
 
         // Update user avatar_url
         const { error: updateError } = await supabase
-          .from('users')
+          .from("users")
           .update({ avatar_url: data.publicUrl })
-          .eq('id', user.id);
+          .eq("id", user.id);
 
         if (updateError) throw updateError;
 
         // Also update auth metadata
         await supabase.auth.updateUser({
-          data: { avatar_url: data.publicUrl }
+          data: { avatar_url: data.publicUrl },
         });
       }
 
       // Handle name update if it changed
-      if (editedName !== (user.user_metadata?.full_name || '')) {
+      if (editedName !== (user.user_metadata?.full_name || "")) {
         const { error: nameError } = await supabase
-          .from('users')
+          .from("users")
           .update({ full_name: editedName })
-          .eq('id', user.id);
+          .eq("id", user.id);
 
         if (nameError) throw nameError;
 
         // Also update auth metadata
         await supabase.auth.updateUser({
-          data: { full_name: editedName }
+          data: { full_name: editedName },
         });
       }
 
       // Handle fisherman profile updates if user is ADMIN
-      if (userRole === 'ADMIN' && fishermanProfile) {
+      if (userRole === "ADMIN" && fishermanProfile) {
         const { error: profileError } = await supabase
-          .from('fisherman_profiles')
-          .update({ 
+          .from("fisherman_profiles")
+          .update({
             fishermans_note: noteContent,
             pickup_address: pickupAddress,
             public_phone_number: publicPhone,
-            default_delivery_fee: defaultDeliveryFee
+            default_delivery_fee: defaultDeliveryFee,
           })
-          .eq('user_id', user.id);
+          .eq("user_id", user.id);
 
         if (profileError) throw profileError;
       }
@@ -231,7 +233,7 @@ const Profiili = () => {
       // Refresh the page to show updates
       setTimeout(() => window.location.reload(), 1000);
     } catch (error) {
-      console.error('Error saving profile:', error);
+      console.error("Error saving profile:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -258,11 +260,11 @@ const Profiili = () => {
   }
 
   const getUserInitials = (name?: string) => {
-    if (!name) return 'K';
+    if (!name) return "K";
     return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
       .toUpperCase()
       .slice(0, 2);
   };
@@ -281,9 +283,13 @@ const Profiili = () => {
             <div className="flex flex-col items-center space-y-4">
               <div className="relative group">
                 <Avatar className="w-24 h-24">
-                  <AvatarImage 
-                    src={selectedFile ? URL.createObjectURL(selectedFile) : user.user_metadata?.avatar_url} 
-                    alt={user.user_metadata?.full_name || 'Käyttäjä'} 
+                  <AvatarImage
+                    src={
+                      selectedFile
+                        ? URL.createObjectURL(selectedFile)
+                        : user.user_metadata?.avatar_url
+                    }
+                    alt={user.user_metadata?.full_name || "Käyttäjä"}
                   />
                   <AvatarFallback className="bg-primary text-primary-foreground text-lg">
                     {getUserInitials(user.user_metadata?.full_name)}
@@ -296,7 +302,7 @@ const Profiili = () => {
                   <Edit2 className="h-3 w-3" />
                 </button>
               </div>
-              
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -304,7 +310,7 @@ const Profiili = () => {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              
+
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2">
                   {isEditingName ? (
@@ -316,7 +322,7 @@ const Profiili = () => {
                     />
                   ) : (
                     <h2 className="text-xl font-semibold text-dark">
-                      {editedName || 'Nimetön käyttäjä'}
+                      {editedName || "Nimetön käyttäjä"}
                     </h2>
                   )}
                   <button
@@ -326,18 +332,18 @@ const Profiili = () => {
                     <Edit2 className="h-4 w-4" />
                   </button>
                 </div>
-                <p className="text-muted-foreground mt-1">
-                  {user.email}
-                </p>
+                <p className="text-muted-foreground mt-1">{user.email}</p>
               </div>
             </div>
 
-            {userRole === 'ADMIN' && fishermanProfile && (
+            {userRole === "ADMIN" && fishermanProfile && (
               <div className="pt-4 border-t space-y-6">
                 {/* Fisherman's Note Section */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-dark">Kalastajan muistio:</h3>
+                    <h3 className="font-semibold text-dark">
+                      Kalastajan muistio:
+                    </h3>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -346,11 +352,14 @@ const Profiili = () => {
                       <Edit2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  
+
                   <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                    Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi kirjoittaa ajatuksia mahdollisesta saaliista, terveiset sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa. Se on asiakkaillekin mielenkiintoista.
+                    Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi
+                    kirjoittaa ajatuksia mahdollisesta saaliista, terveiset
+                    sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa.
+                    Se on asiakkaillekin mielenkiintoista.
                   </p>
-                  
+
                   {isEditingNote ? (
                     <Textarea
                       value={noteContent}
@@ -360,16 +369,19 @@ const Profiili = () => {
                     />
                   ) : (
                     <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
-                      {noteContent || 'Ei muistiota lisätty.'}
+                      {noteContent || "Ei muistiota lisätty."}
                     </p>
                   )}
                 </div>
 
                 {/* Pickup Address Section */}
                 <div>
-                  <h3 className="font-semibold text-dark mb-2">Nouto-osoite:</h3>
+                  <h3 className="font-semibold text-dark mb-2">
+                    Nouto-osoite:
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Tämä osoite näytetään asiakkaille kun he valitsevat noutotoimituksen.
+                    Tämä osoite näytetään asiakkaille kun he valitsevat
+                    noutotoimituksen.
                   </p>
                   <Input
                     value={pickupAddress}
@@ -380,7 +392,9 @@ const Profiili = () => {
 
                 {/* Public Phone Number Section */}
                 <div>
-                  <h3 className="font-semibold text-dark mb-2">Julkinen puhelinnumero:</h3>
+                  <h3 className="font-semibold text-dark mb-2">
+                    Julkinen puhelinnumero:
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-3">
                     Tämä numero voi näkyä asiakkaille yhteystiedoissa.
                   </p>
@@ -394,16 +408,23 @@ const Profiili = () => {
 
                 {/* Default Delivery Fee Section */}
                 <div>
-                  <h3 className="font-semibold text-dark mb-2">Kotiinkuljetuksen oletusmaksu (€):</h3>
+                  <h3 className="font-semibold text-dark mb-2">
+                    Kotiinkuljetuksen oletusmaksu (€):
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    Tämä on oletusmaksu kotiinkuljetukselle. Voit muokata sitä tilauskohtaisesti.
+                    Tämä on oletusmaksu kotiinkuljetukselle. Voit muokata sitä
+                    tilauskohtaisesti.
                   </p>
                   <Input
                     type="number"
-                    step="0.01"
+                    step="1"
                     min="0"
                     value={defaultDeliveryFee}
-                    onChange={(e) => handleDefaultDeliveryFeeChange(parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleDefaultDeliveryFeeChange(
+                        parseFloat(e.target.value) || 0
+                      )
+                    }
                     placeholder="0.00"
                   />
                 </div>
@@ -412,7 +433,7 @@ const Profiili = () => {
 
             {hasChanges && (
               <div className="pt-4 border-t">
-                <Button 
+                <Button
                   onClick={handleSaveAll}
                   disabled={isSaving}
                   className="w-full"
@@ -423,18 +444,14 @@ const Profiili = () => {
                       Tallennetaan...
                     </div>
                   ) : (
-                    'Tallenna'
+                    "Tallenna"
                   )}
                 </Button>
               </div>
             )}
 
             <div className="pt-4">
-              <Button 
-                onClick={signOut}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={signOut} variant="outline" className="w-full">
                 Kirjaudu ulos
               </Button>
             </div>
