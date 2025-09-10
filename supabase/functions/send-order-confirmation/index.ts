@@ -1,3 +1,24 @@
+/**
+ * Edge Function: send-order-confirmation
+ * 
+ * Purpose: Sends order confirmation emails to customers after fisherman approval.
+ * 
+ * Features:
+ * - User authentication verification
+ * - Complete order details retrieval with related data
+ * - Customer contact information lookup
+ * - Professional HTML email formatting
+ * - Order summary with itemized pricing
+ * - Fulfillment details (pickup/delivery)
+ * - Payment instructions
+ * 
+ * Request Body:
+ * - orderId: string - ID of the order to send confirmation for
+ * 
+ * Returns:
+ * - Success: {success: true, message: string}
+ * - Error: {error: string}
+ */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {

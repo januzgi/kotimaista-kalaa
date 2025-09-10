@@ -1,6 +1,17 @@
 import { useLocation } from "react-router-dom";
 import { useEffect } from "react";
 
+/**
+ * 404 Not Found page component for handling invalid routes.
+ * 
+ * Features:
+ * - Error logging for invalid route attempts
+ * - User-friendly 404 message
+ * - Link back to homepage
+ * - Simple centered layout
+ * 
+ * @returns The 404 not found page component
+ */
 const NotFound = () => {
   const location = useLocation();
 

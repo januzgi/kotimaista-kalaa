@@ -4,13 +4,33 @@ import { useNotifications } from '@/contexts/NotificationContext';
 import { Inbox, CheckCircle2, XCircle } from 'lucide-react';
 import { OrdersList } from './OrdersList';
 
+/**
+ * Props for the OrderManagement component
+ */
 interface OrderManagementProps {
+  /** Fisherman profile with ID and default delivery fee */
   fishermanProfile: {
     id: string;
     default_delivery_fee: number;
   };
 }
 
+/**
+ * Order management component that provides tabbed interface for managing orders.
+ * 
+ * Features:
+ * - Tabbed interface for different order statuses (New, Confirmed, Cancelled)
+ * - New order count badge for pending orders
+ * - Integrates with notification system for real-time updates
+ * - Passes fisherman profile data to order list components
+ * - Responsive design with icon indicators
+ * 
+ * The component serves as a wrapper that organizes order management by status
+ * and provides visual indicators for pending actions.
+ * 
+ * @param props - The component props
+ * @returns The order management component with tabbed interface
+ */
 export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
   const { newOrderCount } = useNotifications();
   

@@ -19,6 +19,9 @@ import {
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Interface for product data structure
+ */
 interface Product {
   id: string;
   species: string;
@@ -28,6 +31,9 @@ interface Product {
   created_at: string;
 }
 
+/**
+ * Interface for fulfillment slot data structure
+ */
 interface FulfillmentSlot {
   id: string;
   start_time: string;
@@ -35,6 +41,9 @@ interface FulfillmentSlot {
   type: 'PICKUP' | 'DELIVERY';
 }
 
+/**
+ * Interface for grouped catch data with related products and slots
+ */
 interface CatchGroup {
   catch_id: string;
   catch_date: string;
@@ -42,11 +51,35 @@ interface CatchGroup {
   fulfillment_slots: FulfillmentSlot[];
 }
 
+/**
+ * Props for the InventoryList component
+ */
 interface InventoryListProps {
+  /** ID of the fisherman's profile */
   fishermanProfileId: string;
+  /** Key that triggers data refresh when changed */
   refreshKey: number;
 }
 
+/**
+ * Inventory management component for displaying and managing fish products.
+ * 
+ * Features:
+ * - Groups products by catch date for organized display
+ * - Shows fulfillment slots (pickup/delivery times) for each catch
+ * - Inline quantity editing with validation
+ * - Individual product deletion
+ * - Bulk catch deletion (removes all products and slots)
+ * - Real-time inventory updates
+ * - Confirmation dialogs for destructive actions
+ * - Responsive layout with formatted time displays
+ * 
+ * The component uses RPC functions to efficiently fetch related data
+ * and provides a comprehensive interface for inventory management.
+ * 
+ * @param props - The component props
+ * @returns The inventory list component
+ */
 export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListProps) => {
   const [catchGroups, setCatchGroups] = useState<CatchGroup[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +95,9 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
   const [editingQuantity, setEditingQuantity] = useState<string>('');
   const { toast } = useToast();
 
+  /**
+   * Effect to fetch inventory data when component mounts or refresh key changes
+   */
   useEffect(() => {
     const fetchInventoryData = async () => {
       try {
@@ -97,11 +133,21 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     fetchInventoryData();
   }, [fishermanProfileId, refreshKey, toast]);
 
+  /**
+   * Formats catch date for display
+   * @param dateString - ISO date string
+   * @returns Formatted date string in Finnish
+   */
   const formatCatchDate = (dateString: string) => {
     const date = new Date(dateString);
     return `Saalis ${format(date, 'd. MMMM yyyy', { locale: fi })}`;
   };
 
+  /**
+   * Formats fulfillment slots for display with pickup and delivery grouping
+   * @param slots - Array of fulfillment slots
+   * @returns JSX element displaying formatted time slots
+   */
   const formatTimeSlots = (slots: FulfillmentSlot[]) => {
     if (slots.length === 0) {
       return (
@@ -156,10 +202,18 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     );
   };
 
+  /**
+   * Calculates total number of products across all catch groups
+   * @returns Total product count
+   */
   const getTotalProducts = () => {
     return catchGroups.reduce((total, group) => total + group.products.length, 0);
   };
 
+  /**
+   * Prepares delete confirmation dialog for a specific product
+   * @param product - Product to be deleted
+   */
   const handleDeleteProduct = (product: Product) => {
     setDeleteTarget({
       type: 'product',
@@ -170,6 +224,10 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     setDeleteDialogOpen(true);
   };
 
+  /**
+   * Prepares delete confirmation dialog for an entire catch
+   * @param catchDate - Date of the catch to be deleted
+   */
   const handleDeleteCatch = (catchDate: string) => {
     setDeleteTarget({
       type: 'catch',
@@ -180,11 +238,19 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     setDeleteDialogOpen(true);
   };
 
+  /**
+   * Enables quantity editing mode for a product
+   * @param product - Product to edit quantity for
+   */
   const handleEditQuantity = (product: Product) => {
     setEditingProductId(product.id);
     setEditingQuantity(product.available_quantity.toString());
   };
 
+  /**
+   * Saves the edited quantity for a product
+   * @param productId - ID of the product to update
+   */
   const handleSaveQuantity = async (productId: string) => {
     const newQuantity = parseFloat(editingQuantity);
     
@@ -234,6 +300,9 @@ export const InventoryList = ({ fishermanProfileId, refreshKey }: InventoryListP
     }
   };
 
+  /**
+   * Confirms and executes the deletion operation (product or catch)
+   */
   const confirmDelete = async () => {
     if (!deleteTarget) return;
 

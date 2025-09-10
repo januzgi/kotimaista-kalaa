@@ -12,6 +12,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Trash2, Plus } from 'lucide-react';
 
+/**
+ * Zod schema for adding new default prices
+ */
 const addPriceSchema = z.object({
   species: z.string().min(1, 'Laji on pakollinen'),
   form: z.string().min(1, 'Muoto on pakollinen'),
@@ -20,6 +23,9 @@ const addPriceSchema = z.object({
 
 type AddPriceForm = z.infer<typeof addPriceSchema>;
 
+/**
+ * Interface for default price data structure
+ */
 interface DefaultPrice {
   id: string;
   species: string;
@@ -27,10 +33,17 @@ interface DefaultPrice {
   price_per_kg: number;
 }
 
+/**
+ * Props for the DefaultPricesManagement component
+ */
 interface DefaultPricesManagementProps {
+  /** Fisherman profile data */
   fishermanProfile: any;
 }
 
+/**
+ * Available species options for price management
+ */
 const speciesOptions = [
   { value: 'muikku', label: 'Muikku' },
   { value: 'kuha', label: 'Kuha' },
@@ -41,12 +54,33 @@ const speciesOptions = [
   { value: 'lohi', label: 'Lohi' }
 ];
 
+/**
+ * Available form options for price management
+ */
 const formOptions = [
   { value: 'kokonainen', label: 'Kokonainen' },
   { value: 'fileoitu', label: 'Fileoitu' },
   { value: 'perattu', label: 'Perattu' }
 ];
 
+/**
+ * Component for managing default prices for fish species and preparation forms.
+ * 
+ * Features:
+ * - Add new default prices for species/form combinations
+ * - List existing default prices with inline editing
+ * - Delete default prices
+ * - Form validation with Zod schemas
+ * - Duplicate prevention for species/form combinations
+ * - Real-time price updates
+ * - Responsive layout
+ * 
+ * Default prices are used to automatically populate pricing when adding
+ * new catch entries, streamlining the catch entry process.
+ * 
+ * @param props - The component props
+ * @returns The default prices management component
+ */
 export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManagementProps) => {
   const [defaultPrices, setDefaultPrices] = useState<DefaultPrice[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -63,6 +97,9 @@ export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManag
     }
   });
 
+  /**
+   * Fetches default prices from the database for the fisherman
+   */
   const fetchDefaultPrices = async () => {
     if (!fishermanProfile?.id) return;
 
@@ -91,6 +128,10 @@ export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManag
     fetchDefaultPrices();
   }, [fishermanProfile]);
 
+  /**
+   * Handles form submission to add a new default price
+   * @param data - Form data from the add price form
+   */
   const onSubmit = async (data: AddPriceForm) => {
     if (!fishermanProfile?.id) return;
 
@@ -131,11 +172,20 @@ export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManag
     }
   };
 
+  /**
+   * Enables edit mode for a specific price entry
+   * @param id - ID of the price entry to edit
+   * @param currentPrice - Current price value
+   */
   const handleEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
     setEditingPrice(currentPrice.toString());
   };
 
+  /**
+   * Saves the edited price to the database
+   * @param id - ID of the price entry to update
+   */
   const handleSaveEdit = async (id: string) => {
     const price = parseFloat(editingPrice);
     if (isNaN(price) || price <= 0) {
@@ -172,6 +222,10 @@ export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManag
     }
   };
 
+  /**
+   * Deletes a default price entry
+   * @param id - ID of the price entry to delete
+   */
   const handleDelete = async (id: string) => {
     try {
       const { error } = await supabase
@@ -197,10 +251,20 @@ export const DefaultPricesManagement = ({ fishermanProfile }: DefaultPricesManag
     }
   };
 
+  /**
+   * Gets the display label for a fish species
+   * @param species - Species value
+   * @returns Display label for the species
+   */
   const getSpeciesLabel = (species: string) => {
     return speciesOptions.find(option => option.value === species)?.label || species;
   };
 
+  /**
+   * Gets the display label for a fish form
+   * @param form - Form value
+   * @returns Display label for the form
+   */
   const getFormLabel = (form: string) => {
     return formOptions.find(option => option.value === form)?.label || form;
   };

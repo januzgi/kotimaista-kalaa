@@ -1,3 +1,21 @@
+/**
+ * Edge Function: send-new-catch-notifications
+ * 
+ * Purpose: Sends email notifications to all subscribers when new fish catch is added.
+ * 
+ * Features:
+ * - Fetches all email subscribers from database
+ * - Sends batch notifications using Brevo SMTP
+ * - HTML and text email content
+ * - Error handling for individual email failures
+ * - Success/failure reporting
+ * 
+ * Triggered automatically when fishermen add new catch to inventory.
+ * 
+ * Returns:
+ * - Success: {message: string, successful: number, failed: number, details: array}
+ * - Error: {error: string}
+ */
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 
 const corsHeaders = {

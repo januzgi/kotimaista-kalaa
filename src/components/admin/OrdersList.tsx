@@ -13,6 +13,9 @@ import { fi } from 'date-fns/locale';
 import { ChevronDown, ChevronUp, Clock, MapPin, Phone, User, XCircle, Truck, ShoppingBag } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
+/**
+ * Interface representing an order with all related data
+ */
 interface Order {
   id: string;
   customer_name: string;
@@ -38,12 +41,37 @@ interface Order {
   }[];
 }
 
+/**
+ * Props for the OrdersList component
+ */
 interface OrdersListProps {
+  /** ID of the fisherman's profile */
   fishermanProfileId: string;
+  /** Status filter for orders to display */
   status: 'NEW' | 'CONFIRMED' | 'CANCELLED';
+  /** Default delivery fee for new orders */
   defaultDeliveryFee: number;
 }
 
+/**
+ * Component for displaying and managing orders for a specific fisherman.
+ * 
+ * Features:
+ * - Lists orders filtered by status (NEW, CONFIRMED, CANCELLED)
+ * - Expandable order details with customer and fulfillment information
+ * - Order confirmation with customizable delivery fees
+ * - Order cancellation with automatic inventory restoration
+ * - Real-time updates via notification system
+ * - Email notifications for order confirmations
+ * - Responsive design with status badges and icons
+ * - Order total calculations including delivery fees
+ * 
+ * The component handles the complete order management workflow from
+ * initial order review to final confirmation or cancellation.
+ * 
+ * @param props - The component props
+ * @returns The orders list component with management capabilities
+ */
 export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: OrdersListProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,6 +82,9 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
   const { toast } = useToast();
   const { refreshNotifications } = useNotifications();
 
+  /**
+   * Fetches orders for the fisherman filtered by status
+   */
   const fetchOrders = async () => {
     try {
       // First, get all fulfillment slot IDs for this fisherman
@@ -120,6 +151,10 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
     fetchOrders();
   }, [fishermanProfileId, status]);
 
+  /**
+   * Confirms an order and sends confirmation email to customer
+   * @param orderId - ID of the order to confirm
+   */
   const handleConfirmOrder = async (orderId: string) => {
     setConfirming(orderId);
     try {
@@ -174,6 +209,10 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
     }
   };
 
+  /**
+   * Cancels an order and restores inventory for all order items
+   * @param order - The order to cancel
+   */
   const handleCancelOrder = async (order: Order) => {
     setCancelling(order.id);
     try {
@@ -236,6 +275,10 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
     }
   };
 
+  /**
+   * Toggles the expansion state of an order card
+   * @param orderId - ID of the order to toggle
+   */
   const toggleOrderExpansion = (orderId: string) => {
     if (expandedOrder === orderId) {
       setExpandedOrder(null);
@@ -248,6 +291,11 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
     }
   };
 
+  /**
+   * Calculates the total price for an order including delivery fees
+   * @param order - The order to calculate total for
+   * @returns Total price in euros
+   */
   const calculateOrderTotal = (order: Order) => {
     const itemsTotal = order.order_items.reduce((sum, item) => {
       return sum + (item.quantity * item.product.price_per_kg);
@@ -257,6 +305,11 @@ export const OrdersList = ({ fishermanProfileId, status, defaultDeliveryFee }: O
     return itemsTotal + fee;
   };
 
+  /**
+   * Returns the appropriate badge variant for order status
+   * @param orderStatus - The status of the order
+   * @returns Badge variant string
+   */
   const getStatusBadgeVariant = (orderStatus: string) => {
     switch (orderStatus) {
       case 'NEW':

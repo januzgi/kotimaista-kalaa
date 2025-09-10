@@ -16,6 +16,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
+/**
+ * Interface for fulfillment time slots
+ */
 interface FulfillmentSlot {
   date: Date;
   start_time: string;
@@ -23,6 +26,9 @@ interface FulfillmentSlot {
   type: 'PICKUP' | 'DELIVERY';
 }
 
+/**
+ * Available fish species options for the form
+ */
 const SPECIES_OPTIONS = [
   { value: 'muikku', label: 'Muikku' },
   { value: 'kuha', label: 'Kuha' },
@@ -33,7 +39,13 @@ const SPECIES_OPTIONS = [
   { value: 'lohi', label: 'Lohi' }
 ];
 
-// Helper function to fetch default price from database
+/**
+ * Helper function to fetch default price from database for a species/form combination
+ * @param fishermanId - The fisherman's profile ID
+ * @param species - Fish species
+ * @param form - Fish preparation form (whole, filleted, etc.)
+ * @returns Default price per kg or null if not found
+ */
 const fetchDefaultPrice = async (fishermanId: string, species: string, form: string): Promise<number | null> => {
   try {
     const { data, error } = await supabase
@@ -52,6 +64,9 @@ const fetchDefaultPrice = async (fishermanId: string, species: string, form: str
   }
 };
 
+/**
+ * Zod schemas for form validation
+ */
 const fishEntrySchema = z.object({
   species: z.string().min(1, 'Laji on pakollinen'),
   form: z.string().min(1, 'Muoto on pakollinen'),
@@ -64,11 +79,35 @@ const catchFormSchema = z.object({
   catch_date: z.date({ required_error: 'Pyyntipäivä on pakollinen' })
 });
 
+/**
+ * Props for the AddCatchForm component
+ */
 interface AddCatchFormProps {
+  /** ID of the fisherman's profile */
   fishermanProfileId: string;
+  /** Callback called when catch is successfully added */
   onSuccess: () => void;
 }
 
+/**
+ * Form component for adding new fish catch with products and fulfillment slots.
+ * 
+ * Features:
+ * - Multi-fish entry form with dynamic add/remove functionality
+ * - Automatic default price lookup based on species/form combination
+ * - Catch date selection with calendar widget
+ * - Fulfillment slot management (pickup/delivery times)
+ * - Form validation with Zod schemas
+ * - Database integration for creating catches, products, and slots
+ * - Email notification sending to subscribers
+ * - Success feedback and form reset
+ * 
+ * The component handles the complete workflow from catch entry to making
+ * products available for sale with appropriate fulfillment options.
+ * 
+ * @param props - The component props
+ * @returns The add catch form component
+ */
 export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProps) => {
   const [slots, setSlots] = useState<FulfillmentSlot[]>([
     { date: new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }
@@ -94,7 +133,12 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     name: 'fish_entries'
   });
 
-  // Handle species or form change to update default price
+  /**
+   * Handles species or form field changes and updates default pricing
+   * @param index - Index of the fish entry being modified
+   * @param field - Field name being changed (species or form)
+   * @param value - New field value
+   */
   const handleFieldChange = async (index: number, field: 'species' | 'form', value: string) => {
     form.setValue(`fish_entries.${index}.${field}`, value);
     
@@ -111,6 +155,9 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     }
   };
 
+  /**
+   * Adds a new fish entry to the form
+   */
   const addFishEntry = () => {
     append({
       species: '',
@@ -120,29 +167,50 @@ export const AddCatchForm = ({ fishermanProfileId, onSuccess }: AddCatchFormProp
     });
   };
 
+  /**
+   * Removes a fish entry from the form (minimum one entry required)
+   * @param index - Index of the fish entry to remove
+   */
   const removeFishEntry = (index: number) => {
     if (fields.length > 1) {
       remove(index);
     }
   };
 
+  /**
+   * Adds a new fulfillment slot with default values
+   */
   const addSlot = () => {
     const catchDate = form.getValues('catch_date');
     setSlots([...slots, { date: catchDate || new Date(), start_time: '09:00', end_time: '17:00', type: 'PICKUP' }]);
   };
 
+  /**
+   * Removes a fulfillment slot (minimum one slot required)
+   * @param index - Index of the slot to remove
+   */
   const removeSlot = (index: number) => {
     if (slots.length > 1) {
       setSlots(slots.filter((_, i) => i !== index));
     }
   };
 
+  /**
+   * Updates a specific field in a fulfillment slot
+   * @param index - Index of the slot to update
+   * @param field - Field name to update
+   * @param value - New field value
+   */
   const updateSlot = (index: number, field: keyof FulfillmentSlot, value: string | Date) => {
     const updatedSlots = [...slots];
     updatedSlots[index] = { ...updatedSlots[index], [field]: value };
     setSlots(updatedSlots);
   };
 
+  /**
+   * Handles form submission - creates catch, products, and fulfillment slots
+   * @param values - Form values from the catch form schema
+   */
   const onSubmit = async (values: z.infer<typeof catchFormSchema>) => {
     if (slots.length === 0) {
       toast({

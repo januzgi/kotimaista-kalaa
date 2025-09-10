@@ -2,6 +2,21 @@ import { Header } from '@/components/Header';
 import { Footer } from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+/**
+ * Terms of service page component displaying delivery and service terms.
+ * 
+ * Features:
+ * - Comprehensive terms covering orders, delivery, pricing, and cancellations
+ * - Finnish legal terms specific to fish sales and delivery
+ * - Structured content with numbered sections
+ * - Responsive design with proper typography
+ * - Auto-updating last modified date
+ * 
+ * The terms clarify the relationship between customers, fishermen, and
+ * the platform, ensuring clear expectations for all parties.
+ * 
+ * @returns The terms of service page component
+ */
 const Toimitusehdot = () => {
   return (
     <div className="min-h-screen bg-background">

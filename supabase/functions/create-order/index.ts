@@ -1,3 +1,30 @@
+/**
+ * Edge Function: create-order
+ * 
+ * Purpose: Creates a new order from cart items with inventory validation and notifications.
+ * 
+ * Features:
+ * - User authentication verification
+ * - Real-time inventory checking to prevent overselling
+ * - Atomic order creation with cart items
+ * - Inventory quantity updates
+ * - Email notifications to fishermen about new orders
+ * - Sold-out item handling with detailed error responses
+ * - Transaction-like error handling with rollback attempts
+ * 
+ * Request Body:
+ * - cartItems: Array of {productId, quantity} objects
+ * - customerName: Customer's full name
+ * - customerPhone: Customer's phone number
+ * - customerAddress?: Delivery address (required for delivery orders)
+ * - fulfillmentType: 'PICKUP' or 'DELIVERY'
+ * - fulfillmentSlotId: Selected time slot ID
+ * 
+ * Returns:
+ * - Success: {success: true, orderId: string, message: string}
+ * - Sold out: {error: 'Items sold out', soldOutItems: string[], soldOutProductIds: string[]}
+ * - Other errors: {error: string}
+ */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {

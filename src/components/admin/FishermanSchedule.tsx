@@ -7,10 +7,32 @@ import { useToast } from '@/hooks/use-toast';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { fi } from 'date-fns/locale';
 
+/**
+ * Props for the FishermanSchedule component
+ */
 interface FishermanScheduleProps {
+  /** Fisherman profile data */
   fishermanProfile: any;
 }
 
+/**
+ * Component for managing fisherman's planned fishing schedule.
+ * 
+ * Features:
+ * - Interactive calendar for selecting fishing dates
+ * - Month-by-month schedule management
+ * - Prevents selection of past dates
+ * - Batch save functionality for selected dates
+ * - Visual feedback for selected and saved dates
+ * - Integration with public schedule display
+ * - Finnish locale support
+ * 
+ * The schedule is displayed on the public homepage to inform customers
+ * about when fresh fish might be available based on planned fishing trips.
+ * 
+ * @param props - The component props
+ * @returns The fisherman schedule management component
+ */
 export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) => {
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [currentPlannedTrips, setCurrentPlannedTrips] = useState<Date[]>([]);
@@ -18,7 +40,10 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const { toast } = useToast();
 
-  // Fetch planned trips for the current month
+  /**
+   * Fetches planned trips for the specified month from the database
+   * @param month - The month to fetch trips for
+   */
   const fetchPlannedTrips = async (month: Date) => {
     try {
       const startDate = startOfMonth(month);
@@ -50,6 +75,10 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
     fetchPlannedTrips(currentMonth);
   }, [currentMonth, fishermanProfile.id]);
 
+  /**
+   * Handles date selection/deselection with validation
+   * @param date - Date selected from the calendar
+   */
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) return;
 
@@ -81,6 +110,10 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
     });
   };
 
+  /**
+   * Saves the selected schedule to the database
+   * Replaces all existing trips for the current month with new selections
+   */
   const handleSaveSchedule = async () => {
     setLoading(true);
     try {
@@ -129,6 +162,10 @@ export const FishermanSchedule = ({ fishermanProfile }: FishermanScheduleProps) 
     }
   };
 
+  /**
+   * Handles month navigation in the calendar
+   * @param month - New month to display
+   */
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
   };

@@ -3,6 +3,23 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { EmailSubscriptionModal } from '@/components/EmailSubscriptionModal';
 
+/**
+ * Hero section component for the homepage.
+ * 
+ * Features:
+ * - Welcoming message with fisherman introduction
+ * - Call-to-action buttons for browsing fish and subscribing
+ * - Placeholder for fisherman's photo
+ * - Responsive layout (stacked on mobile, side-by-side on desktop)
+ * - Integration with email subscription modal
+ * - Professional and personal messaging
+ * 
+ * This component serves as the main landing area that introduces visitors
+ * to the fisherman (Niila) and encourages them to explore products or
+ * subscribe for notifications.
+ * 
+ * @returns The hero section component
+ */
 export const HeroSection = () => {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
 
