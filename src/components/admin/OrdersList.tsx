@@ -23,18 +23,9 @@ import {
   PackageCheck,
   CheckCircle2,
 } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Order, FishermanProfile } from "@/lib/types";
+import { ConfirmationDialog } from "../ConfirmationDialog";
+import { FishIcon } from "../FishIcon";
 
 /**
  * Props for the OrdersList component
@@ -68,8 +59,6 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [deliveryFee, setDeliveryFee] = useState<number>(0);
-  const [confirming, setConfirming] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState<string | null>(null);
   const [processingState, setProcessingState] = useState<{
     [key: string]: boolean;
   }>({});
@@ -192,7 +181,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
    * @param orderId - ID of the order to confirm
    */
   const handleConfirmOrder = async (orderId: string) => {
-    setConfirming(orderId);
+    setProcessingState((prev) => ({ ...prev, [orderId]: true }));
     try {
       // Update order status to CONFIRMED
       const { error } = await supabase
@@ -246,7 +235,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
         description: "Tilauksen vahvistaminen epäonnistui.",
       });
     } finally {
-      setConfirming(null);
+      setProcessingState((prev) => ({ ...prev, [orderId]: false }));
     }
   };
 
@@ -255,7 +244,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
    * @param order - The order to cancel
    */
   const handleCancelOrder = async (order: Order) => {
-    setCancelling(order.id);
+    setProcessingState((prev) => ({ ...prev, [order.id]: true }));
     try {
       // Start by updating the order status to CANCELLED
       const { error: orderError } = await supabase
@@ -313,7 +302,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
         description: "Tilauksen peruuttaminen epäonnistui.",
       });
     } finally {
-      setCancelling(null);
+      setProcessingState((prev) => ({ ...prev, [order.id]: false }));
     }
   };
 
@@ -532,15 +521,16 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
                   {order.order_items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex justify-between items-center py-2 border-b"
+                      className="flex justify-between py-2 border-b"
                     >
-                      <div>
+                      <div className="flex">
                         <span className="font-medium">
                           {item.product.species}
                         </span>
-                        <span className="text-muted-foreground ml-2">
+                        <span className="text-muted-foreground mx-2">
                           ({item.product.form})
                         </span>
+                        <FishIcon species={item.product.species} />
                       </div>
                       <div className="text-right">
                         <div>
@@ -598,50 +588,29 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
                   <div className="space-y-3">
                     <Button
                       onClick={() => handleConfirmOrder(order.id)}
-                      disabled={
-                        confirming === order.id || cancelling === order.id
-                      }
+                      disabled={processingState[order.id]}
                       className="w-full"
                     >
-                      {confirming === order.id
-                        ? "Vahvistetaan..."
-                        : "Vahvista tilaus"}
+                      Vahvista tilaus
                     </Button>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    <ConfirmationDialog
+                      triggerButton={
                         <Button
                           variant="destructive"
-                          disabled={
-                            confirming === order.id || cancelling === order.id
-                          }
+                          disabled={processingState[order.id]}
                           className="w-full"
                         >
-                          <XCircle className="mr-2 h-4 w-4" />
-                          {cancelling === order.id
-                            ? "Peruutetaan..."
-                            : "Peruuta tilaus"}
+                          <XCircle className="mr-1 h-4 w-4" />
+                          Peruuta tilaus
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Peruuta tilaus</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Haluatko varmasti peruuttaa tämän tilauksen? Tilatut
-                            tuotteet palautetaan automaattisesti varastoon.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Älä peruuta</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleCancelOrder(order)}
-                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                          >
-                            Kyllä, peruuta tilaus
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                      }
+                      title="Peruuta tilaus"
+                      description="Haluatko varmasti peruuttaa tämän tilauksen? Tilatut tuotteet palautetaan automaattisesti varastoon."
+                      onConfirm={() => handleCancelOrder(order)}
+                      confirmActionText="Kyllä, peruuta tilaus"
+                      isDestructive={true}
+                    />
                   </div>
                 </div>
               )}
@@ -649,19 +618,41 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
               {/* Action Section for CONFIRMED orders */}
               {status === "CONFIRMED" && (
                 <div className="mt-6 p-4 bg-muted/30 rounded-lg space-y-3">
-                  <Button
-                    onClick={() => handleMarkCompleted(order.id)}
-                    disabled={processingState[order.id]}
-                    className="w-full"
-                  >
-                    <PackageCheck className="mr-1 h-4 w-4" />
-                    {processingState[order.id]
-                      ? "Merkitään..."
-                      : "Merkitse valmiiksi"}
-                  </Button>
-                  <AlertDialog>
-                    {/* ... The existing cancel order AlertDialog can also be placed here for confirmed orders ... */}
-                  </AlertDialog>
+                  <ConfirmationDialog
+                    triggerButton={
+                      <Button
+                        variant="default"
+                        disabled={processingState[order.id]}
+                        className="w-full"
+                      >
+                        <PackageCheck className="mr-1 h-4 w-4" />
+                        Merkitse valmiiksi
+                      </Button>
+                    }
+                    title="Merkitse tilaus valmiiksi?"
+                    description="Tämä toiminto on lopullinen, eikä tilausta voi enää peruuttaa sen jälkeen. Haluatko varmasti jatkaa?"
+                    onConfirm={() => handleMarkCompleted(order.id)}
+                    confirmActionText="Kyllä, merkitse valmiiksi"
+                    isDestructive={false}
+                  />
+
+                  <ConfirmationDialog
+                    triggerButton={
+                      <Button
+                        variant="destructive"
+                        disabled={processingState[order.id]}
+                        className="w-full"
+                      >
+                        <XCircle className="mr-1 h-4 w-4" />
+                        Peruuta tilaus
+                      </Button>
+                    }
+                    title="Peruuta tilaus"
+                    description="Haluatko varmasti peruuttaa tämän tilauksen? Tilatut tuotteet palautetaan automaattisesti varastoon."
+                    onConfirm={() => handleCancelOrder(order)}
+                    confirmActionText="Kyllä, peruuta tilaus"
+                    isDestructive={true}
+                  />
                 </div>
               )}
             </CardContent>

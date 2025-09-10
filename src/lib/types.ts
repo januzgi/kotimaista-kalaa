@@ -35,6 +35,7 @@ export type Product = {
       full_name: string;
     };
   } | null;
+  created_at: string;
 };
 
 export type Order = {
@@ -60,4 +61,18 @@ export type Order = {
       price_per_kg: number;
     };
   }[];
+};
+
+export type CatchGroup = {
+  catch_id: string;
+  catch_date: string;
+  products: Product[];
+  fulfillment_slots: FulfillmentSlot[];
+};
+
+export type FulfillmentSlot = {
+  id: string;
+  start_time: string;
+  end_time: string;
+  type: "PICKUP" | "DELIVERY";
 };

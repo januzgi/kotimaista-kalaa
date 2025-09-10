@@ -18,38 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-/**
- * Interface for product data structure
- */
-interface Product {
-  id: string;
-  species: string;
-  form: string;
-  price_per_kg: number;
-  available_quantity: number;
-  created_at: string;
-}
-
-/**
- * Interface for fulfillment slot data structure
- */
-interface FulfillmentSlot {
-  id: string;
-  start_time: string;
-  end_time: string;
-  type: "PICKUP" | "DELIVERY";
-}
-
-/**
- * Interface for grouped catch data with related products and slots
- */
-interface CatchGroup {
-  catch_id: string;
-  catch_date: string;
-  products: Product[];
-  fulfillment_slots: FulfillmentSlot[];
-}
+import { CatchGroup, FulfillmentSlot, Product } from "@/lib/types";
 
 /**
  * Props for the InventoryList component
@@ -116,7 +85,7 @@ export const InventoryList = ({
 
         // Transform the RPC result to match our interface
         const transformedGroups: CatchGroup[] = (catchGroupsData || []).map(
-          (group: any) => ({
+          (group: CatchGroup) => ({
             catch_id: group.catch_id,
             catch_date: group.catch_date,
             products: group.products || [],
@@ -355,7 +324,7 @@ export const InventoryList = ({
 
         // Transform the RPC result to match our interface
         const transformedGroups: CatchGroup[] = (catchGroupsData || []).map(
-          (group: any) => ({
+          (group: CatchGroup) => ({
             catch_id: group.catch_id,
             catch_date: group.catch_date,
             products: group.products || [],
