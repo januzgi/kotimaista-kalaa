@@ -37,9 +37,9 @@ export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscription
     setIsLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('email_subscriptions')
-        .insert([{ email: emailToSubscribe }]);
+      const { data, error } = await supabase.functions.invoke('subscribe-and-welcome', {
+        body: { email: emailToSubscribe }
+      });
 
       if (error) {
         console.error('Subscription error:', error);
@@ -53,7 +53,7 @@ export const EmailSubscriptionModal = ({ open, onOpenChange }: EmailSubscription
 
       toast({
         title: "Kiitos!",
-        description: "Saat jatkossa ilmoituksia sähköpostiisi.",
+        description: "Saat jatkossa ilmoituksia sähköpostiisi. Tarkista myös roskaposti!",
       });
       
       onOpenChange(false);
