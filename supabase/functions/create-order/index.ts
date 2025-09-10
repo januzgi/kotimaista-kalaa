@@ -1,8 +1,8 @@
 /**
  * Edge Function: create-order
- * 
+ *
  * Purpose: Creates a new order from cart items with inventory validation and notifications.
- * 
+ *
  * Features:
  * - User authentication verification
  * - Real-time inventory checking to prevent overselling
@@ -11,7 +11,7 @@
  * - Email notifications to fishermen about new orders
  * - Sold-out item handling with detailed error responses
  * - Transaction-like error handling with rollback attempts
- * 
+ *
  * Request Body:
  * - cartItems: Array of {productId, quantity} objects
  * - customerName: Customer's full name
@@ -19,18 +19,19 @@
  * - customerAddress?: Delivery address (required for delivery orders)
  * - fulfillmentType: 'PICKUP' or 'DELIVERY'
  * - fulfillmentSlotId: Selected time slot ID
- * 
+ *
  * Returns:
  * - Success: {success: true, orderId: string, message: string}
  * - Sold out: {error: 'Items sold out', soldOutItems: string[], soldOutProductIds: string[]}
  * - Other errors: {error: string}
  */
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 interface CartItem {
   productId: string;
@@ -42,75 +43,66 @@ interface OrderData {
   customerName: string;
   customerPhone: string;
   customerAddress?: string;
-  fulfillmentType: 'PICKUP' | 'DELIVERY';
+  fulfillmentType: "PICKUP" | "DELIVERY";
   fulfillmentSlotId: string;
 }
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
     // Get the authorization header
-    const authHeader = req.headers.get('Authorization');
+    const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
-      console.error('No authorization header provided');
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      console.error("No authorization header provided");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Verify user authentication
-    const { data: userData, error: userError } = await supabaseClient.auth.getUser(
-      authHeader.replace('Bearer ', '')
-    );
+    const { data: userData, error: userError } =
+      await supabaseClient.auth.getUser(authHeader.replace("Bearer ", ""));
 
     if (userError || !userData.user) {
-      console.error('Authentication failed:', userError);
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      console.error("Authentication failed:", userError);
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const userId = userData.user.id;
-    console.log('Processing order for user:', userId);
+    console.log("Processing order for user:", userId);
 
     // Parse request body
     const orderData: OrderData = await req.json();
-    console.log('Order data received:', orderData);
+    console.log("Order data received:", orderData);
 
     if (!orderData.cartItems || orderData.cartItems.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'Cart is empty' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      return new Response(JSON.stringify({ error: "Cart is empty" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Start transaction by checking inventory first
-    const productIds = orderData.cartItems.map(item => item.productId);
-    
+    const productIds = orderData.cartItems.map((item) => item.productId);
+
     // Fetch current product quantities and details
     const { data: products, error: productsError } = await supabaseClient
-      .from('products')
-      .select(`
+      .from("products")
+      .select(
+        `
         id,
         species,
         form,
@@ -121,27 +113,28 @@ Deno.serve(async (req) => {
           default_delivery_fee,
           user_id
         )
-      `)
-      .in('id', productIds);
+      `
+      )
+      .in("id", productIds);
 
     if (productsError) {
-      console.error('Error fetching products:', productsError);
+      console.error("Error fetching products:", productsError);
       return new Response(
-        JSON.stringify({ error: 'Failed to fetch products' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: "Failed to fetch products" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
     if (!products || products.length !== orderData.cartItems.length) {
-      console.error('Some products not found');
+      console.error("Some products not found");
       return new Response(
-        JSON.stringify({ error: 'Some products not found' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: "Some products not found" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
@@ -151,7 +144,7 @@ Deno.serve(async (req) => {
     const validItems: { product: any; requestedQuantity: number }[] = [];
 
     for (const cartItem of orderData.cartItems) {
-      const product = products.find(p => p.id === cartItem.productId);
+      const product = products.find((p) => p.id === cartItem.productId);
       if (!product) {
         continue;
       }
@@ -161,44 +154,45 @@ Deno.serve(async (req) => {
       } else {
         validItems.push({
           product,
-          requestedQuantity: cartItem.quantity
+          requestedQuantity: cartItem.quantity,
         });
       }
     }
 
     // If any items are sold out, return error
     if (soldOutItems.length > 0) {
-      console.log('Items sold out:', soldOutItems);
+      console.log("Items sold out:", soldOutItems);
       return new Response(
-        JSON.stringify({ 
-          error: 'Items sold out',
+        JSON.stringify({
+          error: "Items sold out",
           soldOutItems,
           soldOutProductIds: orderData.cartItems
-            .filter(item => {
-              const product = products.find(p => p.id === item.productId);
+            .filter((item) => {
+              const product = products.find((p) => p.id === item.productId);
               return product && product.available_quantity < item.quantity;
             })
-            .map(item => item.productId)
+            .map((item) => item.productId),
         }),
-        { 
-          status: 409, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
     // Calculate delivery fee
     const firstProduct = validItems[0].product;
-    const deliveryFee = orderData.fulfillmentType === 'DELIVERY' 
-      ? firstProduct.fisherman_profile.default_delivery_fee 
-      : 0;
+    const deliveryFee =
+      orderData.fulfillmentType === "DELIVERY"
+        ? firstProduct.fisherman_profile.default_delivery_fee
+        : 0;
 
     // All items are available, proceed with transaction
-    console.log('All items available, creating order...');
+    console.log("All items available, creating order...");
 
     // Create the order
     const { data: orderResult, error: orderError } = await supabaseClient
-      .from('orders')
+      .from("orders")
       .insert({
         customer_id: userId,
         customer_name: orderData.customerName,
@@ -207,90 +201,95 @@ Deno.serve(async (req) => {
         fulfillment_type: orderData.fulfillmentType,
         fulfillment_slot_id: orderData.fulfillmentSlotId,
         final_delivery_fee: deliveryFee,
-        status: 'NEW'
+        status: "NEW",
       })
       .select()
       .single();
 
     if (orderError) {
-      console.error('Error creating order:', orderError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to create order' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      console.error("Error creating order:", orderError);
+      return new Response(JSON.stringify({ error: "Failed to create order" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    console.log('Order created:', orderResult.id);
+    console.log("Order created:", orderResult.id);
 
     // Create order items and update product quantities
-    const orderItems = validItems.map(item => ({
+    const orderItems = validItems.map((item) => ({
       order_id: orderResult.id,
       product_id: item.product.id,
-      quantity: item.requestedQuantity
+      quantity: item.requestedQuantity,
     }));
 
     const { error: orderItemsError } = await supabaseClient
-      .from('order_items')
+      .from("order_items")
       .insert(orderItems);
 
     if (orderItemsError) {
-      console.error('Error creating order items:', orderItemsError);
+      console.error("Error creating order items:", orderItemsError);
       // Try to clean up the order
-      await supabaseClient.from('orders').delete().eq('id', orderResult.id);
+      await supabaseClient.from("orders").delete().eq("id", orderResult.id);
       return new Response(
-        JSON.stringify({ error: 'Failed to create order items' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: "Failed to create order items" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
     // Update product quantities
     for (const item of validItems) {
-      const newQuantity = item.product.available_quantity - item.requestedQuantity;
+      const newQuantity =
+        item.product.available_quantity - item.requestedQuantity;
       const { error: updateError } = await supabaseClient
-        .from('products')
+        .from("products")
         .update({ available_quantity: newQuantity })
-        .eq('id', item.product.id);
+        .eq("id", item.product.id);
 
       if (updateError) {
-        console.error('Error updating product quantity:', updateError);
+        console.error("Error updating product quantity:", updateError);
         // This is a critical error - we should rollback but Supabase doesn't support transactions
         // In a production system, you'd want to use stored procedures for this
         return new Response(
-          JSON.stringify({ error: 'Failed to update inventory' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          JSON.stringify({ error: "Failed to update inventory" }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
     }
 
-    console.log('Order processing completed successfully');
+    console.log("Order processing completed successfully");
 
     // Send notification email to fisherman
     try {
       // Get fisherman email
-      const { data: fishermanUser, error: fishermanError } = await supabaseClient.auth.admin.getUserById(
-        firstProduct.fisherman_profile.user_id
-      );
+      const { data: fishermanUser, error: fishermanError } =
+        await supabaseClient.auth.admin.getUserById(
+          firstProduct.fisherman_profile.user_id
+        );
 
       if (!fishermanError && fishermanUser.user) {
         // Create order summary for email
-        const itemsList = validItems.map(item => 
-          `${item.product.species} (${item.product.form}) - ${item.requestedQuantity} kg`
-        ).join('\n');
+        const itemsList = validItems
+          .map(
+            (item) =>
+              `${item.product.species} (${item.product.form}) - ${item.requestedQuantity} kg`
+          )
+          .join("\n");
 
         const fulfillmentDate = new Date(orderData.fulfillmentSlotId);
-        const dateStr = fulfillmentDate.toLocaleDateString('fi-FI');
+        const dateStr = fulfillmentDate.toLocaleDateString("fi-FI");
 
-        const subject = `Uusi tilaus saapunut! (Tilaus #${orderResult.id.slice(0, 8)})`;
-        
+        const subject = `Uusi tilaus saapunut! (Tilaus #${orderResult.id.slice(
+          0,
+          8
+        )})`;
+
         const emailHtml = `
           <!DOCTYPE html>
           <html>
@@ -301,20 +300,37 @@ Deno.serve(async (req) => {
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
             <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
               <h1 style="color: #000a43; margin: 0;">Uusi tilaus saapunut!</h1>
-              <p style="margin: 10px 0 0 0; color: #666;">Tilaus #${orderResult.id.slice(0, 8)}</p>
+              <p style="margin: 10px 0 0 0; color: #666;">Tilaus #${orderResult.id.slice(
+                0,
+                8
+              )}</p>
             </div>
 
             <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h2 style="color: #000a43; margin-top: 0;">Asiakkaan tiedot</h2>
               <p><strong>Nimi:</strong> ${orderData.customerName}</p>
               <p><strong>Puhelin:</strong> ${orderData.customerPhone}</p>
-              ${orderData.customerAddress ? `<p><strong>Osoite:</strong> ${orderData.customerAddress}</p>` : ''}
+              ${
+                orderData.customerAddress
+                  ? `<p><strong>Osoite:</strong> ${orderData.customerAddress}</p>`
+                  : ""
+              }
               
               <h3 style="color: #000a43;">Tilatut tuotteet</h3>
               <pre style="background: #f8f9fa; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${itemsList}</pre>
               
-              <p><strong>Toimitustapa:</strong> ${orderData.fulfillmentType === 'PICKUP' ? 'Nouto' : 'Kotiinkuljetus'}</p>
-              ${deliveryFee > 0 ? `<p><strong>Toimitusmaksu:</strong> ${deliveryFee.toFixed(2)} €</p>` : ''}
+              <p><strong>Toimitustapa:</strong> ${
+                orderData.fulfillmentType === "PICKUP"
+                  ? "Nouto"
+                  : "Kotiinkuljetus"
+              }</p>
+              ${
+                deliveryFee > 0
+                  ? `<p><strong>Toimitusmaksu:</strong> ${deliveryFee.toFixed(
+                      2
+                    )} €</p>`
+                  : ""
+              }
             </div>
 
             <div style="background: #e3f2fd; border-left: 4px solid #027bff; padding: 15px; margin: 20px 0;">
@@ -330,65 +346,67 @@ Deno.serve(async (req) => {
 
             <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
             <p style="text-align: center; color: #666; font-size: 14px;">
-              <strong>Kotimaistakalaa</strong><br>
-              Ylläpitojärjestelmä
+              <strong>© Kotimaista kalaa</strong><br>
+              <i>Tuoretta kalaa suoraan kalastajalta</i>
             </p>
           </body>
           </html>
         `;
 
         // Send email using Brevo
-        const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
-          },
-          body: JSON.stringify({
-            sender: {
-              name: 'Kotimaistakalaa Järjestelmä',
-              email: 'suorantacoding@gmail.com'
+        const brevoResponse = await fetch(
+          "https://api.brevo.com/v3/smtp/email",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "api-key": Deno.env.get("BREVO_API_KEY") ?? "",
             },
-            to: [{
-              email: fishermanUser.user.email,
-              name: fishermanUser.user.user_metadata?.full_name || 'Kalastaja'
-            }],
-            subject: subject,
-            htmlContent: emailHtml
-          })
-        });
+            body: JSON.stringify({
+              sender: {
+                name: "Kotimaista kalaa -järjestelmäviesti",
+                email: "suorantacoding@gmail.com",
+              },
+              to: [
+                {
+                  email: fishermanUser.user.email,
+                  name:
+                    fishermanUser.user.user_metadata?.full_name || "Kalastaja",
+                },
+              ],
+              subject: subject,
+              htmlContent: emailHtml,
+            }),
+          }
+        );
 
         if (!brevoResponse.ok) {
-          console.error('Failed to send fisherman notification email');
+          console.error("Failed to send fisherman notification email");
         } else {
-          console.log('Fisherman notification email sent successfully');
+          console.log("Fisherman notification email sent successfully");
         }
       }
     } catch (emailError) {
-      console.error('Error sending fisherman notification email:', emailError);
+      console.error("Error sending fisherman notification email:", emailError);
       // Don't fail the order creation if email fails
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         orderId: orderResult.id,
-        message: 'Order created successfully'
+        message: "Order created successfully",
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
-
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    console.error("Unexpected error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

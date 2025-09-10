@@ -1,9 +1,10 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 interface SubscriptionData {
   email: string;
@@ -11,76 +12,75 @@ interface SubscriptionData {
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
+  if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    )
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
     // Parse request body
     const subscriptionData: SubscriptionData = await req.json();
-    console.log('Subscription data received:', subscriptionData);
+    console.log("Subscription data received:", subscriptionData);
 
     if (!subscriptionData.email) {
-      return new Response(
-        JSON.stringify({ error: 'Email is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      return new Response(JSON.stringify({ error: "Email is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     // Check if email already exists
-    const { data: existingSubscription, error: checkError } = await supabaseClient
-      .from('email_subscriptions')
-      .select('email')
-      .eq('email', subscriptionData.email)
-      .single();
+    const { data: existingSubscription, error: checkError } =
+      await supabaseClient
+        .from("email_subscriptions")
+        .select("email")
+        .eq("email", subscriptionData.email)
+        .single();
 
-    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 = no rows returned
-      console.error('Error checking existing subscription:', checkError);
+    if (checkError && checkError.code !== "PGRST116") {
+      // PGRST116 = no rows returned
+      console.error("Error checking existing subscription:", checkError);
       return new Response(
-        JSON.stringify({ error: 'Failed to check subscription status' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: "Failed to check subscription status" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
     // If email already exists, still send success (but don't create duplicate)
-    let isNewSubscription = !existingSubscription;
+    const isNewSubscription = !existingSubscription;
 
     if (isNewSubscription) {
       // Save email to database
       const { error: insertError } = await supabaseClient
-        .from('email_subscriptions')
+        .from("email_subscriptions")
         .insert([{ email: subscriptionData.email }]);
 
       if (insertError) {
-        console.error('Error saving subscription:', insertError);
+        console.error("Error saving subscription:", insertError);
         return new Response(
-          JSON.stringify({ error: 'Failed to save subscription' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          JSON.stringify({ error: "Failed to save subscription" }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       }
 
-      console.log('Email subscription saved successfully');
+      console.log("Email subscription saved successfully");
     } else {
-      console.log('Email already subscribed, skipping database insert');
+      console.log("Email already subscribed, skipping database insert");
     }
 
     // Send welcome email using Brevo
-    const subject = 'Tervetuloa Kotimaista kalaa-postituslistalle! 🐟';
-    
+    const subject = "Tervetuloa Kotimaista kalaa-postituslistalle! 🐟";
+
     const emailHtml = `
       <!DOCTYPE html>
       <html>
@@ -136,8 +136,8 @@ Deno.serve(async (req) => {
 
         <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
         <p style="text-align: center; color: #666; font-size: 14px;">
-          <strong>Kotimaistakalaa</strong><br>
-          Tuoreita kaloja suoraan järveltä
+          <strong>© Kotimaista kalaa</strong><br>
+          <i>Tuoretta kalaa suoraan kalastajalta</i>
         </p>
       </body>
       </html>
@@ -145,69 +145,69 @@ Deno.serve(async (req) => {
 
     // Send welcome email using Brevo
     try {
-      const brevoResponse = await fetch('https://api.brevo.com/v3/smtp/email', {
-        method: 'POST',
+      const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'api-key': Deno.env.get('BREVO_API_KEY') ?? '',
+          "Content-Type": "application/json",
+          "api-key": Deno.env.get("BREVO_API_KEY") ?? "",
         },
         body: JSON.stringify({
           sender: {
-            name: 'Kotimaista kalaa -tiimi',
-            email: 'suorantacoding@gmail.com'
+            name: "Kotimaista kalaa -tiimi",
+            email: "suorantacoding@gmail.com",
           },
-          to: [{
-            email: subscriptionData.email,
-            name: 'Kalaharrastaja'
-          }],
+          to: [
+            {
+              email: subscriptionData.email,
+              name: "Kalaharrastaja",
+            },
+          ],
           subject: subject,
-          htmlContent: emailHtml
-        })
+          htmlContent: emailHtml,
+        }),
       });
 
       if (!brevoResponse.ok) {
         const errorDetails = await brevoResponse.text();
-        console.error('Failed to send welcome email:', errorDetails);
+        console.error("Failed to send welcome email:", errorDetails);
         return new Response(
-          JSON.stringify({ error: 'Failed to send welcome email' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          JSON.stringify({ error: "Failed to send welcome email" }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
           }
         );
       } else {
-        console.log('Welcome email sent successfully');
+        console.log("Welcome email sent successfully");
       }
     } catch (emailError) {
-      console.error('Error sending welcome email:', emailError);
+      console.error("Error sending welcome email:", emailError);
       return new Response(
-        JSON.stringify({ error: 'Failed to send welcome email' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        JSON.stringify({ error: "Failed to send welcome email" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: isNewSubscription ? 'Subscription created and welcome email sent' : 'Welcome email sent to existing subscriber'
+      JSON.stringify({
+        success: true,
+        message: isNewSubscription
+          ? "Subscription created and welcome email sent"
+          : "Welcome email sent to existing subscriber",
       }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
-
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    console.error("Unexpected error:", error);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });

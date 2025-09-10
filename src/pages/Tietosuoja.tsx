@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
  * Privacy policy page component.
- * * Outlines the data handling practices for the Kotimaistakalaa service,
+ * * Outlines the data handling practices for the Kotimaista kalaa service,
  * in compliance with GDPR.
  * * @returns The privacy policy page component
  */

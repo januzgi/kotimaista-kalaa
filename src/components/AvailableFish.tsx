@@ -40,7 +40,7 @@ export const AvailableFish = () => {
           Todellinen hinta riippuu kalan muodosta (esim. fileoitu).
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
           {fishProducts.map((fish, index) => (
             <ProductCard
               key={index}
@@ -53,7 +53,10 @@ export const AvailableFish = () => {
 
         <div className="text-center">
           <Link to="/saatavilla">
-            <Button size="lg" className="w-full sm:w-auto">
+            <Button
+              size="lg"
+              className="w-full h-14 whitespace-normal sm:w-auto sm:h-11 sm:whitespace-nowrap max-w-[300px]"
+            >
               Katso kaikki saatavilla olevat kalat
             </Button>
           </Link>
