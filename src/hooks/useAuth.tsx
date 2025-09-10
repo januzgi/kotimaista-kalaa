@@ -33,6 +33,8 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("session: ", session);
+      console.log("event: ", event);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
@@ -41,12 +43,14 @@ export const useAuth = () => {
       // from an external provider like Google.
       if (
         event === "SIGNED_IN" &&
-        window.location.hash.includes("access_token")
+        sessionStorage.getItem("oauth_in_progress") === "true"
       ) {
         toast({
           title: "Kirjauduit sisään onnistuneesti",
           description: "Tervetuloa takaisin!",
         });
+        // Clean up the flag so it doesn't fire again on a normal page refresh
+        sessionStorage.removeItem("oauth_in_progress");
       }
     });
 
@@ -68,6 +72,7 @@ export const useAuth = () => {
     provider: "google" | "facebook" | "apple"
   ) => {
     try {
+      sessionStorage.setItem("oauth_in_progress", "true");
       const redirectUrl = `${window.location.origin}/`;
 
       const { error } = await supabase.auth.signInWithOAuth({
