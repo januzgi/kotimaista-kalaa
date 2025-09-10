@@ -36,3 +36,28 @@ export type Product = {
     };
   } | null;
 };
+
+export type Order = {
+  id: string;
+  customer_name: string;
+  customer_address: string | null;
+  customer_phone: string;
+  fulfillment_type: "PICKUP" | "DELIVERY";
+  final_delivery_fee: number | null;
+  status: "NEW" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  created_at: string;
+  fulfillment_slot: {
+    start_time: string;
+    end_time: string;
+    type: "PICKUP" | "DELIVERY";
+  } | null;
+  order_items: {
+    id: string;
+    quantity: number;
+    product: {
+      species: string;
+      form: string;
+      price_per_kg: number;
+    };
+  }[];
+};

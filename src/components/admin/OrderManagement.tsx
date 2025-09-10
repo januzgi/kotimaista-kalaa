@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/contexts/NotificationContext";
-import { Inbox, CheckCircle2, XCircle } from "lucide-react";
+import { Inbox, CheckCircle2, XCircle, PackageCheck } from "lucide-react";
 import { OrdersList } from "./OrdersList";
 import { FishermanProfile } from "@/lib/types";
 
@@ -16,7 +16,7 @@ interface OrderManagementProps {
  * Order management component that provides tabbed interface for managing orders.
  *
  * Features:
- * - Tabbed interface for different order statuses (New, Confirmed, Cancelled)
+ * - Tabbed interface for different order statuses (New, Confirmed, Completed, Cancelled)
  * - New order count badge for pending orders
  * - Integrates with notification system for real-time updates
  * - Passes fisherman profile data to order list components
@@ -43,7 +43,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
       </div>
 
       <Tabs defaultValue="new" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="new" className="text-xs sm:text-sm relative">
             <Inbox className="mr-1 h-4 w-4" />
             Uudet
@@ -60,6 +60,10 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
             <CheckCircle2 className="mr-1 h-4 w-4" />
             Vahvistetut
           </TabsTrigger>
+          <TabsTrigger value="completed" className="text-xs sm:text-sm">
+            <PackageCheck className="mr-1 h-4 w-4" />
+            Valmiit
+          </TabsTrigger>
           <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
             <XCircle className="mr-1 h-4 w-4" />
             Perutut
@@ -67,27 +71,19 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
         </TabsList>
 
         <TabsContent value="new">
-          <OrdersList
-            fishermanProfileId={fishermanProfile.id}
-            status="NEW"
-            defaultDeliveryFee={fishermanProfile.default_delivery_fee}
-          />
+          <OrdersList status="NEW" fishermanProfile={fishermanProfile} />
         </TabsContent>
 
         <TabsContent value="confirmed">
-          <OrdersList
-            fishermanProfileId={fishermanProfile.id}
-            status="CONFIRMED"
-            defaultDeliveryFee={fishermanProfile.default_delivery_fee}
-          />
+          <OrdersList status="CONFIRMED" fishermanProfile={fishermanProfile} />
+        </TabsContent>
+
+        <TabsContent value="completed">
+          <OrdersList status="COMPLETED" fishermanProfile={fishermanProfile} />
         </TabsContent>
 
         <TabsContent value="cancelled">
-          <OrdersList
-            fishermanProfileId={fishermanProfile.id}
-            status="CANCELLED"
-            defaultDeliveryFee={fishermanProfile.default_delivery_fee}
-          />
+          <OrdersList status="CANCELLED" fishermanProfile={fishermanProfile} />
         </TabsContent>
       </Tabs>
     </div>

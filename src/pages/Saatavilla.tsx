@@ -74,7 +74,7 @@ const Saatavilla = () => {
       // Initialize quantities with default value of 1 for each product
       const initialQuantities: { [productId: string]: number } = {};
       productsData.forEach((product) => {
-        initialQuantities[product.id] = 1;
+        initialQuantities[product.id] = Math.min(1, product.available_quantity);
       });
       setQuantities(initialQuantities);
     } catch (error) {
