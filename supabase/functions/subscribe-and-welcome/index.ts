@@ -125,16 +125,13 @@ Deno.serve(async (req) => {
             <ol style="margin: 0; padding-left: 20px;">
               <li>Avaa tämä viesti Outlookissa.</li>
               <li>Mene asetuksiin: Mail → Roskaposti (Junk email).</li>
-              <li>Lisää osoitteemme <strong>suorantacoding@gmail.com</strong> kohtaan "Turvalliset lähettäjät" (Safe Senders).</li>
+              <li>Lisää osoitteemme <strong>noreply@kotimaistakalaa.fi</strong> kohtaan "Turvalliset lähettäjät" (Safe Senders).</li>
             </ol>
           </div>
           
           <p>Sen jälkeen viestimme näkyvät kirkkaasti ja esteettä, VIP-luettelossa Apple Mailissa ja luotettujen lähettäjien joukossa Gmailissa ja Outlookissa.</p>
           
           <p>Kiitos ja nähdään saaliiden rantauduttua!</p>
-          
-          <p style="margin-top: 30px;">Lämpimin terveisin,<br>
-          <strong>Kotimaista kalaa -tiimi</strong></p>
         </div>
 
         <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
