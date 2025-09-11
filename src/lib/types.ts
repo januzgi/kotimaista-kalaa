@@ -27,15 +27,18 @@ export type Product = {
   form: string;
   price_per_kg: number;
   available_quantity: number;
-  catch: {
+  catch?: {
     catch_date: string;
   } | null;
   fisherman_profile: {
+    id?: string;
+    pickup_address?: string;
+    default_delivery_fee?: number;
+    public_phone_number?: string | null;
     user: {
       full_name: string;
     };
   } | null;
-  created_at: string;
 };
 
 export type Order = {

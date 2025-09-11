@@ -11,7 +11,6 @@ CREATE TYPE public.order_status AS ENUM ('NEW', 'CONFIRMED', 'COMPLETED', 'CANCE
 CREATE TABLE public.users (
   id UUID NOT NULL PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
-  full_name TEXT,
   avatar_url TEXT,
   phone_number TEXT,
   role user_role NOT NULL DEFAULT 'CUSTOMER',

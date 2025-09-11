@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,26 +24,7 @@ import { fi } from "date-fns/locale";
 import { Fish, MapPin, Clock, Euro, User, Phone, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FishIcon } from "@/components/FishIcon";
-
-/**
- * Interface for product data from database
- */
-interface Product {
-  id: string;
-  species: string;
-  form: string;
-  price_per_kg: number;
-  available_quantity: number;
-  fisherman_profile: {
-    id: string;
-    pickup_address: string;
-    default_delivery_fee: number;
-    public_phone_number: string | null;
-    user: {
-      full_name: string;
-    };
-  };
-}
+import { Product } from "@/lib/types";
 
 /**
  * Interface for fulfillment time slots
@@ -102,58 +83,7 @@ const Tilaa = () => {
   const [selectedSlotId, setSelectedSlotId] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  useEffect(() => {
-    // If there's a productId, we're coming from the old single-product flow
-    // Redirect to cart page instead
-    if (productId) {
-      navigate("/ostoskori");
-      return;
-    }
-
-    // If cart is empty, redirect to available products
-    if (cartItems.length === 0) {
-      navigate("/saatavilla");
-      return;
-    }
-
-    fetchProductData();
-  }, [productId, cartItems.length]);
-
-  useEffect(() => {
-    if (user) {
-      fetchUserProfile();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (product) {
-      fetchFulfillmentSlots();
-    }
-  }, [product, fulfillmentType]);
-
-  useEffect(() => {
-    const fetchAllSlots = async () => {
-      if (!product) return;
-
-      try {
-        const { data, error } = await supabase
-          .from("fulfillment_slots")
-          .select("id, start_time, end_time, type")
-          .eq("fisherman_id", product.fisherman_profile.id)
-          .gte("start_time", new Date().toISOString());
-
-        if (!error) {
-          setAllSlots(data || []);
-        }
-      } catch (error) {
-        console.error("Error fetching all slots:", error);
-      }
-    };
-
-    fetchAllSlots();
-  }, [product]);
-
-  const fetchProductData = async () => {
+  const fetchProductData = useCallback(async () => {
     if (cartItems.length === 0) return;
 
     try {
@@ -197,9 +127,9 @@ const Tilaa = () => {
       });
       navigate("/saatavilla");
     }
-  };
+  }, [cartItems, navigate, toast]);
 
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -216,9 +146,9 @@ const Tilaa = () => {
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
-  };
+  }, [user]);
 
-  const fetchFulfillmentSlots = async () => {
+  const fetchFulfillmentSlots = useCallback(async () => {
     if (!product) return;
 
     try {
@@ -257,7 +187,58 @@ const Tilaa = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fulfillmentType, product]);
+
+  useEffect(() => {
+    // If there's a productId, we're coming from the old single-product flow
+    // Redirect to cart page instead
+    if (productId) {
+      navigate("/ostoskori");
+      return;
+    }
+
+    // If cart is empty, redirect to available products
+    if (cartItems.length === 0) {
+      navigate("/saatavilla");
+      return;
+    }
+
+    fetchProductData();
+  }, [productId, cartItems.length, fetchProductData, navigate]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [fetchUserProfile, user]);
+
+  useEffect(() => {
+    if (product) {
+      fetchFulfillmentSlots();
+    }
+  }, [product, fulfillmentType, fetchFulfillmentSlots]);
+
+  useEffect(() => {
+    const fetchAllSlots = async () => {
+      if (!product) return;
+
+      try {
+        const { data, error } = await supabase
+          .from("fulfillment_slots")
+          .select("id, start_time, end_time, type")
+          .eq("fisherman_id", product.fisherman_profile.id)
+          .gte("start_time", new Date().toISOString());
+
+        if (!error) {
+          setAllSlots(data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching all slots:", error);
+      }
+    };
+
+    fetchAllSlots();
+  }, [product]);
 
   const calculateTotal = () => {
     if (!cartItems.length) return 0;

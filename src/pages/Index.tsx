@@ -72,7 +72,7 @@ const Index = () => {
                 tuoretta kalaa on taas saatavilla.
               </p>
               <Button
-                variant="secondary"
+                variant="default"
                 size="lg"
                 className="w-full sm:w-auto max-w-[240px]"
                 onClick={() => setIsSubscriptionModalOpen(true)}
