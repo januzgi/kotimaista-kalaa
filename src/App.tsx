@@ -13,6 +13,7 @@ import Kiitos from "./pages/Kiitos";
 import Toimitusehdot from "./pages/Toimitusehdot";
 import NotFound from "./pages/NotFound";
 import Tietosuoja from "./pages/Tietosuoja";
+import { VaihdaSalasana } from "./pages/VaihdaSalasana";
 
 /**
  * React Query client instance for managing server state and caching
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/kiitos" element={<Kiitos />} />
           <Route path="/toimitusehdot" element={<Toimitusehdot />} />
           <Route path="/tietosuoja" element={<Tietosuoja />} />
+          <Route path="/vaihda-salasana" element={<VaihdaSalasana />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
