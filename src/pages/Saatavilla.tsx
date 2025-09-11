@@ -45,35 +45,15 @@ const Saatavilla = () => {
    */
   const fetchProducts = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("products")
-        .select(
-          `
-          id,
-          species,
-          form,
-          price_per_kg,
-          available_quantity,
-          catch:catches(
-            catch_date
-          ),
-          fisherman_profile:fisherman_profiles(
-            user:users(
-              full_name
-            )
-          )
-        `
-        )
-        .gt("available_quantity", 0)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("get_available_products");
 
       if (error) throw error;
-      const productsData = data || [];
-      setProducts(productsData);
+      const correctlyTypedProducts = (data as unknown as Product[]) || [];
+      setProducts(correctlyTypedProducts);
 
       // Initialize quantities with default value of 1 for each product
       const initialQuantities: { [productId: string]: number } = {};
-      productsData.forEach((product) => {
+      correctlyTypedProducts.forEach((product) => {
         initialQuantities[product.id] = Math.min(1, product.available_quantity);
       });
       setQuantities(initialQuantities);

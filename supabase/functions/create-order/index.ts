@@ -349,7 +349,7 @@ Deno.serve(async (req) => {
             </div>
 
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://kotimaistakalaa.vercel.app/admin" 
+              <a href="https://kotimaistakalaa.fi/admin" 
                  style="background: #027bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
                 Siirry ylläpitoon
               </a>

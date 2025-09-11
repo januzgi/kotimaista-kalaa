@@ -90,8 +90,6 @@ export const EmailSubscriptionModal = ({
         return;
       }
 
-      console.log("data.message: ", data.message);
-
       if (data.message === "Already subscribed") {
         toast({
           title: "Olet jo listalla!",

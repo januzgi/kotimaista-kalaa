@@ -356,8 +356,6 @@ export const AddCatchForm = ({
         );
         if (emailError) {
           console.error("Email notification error:", emailError);
-        } else {
-          console.log("Email notifications sent successfully");
         }
       } catch (emailError) {
         // Don't fail the whole operation if emails fail

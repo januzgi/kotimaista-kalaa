@@ -37,7 +37,7 @@ export type Product = {
     public_phone_number?: string | null;
     user: {
       full_name: string;
-    };
+    } | null;
   } | null;
 };
 

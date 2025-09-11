@@ -191,17 +191,11 @@ const Profiili = () => {
 
       // Handle name update if it changed
       if (editedName !== (user.user_metadata?.full_name || "")) {
-        const { error: nameError } = await supabase
-          .from("users")
-          .update({ full_name: editedName })
-          .eq("id", user.id);
-
-        if (nameError) throw nameError;
-
-        // Also update auth metadata
-        await supabase.auth.updateUser({
+        const { error: nameError } = await supabase.auth.updateUser({
           data: { full_name: editedName },
         });
+
+        if (nameError) throw nameError;
       }
 
       // Handle fisherman profile updates if user is ADMIN

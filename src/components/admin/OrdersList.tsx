@@ -211,8 +211,6 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
             description:
               "Tilaus vahvistettiin, mutta vahvistussähköpostin lähetys epäonnistui.",
           });
-        } else {
-          console.log("Confirmation email sent successfully");
         }
       } catch (emailError) {
         console.error("Error with confirmation email function:", emailError);

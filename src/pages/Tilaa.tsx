@@ -73,7 +73,6 @@ const Tilaa = () => {
   const [submitting, setSubmitting] = useState(false);
 
   // Form state
-  const [quantity, setQuantity] = useState<number>(1);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
@@ -104,7 +103,7 @@ const Tilaa = () => {
             pickup_address,
             default_delivery_fee,
             public_phone_number,
-            user:users(
+            user:public_users!user_id(
               full_name
             )
           )
@@ -116,7 +115,7 @@ const Tilaa = () => {
 
       if (data && data.length > 0) {
         // Use the first product's fisherman profile for fulfillment details
-        setProduct(data[0]);
+        setProduct(data[0] as unknown as Product);
       }
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -132,15 +131,17 @@ const Tilaa = () => {
   const fetchUserProfile = useCallback(async () => {
     if (!user) return;
 
+    // The name is already in the auth object
+    setCustomerName(user.user_metadata.full_name || "");
+
     try {
       const { data, error } = await supabase
         .from("users")
-        .select("full_name, phone_number")
+        .select("phone_number")
         .eq("id", user.id)
         .single();
 
       if (!error && data) {
-        setCustomerName(data.full_name || "");
         setCustomerPhone(data.phone_number || "");
       }
     } catch (error) {
@@ -302,8 +303,6 @@ const Tilaa = () => {
         fulfillmentSlotId: selectedSlotId,
       };
 
-      console.log("Calling create-order function with:", orderData);
-
       const { data, error } = await supabase.functions.invoke("create-order", {
         body: orderData,
       });
@@ -316,8 +315,6 @@ const Tilaa = () => {
       if (data.error) {
         if (data.error === "Items sold out") {
           // Handle sold out items
-          console.log("Items sold out:", data.soldOutItems);
-
           // Remove sold out items from cart
           if (data.soldOutProductIds && data.soldOutProductIds.length > 0) {
             removeItemsById(data.soldOutProductIds);
@@ -340,7 +337,6 @@ const Tilaa = () => {
       }
 
       // Success - clear cart and redirect
-      console.log("Order created successfully:", data.orderId);
       clearCart();
 
       toast({
