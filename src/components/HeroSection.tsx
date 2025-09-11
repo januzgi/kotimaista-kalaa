@@ -69,15 +69,15 @@ export const HeroSection = () => {
           {/* Hero Content */}
           <div className="w-full lg:w-1/2 text-center lg:text-left">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-4">
-              Tervetuloa Niilan kalastuspaikalle
+              Tervetuloa apajille
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-6">
               Tuoretta, paikallista kalaa suoraan kalastajalta. Pyydän kalaa
-              päivittäin Suomen puhtaista vesistöistä ja toimitan sen tuoreena
-              kotiovellesi.
+              viikoittain Pirkanmaan puhtaista vesistöistä ja toimitan sen
+              tuoreena kotiovellesi.
             </p>
             <p className="text-sm sm:text-base text-muted-foreground mb-6">
-              Yli 20 vuoden kokemus kalastuksesta ja sitoutuminen laadukkaimpaan
+              Yli 10 vuoden kokemus kalastuksesta ja sitoutuminen laadukkaimpaan
               tuoreeseen kalaan.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 lg:justify-start justify-center">
