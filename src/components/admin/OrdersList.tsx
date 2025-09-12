@@ -521,17 +521,17 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
                       key={item.id}
                       className="flex justify-between py-2 border-b"
                     >
-                      <div className="flex">
+                      <div className="flex items-center">
+                        <FishIcon species={item.product.species} />
                         <span className="font-medium">
                           {item.product.species}
                         </span>
                         <span className="text-muted-foreground mx-2">
-                          ({item.product.form})
+                          {item.product.form}
                         </span>
-                        <FishIcon species={item.product.species} />
                       </div>
                       <div className="text-right">
-                        <div>
+                        <div className="text-sm">
                           {item.quantity} kg ×{" "}
                           {item.product.price_per_kg.toFixed(2)} €/kg
                         </div>
@@ -547,7 +547,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
 
                   {order.fulfillment_type === "DELIVERY" && (
                     <div className="flex justify-between items-center py-2 border-b">
-                      <span>Toimitusmaksu</span>
+                      <span className="flex items-center">Toimitusmaksu</span>
                       <span className="font-semibold">
                         {(order.final_delivery_fee || 0).toFixed(2)} €
                       </span>
