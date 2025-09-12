@@ -89,33 +89,17 @@ const Tilaa = () => {
       // Get unique product IDs from cart
       const productIds = [...new Set(cartItems.map((item) => item.productId))];
 
-      const { data, error } = await supabase
-        .from("products")
-        .select(
-          `
-          id,
-          species,
-          form,
-          price_per_kg,
-          available_quantity,
-          fisherman_profile:fisherman_profiles(
-            id,
-            pickup_address,
-            default_delivery_fee,
-            public_phone_number,
-            user:public_users!user_id(
-              full_name
-            )
-          )
-        `
-        )
-        .in("id", productIds);
+      // Call the new RPC function with the product IDs
+      const { data, error } = await supabase.rpc("get_products_by_ids", {
+        product_ids_param: productIds,
+      });
 
       if (error) throw error;
 
-      if (data && data.length > 0) {
+      const productsData = data as unknown as Product[];
+      if (productsData && productsData.length > 0) {
         // Use the first product's fisherman profile for fulfillment details
-        setProduct(data[0] as unknown as Product);
+        setProduct(productsData[0]);
       }
     } catch (error) {
       console.error("Error fetching products:", error);

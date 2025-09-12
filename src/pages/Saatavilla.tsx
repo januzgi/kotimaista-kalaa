@@ -33,7 +33,7 @@ import { Link } from "react-router-dom";
 const Saatavilla = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [quantities, setQuantities] = useState<{ [productId: string]: number }>(
+  const [quantities, setQuantities] = useState<{ [productId: string]: string }>(
     {}
   );
   const { toast } = useToast();
@@ -50,13 +50,6 @@ const Saatavilla = () => {
       if (error) throw error;
       const correctlyTypedProducts = (data as unknown as Product[]) || [];
       setProducts(correctlyTypedProducts);
-
-      // Initialize quantities with default value of 1 for each product
-      const initialQuantities: { [productId: string]: number } = {};
-      correctlyTypedProducts.forEach((product) => {
-        initialQuantities[product.id] = Math.min(1, product.available_quantity);
-      });
-      setQuantities(initialQuantities);
     } catch (error) {
       console.error("Error fetching products:", error);
       toast({
@@ -77,24 +70,47 @@ const Saatavilla = () => {
   }, [fetchProducts]);
 
   /**
+   * Effect to update product amount input values if they are already in the cart
+   */
+  useEffect(() => {
+    if (products.length > 0) {
+      const newQuantities = products.reduce((acc, product) => {
+        // Check if the current product is already in the cart
+        const itemInCart = items.find((item) => item.productId === product.id);
+
+        // If it is, use its quantity. If not, default to "1".
+        acc[product.id] = itemInCart
+          ? itemInCart.quantity.toString()
+          : Math.min(1, product.available_quantity).toString();
+
+        return acc;
+      }, {} as { [productId: string]: string });
+
+      setQuantities(newQuantities);
+    }
+  }, [products, items]);
+
+  /**
    * Handles adding a product to the shopping cart
    * @param product - The product to add to the cart
    */
   const handleAddToCart = (product: Product) => {
-    const selectedQuantity = quantities[product.id] || 1;
+    const quantityString = quantities[product.id] || "1";
+    const numericQuantity = parseFloat(quantityString.replace(",", "."));
+
     addItem({
       productId: product.id,
       species: product.species,
       form: product.form,
       pricePerKg: product.price_per_kg,
-      quantity: selectedQuantity,
+      quantity: numericQuantity,
       fishermanName: product.fisherman_profile?.user?.full_name || "Tuntematon",
       availableQuantity: product.available_quantity,
     });
 
     toast({
       title: "Tuote lisätty ostoskoriin",
-      description: `${selectedQuantity} kg ${product.species} (${product.form}) lisätty ostoskoriin.`,
+      description: `${product.species} × ${quantityString}kg (${product.form}) lisätty ostoskoriin.`,
     });
   };
 
@@ -104,23 +120,67 @@ const Saatavilla = () => {
    * @param value - New quantity value as string
    */
   const handleQuantityChange = (productId: string, value: string) => {
-    const numValue = parseFloat(value);
+    // Replace comma with a period for universal parsing
+    const formattedValue = value.replace(",", ".");
     const product = products.find((p) => p.id === productId);
-    if (product && numValue >= 0.1 && numValue <= product.available_quantity) {
-      setQuantities((prev) => ({
-        ...prev,
-        [productId]: numValue,
-      }));
+
+    // Allow empty input or valid number patterns
+    if (formattedValue === "" || /^[0-9]*\.?[0-9]*$/.test(formattedValue)) {
+      const numValue = parseFloat(formattedValue);
+
+      // Cap at max value if it's a valid number and too high
+      if (
+        product &&
+        !isNaN(numValue) &&
+        numValue > product.available_quantity
+      ) {
+        setQuantities((prev) => ({
+          ...prev,
+          [productId]: product.available_quantity.toString(),
+        }));
+      } else {
+        setQuantities((prev) => ({
+          ...prev,
+          [productId]: formattedValue,
+        }));
+      }
     }
   };
 
   /**
-   * Formats a date string to Finnish locale format
+   * Handles blur event for quantity input, enforcing minimum value.
+   * @param productId - ID of the product
+   */
+  const handleQuantityBlur = (productId: string) => {
+    // Parse the current string value, replacing comma with period
+    let numericValue =
+      parseFloat(quantities[productId]?.replace(",", ".")) || 0;
+
+    // Enforce the minimum value of 0.1
+    if (numericValue < 0.1) {
+      numericValue = 0.1;
+    }
+
+    // Round the value to one decimal place (100g increments)
+    const roundedValue = Math.round(numericValue * 10) / 10;
+
+    // Update the state with the cleaned, rounded value as a string
+    setQuantities((prev) => ({
+      ...prev,
+      [productId]: roundedValue.toString(),
+    }));
+  };
+
+  /**
+   * Formats a date string to DD.MM. format
    * @param dateString - ISO date string
-   * @returns Formatted date string (DD.MM.YYYY)
+   * @returns Formatted date string (DD.MM.)
    */
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fi-FI");
+    const date = new Date(dateString);
+    const day = String(date.getDate());
+    const month = String(date.getMonth() + 1);
+    return `${day}.${month}.`;
   };
 
   if (loading) {
@@ -141,7 +201,7 @@ const Saatavilla = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 relative">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-dark mb-2">
             Saatavilla oleva kala
@@ -223,13 +283,13 @@ const Saatavilla = () => {
                       <Input
                         id={`quantity-${product.id}`}
                         type="number"
-                        min={0.1}
                         max={product.available_quantity}
                         step={0.1}
-                        value={quantities[product.id] || 1}
+                        value={quantities[product.id] || ""}
                         onChange={(e) =>
                           handleQuantityChange(product.id, e.target.value)
                         }
+                        onBlur={() => handleQuantityBlur(product.id)}
                         disabled={isInCart(product.id)}
                         className="w-full"
                       />
@@ -251,7 +311,7 @@ const Saatavilla = () => {
           </div>
         )}
         {items.length > 0 && (
-          <div className="mt-12 text-center">
+          <div className="mt-12 text-center bottom-4 sticky">
             <Link to="/ostoskori">
               <Button size="lg">
                 <ShoppingCart className="mr-2 h-4 w-4" />

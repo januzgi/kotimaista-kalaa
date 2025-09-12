@@ -441,6 +441,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      get_products_by_ids: {
+        Args: { product_ids_param: string[] }
+        Returns: Json[]
+      }
     }
     Enums: {
       fulfillment_type: "PICKUP" | "DELIVERY"

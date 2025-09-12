@@ -435,9 +435,9 @@ export const InventoryList = ({
                                     onClick={() =>
                                       handleSaveQuantity(product.id)
                                     }
-                                    className="h-6 w-6 p-0 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    className="flex gap-1 h-6 px-1 text-green-600 hover:text-green-700 hover:bg-green-50"
                                   >
-                                    <Check className="h-3 w-3" />
+                                    <Check className="h-3 w-3" /> Tallenna
                                   </Button>
                                 </div>
                               ) : (
@@ -449,9 +449,9 @@ export const InventoryList = ({
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => handleEditQuantity(product)}
-                                    className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+                                    className="h-6 gap-1 px-1 text-muted-foreground hover:text-accent-foreground"
                                   >
-                                    <Edit className="h-3 w-3" />
+                                    <Edit className="h-3 w-3" /> Muokkaa
                                   </Button>
                                 </div>
                               )}

@@ -42,14 +42,11 @@ interface ProductAvailability {
 const Ostoskori = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const {
-    items,
-    updateQuantity,
-    removeItem,
-    getTotalPrice,
-    removedItems,
-    clearRemovedItems,
-  } = useCart();
+  const { items, updateQuantity, removeItem, removedItems, clearRemovedItems } =
+    useCart();
+  const [inputQuantities, setInputQuantities] = useState<{
+    [key: string]: string;
+  }>({});
   const [productAvailability, setProductAvailability] = useState<
     ProductAvailability[]
   >([]);
@@ -100,6 +97,19 @@ const Ostoskori = () => {
   }, [checkInventory]);
 
   /**
+   * Effect for ensuring the inputs always show the correct, up-to-date quantity from the cart.
+   */
+  useEffect(() => {
+    if (items.length > 0) {
+      const quantitiesFromCart = items.reduce((acc, item) => {
+        acc[item.productId] = item.quantity.toString();
+        return acc;
+      }, {} as { [key: string]: string });
+      setInputQuantities(quantitiesFromCart);
+    }
+  }, [items]);
+
+  /**
    * Gets availability information for a specific product
    * @param productId - The product ID to check
    * @returns Product availability object or undefined
@@ -131,29 +141,47 @@ const Ostoskori = () => {
    * @param productId - ID of the product to update
    * @param newQuantity - New quantity value
    */
-  const handleQuantityChange = (productId: string, newQuantity: number) => {
-    // Cap the quantity at available quantity
+  const handleQuantityChange = (productId: string, value: string) => {
+    const formattedValue = value.replace(",", ".");
     const availability = getItemAvailability(productId);
-    if (availability && newQuantity > availability.currentAvailableQuantity) {
-      newQuantity = availability.currentAvailableQuantity;
-    }
+    const max = availability?.currentAvailableQuantity;
 
-    // Only update if the quantity is valid (greater than 0)
-    if (newQuantity > 0) {
-      updateQuantity(productId, newQuantity);
+    if (formattedValue === "" || /^[0-9]*\.?[0-9]*$/.test(formattedValue)) {
+      const numValue = parseFloat(formattedValue);
+
+      if (max && !isNaN(numValue) && numValue > max) {
+        setInputQuantities((prev) => ({
+          ...prev,
+          [productId]: max.toString(),
+        }));
+      } else {
+        setInputQuantities((prev) => ({
+          ...prev,
+          [productId]: formattedValue,
+        }));
+      }
     }
   };
 
   /**
    * Handles quantity input blur events with minimum value validation
    * @param productId - ID of the product
-   * @param currentValue - Current input value
    */
-  const handleQuantityBlur = (productId: string, currentValue: number) => {
-    // If the value is invalid or less than minimum, reset to 0.1
-    if (!currentValue || currentValue < 0.1) {
-      updateQuantity(productId, 0.1);
+  const handleQuantityBlur = (productId: string) => {
+    // Parse the current string value from the local input state
+    let numericValue =
+      parseFloat(inputQuantities[productId]?.replace(",", ".")) || 0;
+
+    // Enforce the minimum value of 0.1
+    if (numericValue < 0.1) {
+      numericValue = 0.1;
     }
+
+    // Round the value to one decimal place
+    const roundedValue = Math.round(numericValue * 10) / 10;
+
+    // Update the global cart context with the final, rounded numeric value
+    updateQuantity(productId, roundedValue);
   };
 
   /**
@@ -265,7 +293,7 @@ const Ostoskori = () => {
         ) : (
           <div className="space-y-6">
             {/* Cart Items */}
-            <div className="space-y-4">
+            <div className="space-y-4 mx-auto max-w-[400px] sm:max-w-[600px]">
               {items.map((item) => {
                 const soldOut = isSoldOut(item);
                 const availability = getItemAvailability(item.productId);
@@ -273,23 +301,23 @@ const Ostoskori = () => {
                 return (
                   <Card
                     key={item.productId}
-                    className={soldOut ? "opacity-50" : ""}
+                    className={`relative max-w-[400px] sm:max-w-[600px] ${
+                      soldOut ? "opacity-50" : ""
+                    }`}
                   >
                     <CardContent className="p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-end gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <FishIcon species={item.species} />
                             <h3 className="font-semibold text-lg">
                               {item.species}
                             </h3>
+                            <p className="text-muted-foreground">{item.form}</p>
                             {soldOut && (
                               <Badge variant="destructive">Loppuunmyyty</Badge>
                             )}
                           </div>
-                          <p className="text-muted-foreground mb-1">
-                            {item.form}
-                          </p>
                           <p className="text-sm text-muted-foreground">
                             Kalastaja: {item.fishermanName}
                           </p>
@@ -298,8 +326,8 @@ const Ostoskori = () => {
                           </p>
                         </div>
 
-                        <div className="flex items-center gap-4">
-                          <div>
+                        <div className="flex flex-col sm:flex-row items-end gap-4">
+                          <div className="self-start">
                             <div className="flex items-center gap-2">
                               <label
                                 htmlFor={`quantity-${item.productId}`}
@@ -311,29 +339,20 @@ const Ostoskori = () => {
                                 id={`quantity-${item.productId}`}
                                 type="number"
                                 step="0.1"
-                                min="0.1"
                                 max={
                                   availability?.currentAvailableQuantity ||
                                   item.availableQuantity
                                 }
-                                value={item.quantity}
-                                onChange={(e) => {
-                                  const newQuantity =
-                                    parseFloat(e.target.value) || 0;
+                                value={inputQuantities[item.productId] || ""}
+                                onChange={(e) =>
                                   handleQuantityChange(
                                     item.productId,
-                                    newQuantity
-                                  );
-                                }}
-                                onBlur={(e) => {
-                                  const currentValue = parseFloat(
                                     e.target.value
-                                  );
-                                  handleQuantityBlur(
-                                    item.productId,
-                                    currentValue
-                                  );
-                                }}
+                                  )
+                                }
+                                onBlur={() =>
+                                  handleQuantityBlur(item.productId)
+                                }
                                 className="w-20"
                                 disabled={soldOut}
                               />
@@ -349,7 +368,7 @@ const Ostoskori = () => {
                             )}
                           </div>
 
-                          <div className="text-right min-w-[80px]">
+                          <div className="text-right min-w-[80px] ml-auto sm:ml-0">
                             <p className="font-semibold">
                               {(item.pricePerKg * item.quantity).toFixed(2)} €
                             </p>
@@ -359,7 +378,7 @@ const Ostoskori = () => {
                             variant="ghost"
                             size="sm"
                             onClick={() => removeItem(item.productId)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 absolute top-3 right-3"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -430,10 +449,10 @@ const Ostoskori = () => {
                 Jatka ostoksia
               </Button>
               <Button
+                variant="default"
                 onClick={handleGoToCheckout}
                 disabled={items.length === 0 || hasUnavailableItems()}
                 className="flex-1"
-                size="lg"
               >
                 Mene kassalle
               </Button>
