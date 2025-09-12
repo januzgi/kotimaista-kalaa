@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { format } from "date-fns";
 import { fi } from "date-fns/locale";
 import { Trash2, ShoppingBag, Truck, Edit, Check } from "lucide-react";
@@ -18,7 +18,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { CatchGroup, FulfillmentSlot, Product } from "@/lib/types";
+import {
+  CatchGroup,
+  CatchGroupRpcResponse,
+  FulfillmentSlot,
+  Product,
+} from "@/lib/types";
 
 /**
  * Props for the InventoryList component
@@ -67,47 +72,48 @@ export const InventoryList = ({
   const [editingQuantity, setEditingQuantity] = useState<string>("");
   const { toast } = useToast();
 
+  const fetchInventoryData = useCallback(async () => {
+    try {
+      setLoading(true); // Set loading to true at the start of the fetch
+      // Use the RPC function to get catch groups with proper data relationships
+      const { data, error } = await supabase.rpc("get_catch_groups", {
+        fisherman_profile_id: fishermanProfileId,
+      });
+
+      if (error) throw error;
+
+      // Transform the RPC result to match our interface
+      const catchGroupsData = data as CatchGroupRpcResponse[];
+      if (!catchGroupsData) {
+        setCatchGroups([]); // Handle null case
+        return;
+      }
+
+      const transformedGroups: CatchGroup[] = catchGroupsData.map((group) => ({
+        ...group,
+        products: JSON.parse(group.products),
+        fulfillment_slots: JSON.parse(group.fulfillment_slots),
+      }));
+
+      setCatchGroups(transformedGroups);
+    } catch (error) {
+      console.error("Error fetching inventory data:", error);
+      toast({
+        variant: "destructive",
+        title: "Virhe",
+        description: "Varaston lataaminen epäonnistui.",
+      });
+    } finally {
+      setLoading(false); // Always set loading to false at the end
+    }
+  }, [fishermanProfileId, toast]);
+
   /**
    * Effect to fetch inventory data when component mounts or refresh key changes
    */
   useEffect(() => {
-    const fetchInventoryData = async () => {
-      try {
-        // Use the RPC function to get catch groups with proper data relationships
-        const { data: catchGroupsData, error } = await supabase.rpc(
-          "get_catch_groups",
-          {
-            fisherman_profile_id: fishermanProfileId,
-          }
-        );
-
-        if (error) throw error;
-
-        // Transform the RPC result to match our interface
-        const transformedGroups: CatchGroup[] = (catchGroupsData || []).map(
-          (group: CatchGroup) => ({
-            catch_id: group.catch_id,
-            catch_date: group.catch_date,
-            products: group.products || [],
-            fulfillment_slots: group.fulfillment_slots || [],
-          })
-        );
-
-        setCatchGroups(transformedGroups);
-      } catch (error) {
-        console.error("Error fetching inventory data:", error);
-        toast({
-          variant: "destructive",
-          title: "Virhe",
-          description: "Varaston lataaminen epäonnistui.",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchInventoryData();
-  }, [fishermanProfileId, refreshKey, toast]);
+  }, [fetchInventoryData, refreshKey]);
 
   /**
    * Formats catch date for display
@@ -312,29 +318,6 @@ export const InventoryList = ({
       }
 
       // Refresh the data by refetching using the same RPC function
-      const fetchInventoryData = async () => {
-        const { data: catchGroupsData, error } = await supabase.rpc(
-          "get_catch_groups",
-          {
-            fisherman_profile_id: fishermanProfileId,
-          }
-        );
-
-        if (error) throw error;
-
-        // Transform the RPC result to match our interface
-        const transformedGroups: CatchGroup[] = (catchGroupsData || []).map(
-          (group: CatchGroup) => ({
-            catch_id: group.catch_id,
-            catch_date: group.catch_date,
-            products: group.products || [],
-            fulfillment_slots: group.fulfillment_slots || [],
-          })
-        );
-
-        setCatchGroups(transformedGroups);
-      };
-
       await fetchInventoryData();
     } catch (error) {
       console.error("Error deleting:", error);

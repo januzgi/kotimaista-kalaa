@@ -24,17 +24,7 @@ import { fi } from "date-fns/locale";
 import { Fish, MapPin, Clock, Euro, User, Phone, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FishIcon } from "@/components/FishIcon";
-import { Product } from "@/lib/types";
-
-/**
- * Interface for fulfillment time slots
- */
-interface FulfillmentSlot {
-  id: string;
-  start_time: string;
-  end_time: string;
-  type: "PICKUP" | "DELIVERY";
-}
+import { FulfillmentSlot, Product } from "@/lib/types";
 
 /**
  * Order placement page component.

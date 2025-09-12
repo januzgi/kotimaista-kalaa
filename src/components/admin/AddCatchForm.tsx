@@ -32,16 +32,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-
-/**
- * Interface for fulfillment time slots
- */
-interface FulfillmentSlot {
-  date: Date;
-  start_time: string;
-  end_time: string;
-  type: "PICKUP" | "DELIVERY";
-}
+import { FulfillmentSlot } from "@/lib/types";
 
 /**
  * Available fish species options for the form
@@ -247,7 +238,7 @@ export const AddCatchForm = ({
   };
 
   /**
-   * Updates a specific field in a fulfillment slot
+   * Updates a specific field in a fulfillment slot and validates time logic
    * @param index - Index of the slot to update
    * @param field - Field name to update
    * @param value - New field value
@@ -257,8 +248,31 @@ export const AddCatchForm = ({
     field: keyof FulfillmentSlot,
     value: string | Date
   ) => {
+    // Create a mutable copy of the slots array
     const updatedSlots = [...slots];
-    updatedSlots[index] = { ...updatedSlots[index], [field]: value };
+
+    // Create an updated version of the specific slot being changed
+    const updatedSlot = { ...updatedSlots[index], [field]: value };
+
+    // --- Validation Logic ---
+    // We only need to validate if the change is to one of the time fields
+    if (field === "start_time" || field === "end_time") {
+      const startTime = updatedSlot.start_time;
+      const endTime = updatedSlot.end_time;
+
+      // Check for an error: if both times exist and start time is not before end time
+      if (startTime && endTime && startTime >= endTime) {
+        updatedSlot.error = "Loppuajan on oltava alkuajan jälkeen.";
+      } else {
+        // If the times are valid, clear any existing error
+        updatedSlot.error = null;
+      }
+    }
+
+    // Place the updated slot back into our array copy
+    updatedSlots[index] = updatedSlot;
+
+    // Set the state with the new array
     setSlots(updatedSlots);
   };
 
@@ -647,6 +661,10 @@ export const AddCatchForm = ({
                         onChange={(e) =>
                           updateSlot(index, "start_time", e.target.value)
                         }
+                        className={cn(
+                          slot.error &&
+                            "border-destructive focus-visible:ring-destructive"
+                        )}
                       />
                     </div>
                     <div>
@@ -658,7 +676,16 @@ export const AddCatchForm = ({
                         onChange={(e) =>
                           updateSlot(index, "end_time", e.target.value)
                         }
+                        className={cn(
+                          slot.error &&
+                            "border-destructive focus-visible:ring-destructive"
+                        )}
                       />
+                      {slot.error && (
+                        <p className="text-sm text-destructive mt-1">
+                          {slot.error}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <Label htmlFor={`type-${index}`}>Tyyppi</Label>
