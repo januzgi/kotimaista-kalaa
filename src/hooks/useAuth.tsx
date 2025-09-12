@@ -125,18 +125,18 @@ export const useAuth = () => {
 
   /**
    * Registers a new user with email and password
+   * Note: Email verification is handled by the send-signup-confirmation Edge Function
+   * which is triggered automatically on user signup via database trigger
    * @param email - User's email address
    * @param password - User's password
    */
   const signUpWithEmail = async (email: string, password: string) => {
     try {
-      const redirectUrl = `${window.location.origin}/`;
-
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${window.location.origin}/`,
         },
       });
 

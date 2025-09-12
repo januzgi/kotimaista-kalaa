@@ -29,8 +29,8 @@ export const ForgotPasswordDialog = ({
     if (!email) return;
     setLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/vaihda-salasana`,
+      const { error } = await supabase.functions.invoke('send-password-reset', {
+        body: { email }
       });
       if (error) throw error;
       setSent(true);
