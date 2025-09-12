@@ -390,17 +390,12 @@ const Tilaa = () => {
               {cartItems.map((item) => (
                 <div
                   key={item.productId}
-                  className="flex flex-col relative sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg"
                 >
-                  <div>
-                    <h3 className="font-semibold">
-                      <FishIcon
-                        species={item.species}
-                        className="absolute top-[-16px] left-[-16px] mr-2 h-8 w-8"
-                      />
-                      {item.species}
-                    </h3>
-                    <p className="text-muted-foreground text-sm">{item.form}</p>
+                  <div className="flex gap-2 items-center">
+                    <FishIcon species={item.species} className="h-8 w-8" />
+                    <h3 className="font-semibold">{item.species}</h3>
+                    <p className="text-muted-foreground">{item.form}</p>
                   </div>
                   <div className="text-right">
                     <p className="font-semibold">

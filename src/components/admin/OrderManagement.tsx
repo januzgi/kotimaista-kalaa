@@ -32,7 +32,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
   const { newOrderCount } = useNotifications();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-12">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-dark mb-2">
           Tilaukset
@@ -44,27 +44,39 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
 
       <Tabs defaultValue="new" className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="new" className="text-xs sm:text-sm relative">
+          <TabsTrigger
+            value="new"
+            className="text-xs sm:text-sm relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+          >
             <Inbox className="mr-1 h-4 w-4" />
             Uudet
             {newOrderCount > 0 && (
               <Badge
                 variant="destructive"
-                className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs"
+                className="ml-2 h-4 w-4 p-0 flex items-center justify-center text-xs"
               >
                 {newOrderCount}
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="confirmed" className="text-xs sm:text-sm">
+          <TabsTrigger
+            value="confirmed"
+            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+          >
             <CheckCircle2 className="mr-1 h-4 w-4" />
             Vahvistetut
           </TabsTrigger>
-          <TabsTrigger value="completed" className="text-xs sm:text-sm">
+          <TabsTrigger
+            value="completed"
+            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+          >
             <PackageCheck className="mr-1 h-4 w-4" />
             Valmiit
           </TabsTrigger>
-          <TabsTrigger value="cancelled" className="text-xs sm:text-sm">
+          <TabsTrigger
+            value="cancelled"
+            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+          >
             <XCircle className="mr-1 h-4 w-4" />
             Perutut
           </TabsTrigger>

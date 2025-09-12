@@ -314,7 +314,7 @@ const Saatavilla = () => {
           <div className="mt-12 text-center bottom-4 sticky">
             <Link to="/ostoskori">
               <Button size="lg">
-                <ShoppingCart className="mr-2 h-4 w-4" />
+                <ShoppingCart className="h-4 w-4" />
                 Siirry ostoskoriin ({items.length})
               </Button>
             </Link>

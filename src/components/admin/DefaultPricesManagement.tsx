@@ -385,7 +385,7 @@ export const DefaultPricesManagement = ({
               </div>
 
               <Button type="submit" className="w-full md:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus className="w-4 h-4" />
                 Lisää kilohinta
               </Button>
             </form>
@@ -415,10 +415,10 @@ export const DefaultPricesManagement = ({
                 >
                   <div className="flex items-center space-x-4">
                     <div>
-                      <span className="font-medium">
+                      <span className="font-medium lowercase">
                         {getSpeciesLabel(price.species)}
                       </span>
-                      <span className="text-muted-foreground">
+                      <span className="text-muted-foreground lowercase">
                         {" "}
                         - {getFormLabel(price.form)}
                       </span>

@@ -266,7 +266,7 @@ export const Header = () => {
                         onClick={signOut}
                         className="w-full justify-start"
                       >
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <LogOut className="h-4 w-4" />
                         Kirjaudu ulos
                       </Button>
                     </div>

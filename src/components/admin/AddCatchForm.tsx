@@ -527,7 +527,7 @@ export const AddCatchForm = ({
                         size="sm"
                         onClick={() => removeFishEntry(index)}
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
+                        <Trash2 className="h-4 w-4" />
                         Poista
                       </Button>
                     </div>
@@ -543,7 +543,7 @@ export const AddCatchForm = ({
                   size="sm"
                   onClick={addFishEntry}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4" />
                   Lisää toinen kala
                 </Button>
               </div>
@@ -703,7 +703,7 @@ export const AddCatchForm = ({
                   size="sm"
                   onClick={addSlot}
                 >
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="h-4 w-4" />
                   Lisää aika
                 </Button>
               </div>
