@@ -6,6 +6,7 @@ import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
+import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 const Index = () => {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const { user } = useAuth();
   const [isSubscribed, setIsSubscribed] = useState(false);
 
@@ -51,6 +53,12 @@ const Index = () => {
     };
 
     checkSubscription();
+  }, [user]);
+
+  useEffect(() => {
+    if (user && !user.user_metadata?.full_name) {
+      setIsProfileModalOpen(true);
+    }
   }, [user]);
 
   return (
@@ -90,6 +98,15 @@ const Index = () => {
         )}
       </main>
       <Footer />
+      
+      <ProfileCompletionModal
+        open={isProfileModalOpen}
+        onOpenChange={setIsProfileModalOpen}
+        onSuccess={() => {
+          setIsProfileModalOpen(false);
+          window.location.reload();
+        }}
+      />
     </div>
   );
 };
