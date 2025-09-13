@@ -17,7 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
-import { useNotifications } from "@/contexts/NotificationContext";
+import { useNotifications } from "@/hooks/useNotifications";
 
 /**
  * Application header component with navigation, authentication, and shopping cart.

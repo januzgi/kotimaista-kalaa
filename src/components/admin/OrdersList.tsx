@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { useNotifications } from "@/contexts/NotificationContext";
 import { format } from "date-fns";
 import { fi } from "date-fns/locale";
 import {
@@ -26,6 +25,7 @@ import {
 import { Order, FishermanProfile } from "@/lib/types";
 import { ConfirmationDialog } from "../ConfirmationDialog";
 import { FishIcon } from "../FishIcon";
+import { useNotifications } from "@/hooks/useNotifications";
 
 /**
  * Props for the OrdersList component

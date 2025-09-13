@@ -11,11 +11,11 @@ import { DefaultPricesManagement } from "@/components/admin/DefaultPricesManagem
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNotifications } from "@/contexts/NotificationContext";
 import { useNavigate } from "react-router-dom";
 import { Fish, Euro, ShoppingCart, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FishermanSchedule } from "@/components/admin/FishermanSchedule";
+import { useNotifications } from "@/hooks/useNotifications";
 
 /**
  * Admin dashboard component for fishermen to manage their business.

@@ -1,9 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useNotifications } from "@/contexts/NotificationContext";
 import { Inbox, CheckCircle2, XCircle, PackageCheck } from "lucide-react";
 import { OrdersList } from "./OrdersList";
 import { FishermanProfile } from "@/lib/types";
+import { useNotifications } from "@/hooks/useNotifications";
 
 /**
  * Props for the OrderManagement component
