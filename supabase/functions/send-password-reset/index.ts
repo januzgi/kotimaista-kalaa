@@ -17,15 +17,12 @@
  * Returns:
  * - Success: {success: true, message: string}
  * - Error: {error: string}
- */
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
+ */ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
-
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -33,18 +30,14 @@ Deno.serve(async (req) => {
       headers: corsHeaders,
     });
   }
-
   try {
     const supabaseClient = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
-
     // Parse request body
     const { email } = await req.json();
-    
     console.log("Processing password reset request for email:", email);
-
     if (!email) {
       return new Response(
         JSON.stringify({
@@ -59,7 +52,6 @@ Deno.serve(async (req) => {
         }
       );
     }
-
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
@@ -76,21 +68,20 @@ Deno.serve(async (req) => {
         }
       );
     }
-
     // Construct site URL for redirect
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const siteUrl = supabaseUrl.replace('/supabase', '') || 'http://localhost:3000';
+    const siteUrl =
+      supabaseUrl.replace("/supabase", "") || "http://localhost:3000";
     const redirectUrl = `${siteUrl}/vaihda-salasana`;
-
     // Generate secure password recovery link
-    const { data: linkData, error: linkError } = await supabaseClient.auth.admin.generateLink({
-      type: 'recovery',
-      email: email,
-      options: {
-        redirectTo: redirectUrl
-      }
-    });
-
+    const { data: linkData, error: linkError } =
+      await supabaseClient.auth.admin.generateLink({
+        type: "recovery",
+        email: email,
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
     if (linkError || !linkData.properties?.action_link) {
       console.error("Error generating recovery link:", linkError);
       return new Response(
@@ -106,10 +97,8 @@ Deno.serve(async (req) => {
         }
       );
     }
-
     const confirmationUrl = linkData.properties.action_link;
     console.log("Generated recovery URL for user:", email);
-
     // Email HTML template with recovery URL
     const emailHtml = `
       <!DOCTYPE html>
@@ -140,7 +129,6 @@ Deno.serve(async (req) => {
       </body>
       </html>
     `;
-
     // Send email using Brevo
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
@@ -162,7 +150,6 @@ Deno.serve(async (req) => {
         htmlContent: emailHtml,
       }),
     });
-
     if (!brevoResponse.ok) {
       const errorText = await brevoResponse.text();
       console.error("Brevo email error:", errorText);
@@ -179,9 +166,7 @@ Deno.serve(async (req) => {
         }
       );
     }
-
     console.log("Password reset email sent successfully to:", email);
-
     return new Response(
       JSON.stringify({
         success: true,

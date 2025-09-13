@@ -18,7 +18,7 @@
  * - customerPhone: Customer's phone number
  * - customerAddress?: Delivery address (required for delivery orders)
  * - fulfillmentType: 'PICKUP' or 'DELIVERY'
- * - fulfillmentSlotId: Selected time slot ID
+ * - fulfillmentSlotId: Selected time slot ID or NULL
  *
  * Returns:
  * - Success: {success: true, orderId: string, message: string}
@@ -166,16 +166,17 @@ Deno.serve(async (req) => {
     // If any items are sold out, return error
     if (soldOutItems.length > 0) {
       console.log("Items sold out:", soldOutItems);
+      const soldOutProductIds = orderData.cartItems
+        .filter((item) => {
+          const product = products.find((p) => p.id === item.productId);
+          return product && product.available_quantity < item.quantity;
+        })
+        .map((item) => item.productId);
       return new Response(
         JSON.stringify({
           error: "Items sold out",
           soldOutItems,
-          soldOutProductIds: orderData.cartItems
-            .filter((item) => {
-              const product = products.find((p) => p.id === item.productId);
-              return product && product.available_quantity < item.quantity;
-            })
-            .map((item) => item.productId),
+          soldOutProductIds,
         }),
         {
           status: 409,
@@ -225,7 +226,7 @@ Deno.serve(async (req) => {
       );
     }
     console.log("Order created:", orderResult.id);
-    // Create order items and update product quantities
+    // Create order items
     const orderItems = validItems.map((item) => ({
       order_id: orderResult.id,
       product_id: item.product.id,
@@ -236,7 +237,6 @@ Deno.serve(async (req) => {
       .insert(orderItems);
     if (orderItemsError) {
       console.error("Error creating order items:", orderItemsError);
-      // Try to clean up the order
       await supabaseClient.from("orders").delete().eq("id", orderResult.id);
       return new Response(
         JSON.stringify({
@@ -263,8 +263,6 @@ Deno.serve(async (req) => {
         .eq("id", item.product.id);
       if (updateError) {
         console.error("Error updating product quantity:", updateError);
-        // This is a critical error - we should rollback but Supabase doesn't support transactions
-        // In a production system, you'd want to use stored procedures for this
         return new Response(
           JSON.stringify({
             error: "Failed to update inventory",
@@ -280,7 +278,7 @@ Deno.serve(async (req) => {
       }
     }
     console.log("Order processing completed successfully");
-    // Send notification email to fisherman
+    // ✨ --- Start of updated email logic --- ✨
     try {
       // Get fisherman email
       const { data: fishermanUser, error: fishermanError } =
@@ -288,15 +286,42 @@ Deno.serve(async (req) => {
           firstProduct.fisherman_profile.user_id
         );
       if (!fishermanError && fishermanUser.user) {
-        // Create order summary for email
         const itemsList = validItems
           .map(
             (item) =>
               `${item.product.species} (${item.product.form}) - ${item.requestedQuantity} kg`
           )
           .join("\n");
-        const fulfillmentDate = new Date(orderData.fulfillmentSlotId);
-        const dateStr = fulfillmentDate.toLocaleDateString("fi-FI");
+        let fulfillmentDetailsHtml = "";
+        if (orderData.fulfillmentSlotId) {
+          const { data: slotData, error: slotError } = await supabaseClient
+            .from("fulfillment_slots")
+            .select("start_time, end_time")
+            .eq("id", orderData.fulfillmentSlotId)
+            .single();
+          if (!slotError && slotData) {
+            const startTime = new Date(slotData.start_time).toLocaleTimeString(
+              "fi-FI",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
+            const endTime = new Date(slotData.end_time).toLocaleTimeString(
+              "fi-FI",
+              {
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
+            const startDate = new Date(slotData.start_time).toLocaleDateString(
+              "fi-FI"
+            );
+            fulfillmentDetailsHtml = `<p><strong>Toimitusaika:</strong> ${startDate} klo ${startTime} - ${endTime}</p>`;
+          }
+        } else {
+          fulfillmentDetailsHtml = `<p><strong>Toimitusaika:</strong> <span style="color: #dc3545; font-weight: bold;">Sovittava erikseen asiakkaan kanssa.</span></p>`;
+        }
         const subject = `Uusi tilaus saapunut! (Tilaus #${orderResult.id.slice(
           0,
           8
@@ -316,7 +341,6 @@ Deno.serve(async (req) => {
                 8
               )}</p>
             </div>
-
             <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0;">
               <h2 style="color: #000a43; margin-top: 0;">Asiakkaan tiedot</h2>
               <p><strong>Nimi:</strong> ${orderData.customerName}</p>
@@ -326,10 +350,8 @@ Deno.serve(async (req) => {
                   ? `<p><strong>Osoite:</strong> ${orderData.customerAddress}</p>`
                   : ""
               }
-              
               <h3 style="color: #000a43;">Tilatut tuotteet</h3>
               <pre style="background: #f8f9fa; padding: 15px; border-radius: 4px; white-space: pre-wrap;">${itemsList}</pre>
-              
               <p><strong>Toimitustapa:</strong> ${
                 orderData.fulfillmentType === "PICKUP"
                   ? "Nouto"
@@ -342,19 +364,17 @@ Deno.serve(async (req) => {
                     )} €</p>`
                   : ""
               }
+              ${fulfillmentDetailsHtml}
             </div>
-
             <div style="background: #e3f2fd; border-left: 4px solid #027bff; padding: 15px; margin: 20px 0;">
               <p style="margin: 0; color: #1565c0;"><strong>Toimenpide:</strong> Kirjaudu ylläpitoon vahvistaaksesi tilauksen ja lähettääksesi asiakkaalle lopulliset tiedot.</p>
             </div>
-
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://kotimaistakalaa.fi/admin" 
+              <a href="https://kotimaistakalaa.fi/yllapito" 
                  style="background: #027bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
                 Siirry ylläpitoon
               </a>
             </div>
-
             <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
             <p style="text-align: center; color: #666; font-size: 14px;">
               <strong>© Kotimaista kalaa</strong><br>
@@ -363,7 +383,6 @@ Deno.serve(async (req) => {
           </body>
           </html>
         `;
-        // Send email using Brevo
         const brevoResponse = await fetch(
           "https://api.brevo.com/v3/smtp/email",
           {
@@ -397,8 +416,8 @@ Deno.serve(async (req) => {
       }
     } catch (emailError) {
       console.error("Error sending fisherman notification email:", emailError);
-      // Don't fail the order creation if email fails
     }
+    // ✨ --- End of updated email logic --- ✨
     return new Response(
       JSON.stringify({
         success: true,

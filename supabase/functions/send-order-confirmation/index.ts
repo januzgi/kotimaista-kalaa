@@ -164,23 +164,77 @@ Deno.serve(async (req) => {
     const deliveryFee =
       order.fulfillment_type === "DELIVERY" ? order.final_delivery_fee || 0 : 0;
     const totalPrice = itemsTotal + deliveryFee;
-    // Format date and time
-    const fulfillmentDate = new Date(order.fulfillment_slot.start_time);
-    const startTime = fulfillmentDate.toLocaleTimeString("fi-FI", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const endTime = new Date(
-      order.fulfillment_slot.end_time
-    ).toLocaleTimeString("fi-FI", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-    const dateStr = fulfillmentDate.toLocaleDateString("fi-FI");
-    // Get fisherman info
+    // ✨ --- Start of updated email logic --- ✨
     const fishermanProfile =
       order.order_items[0]?.product?.fisherman_profile || {};
-    // Create email content
+    let fulfillmentDetailsHtml = "";
+    if (order.fulfillment_slot) {
+      const startTime = new Date(
+        order.fulfillment_slot.start_time
+      ).toLocaleTimeString("fi-FI", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const endTime = new Date(
+        order.fulfillment_slot.end_time
+      ).toLocaleTimeString("fi-FI", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      const dateStr = new Date(
+        order.fulfillment_slot.start_time
+      ).toLocaleDateString("fi-FI");
+      fulfillmentDetailsHtml = `
+        <h3 style="color: #000a43; margin-bottom: 10px;">${
+          order.fulfillment_type === "PICKUP" ? "Nouto" : "Toimitus"
+        }tiedot</h3>
+        <p><strong>Päivämäärä:</strong> ${dateStr}</p>
+        <p><strong>Aika:</strong> ${startTime} - ${endTime}</p>
+        ${
+          order.fulfillment_type === "PICKUP"
+            ? `
+          <p><strong>Noutopaikka:</strong> ${
+            fishermanProfile.pickup_address || "Tiedot toimitetaan erikseen"
+          }</p>
+        `
+            : `
+          <p><strong>Toimitusosoite:</strong> ${order.customer_address}</p>
+        `
+        }
+        ${
+          fishermanProfile.public_phone_number
+            ? `
+          <p><strong>Kalastajan puhelin:</strong> ${fishermanProfile.public_phone_number}</p>
+        `
+            : ""
+        }
+      `;
+    } else {
+      fulfillmentDetailsHtml = `
+        <h3 style="color: #000a43; margin-bottom: 10px;">${
+          order.fulfillment_type === "PICKUP" ? "Nouto" : "Toimitus"
+        }tiedot</h3>
+        <p><strong>Toimitusaika:</strong> <span style="font-weight: bold;">Kalastaja on sinuun yhteydessä sopiakseen tarkemmasta ajasta.</span></p>
+        ${
+          order.fulfillment_type === "PICKUP"
+            ? `
+          <p><strong>Noutopaikka:</strong> ${
+            fishermanProfile.pickup_address || "Tiedot toimitetaan erikseen"
+          }</p>
+        `
+            : `
+          <p><strong>Toimitusosoite:</strong> ${order.customer_address}</p>
+        `
+        }
+        ${
+          fishermanProfile.public_phone_number
+            ? `
+          <p><strong>Kalastajan puhelin:</strong> ${fishermanProfile.public_phone_number}</p>
+        `
+            : ""
+        }
+      `;
+    }
     const subject = `Kotimaistakalaa.fi: Tilauksesi #${order.id.slice(
       0,
       8
@@ -220,16 +274,12 @@ Deno.serve(async (req) => {
             8
           )}</p>
         </div>
-
         <p>Hei ${order.customer_name},</p>
-        
         <p>Kiitos tilauksestasi! Tilauksesi on nyt vahvistettu ja odottaa ${
           order.fulfillment_type === "PICKUP" ? "noutoa" : "toimitusta"
         }.</p>
-
         <div style="background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin: 20px 0;">
           <h2 style="color: #000a43; margin-top: 0;">Tilauksen tiedot</h2>
-          
           <table style="width: 100%; margin-bottom: 20px;">
             <thead>
               <tr style="background: #f8f9fa;">
@@ -261,33 +311,8 @@ Deno.serve(async (req) => {
               </tr>
             </tbody>
           </table>
-
-          <h3 style="color: #000a43; margin-bottom: 10px;">${
-            order.fulfillment_type === "PICKUP" ? "Nouto" : "Toimitus"
-          }tiedot</h3>
-          <p><strong>Päivämäärä:</strong> ${dateStr}</p>
-          <p><strong>Aika:</strong> ${startTime} - ${endTime}</p>
-          ${
-            order.fulfillment_type === "PICKUP"
-              ? `
-            <p><strong>Noutopaikka:</strong> ${
-              fishermanProfile.pickup_address || "Tiedot toimitetaan erikseen"
-            }</p>
-          `
-              : `
-            <p><strong>Toimitusosoite:</strong> ${order.customer_address}</p>
-          `
-          }
-          
-          ${
-            fishermanProfile.public_phone_number
-              ? `
-            <p><strong>Kalastajan puhelin:</strong> ${fishermanProfile.public_phone_number}</p>
-          `
-              : ""
-          }
+          ${fulfillmentDetailsHtml}
         </div>
-
         <div style="background: #e3f2fd; border-left: 4px solid #027bff; padding: 15px; margin: 20px 0;">
           <p style="margin: 0; color: #1565c0;"><strong>Tärkeää:</strong> Maksu suoritetaan paikan päällä ${
             order.fulfillment_type === "PICKUP"
@@ -295,15 +320,12 @@ Deno.serve(async (req) => {
               : "toimituksen yhteydessä"
           }. Otathan mukaan käteistä tai varmista, että mobiilimaksu on mahdollista.</p>
         </div>
-
         <p>Jos sinulla on kysyttävää tilauksestasi, ota yhteyttä suoraan kalastajaan${
           fishermanProfile.public_phone_number
             ? ` numeroon ${fishermanProfile.public_phone_number}`
             : ""
         }.</p>
-
         <p>Kiitos, että tuet paikallista kalastusta!</p>
-
         <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
         <p style="text-align: center; color: #666; font-size: 14px;">
            <strong>© Kotimaista kalaa</strong><br>
@@ -312,6 +334,7 @@ Deno.serve(async (req) => {
       </body>
       </html>
     `;
+    // ✨ --- End of updated email logic --- ✨
     // Send email using Brevo
     const brevoResponse = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
