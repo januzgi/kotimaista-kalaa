@@ -1,31 +1,7 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-
-interface NotificationContextType {
-  newOrderCount: number;
-  refreshNotifications: () => Promise<void>;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(
-  undefined
-);
-
-export const useNotifications = () => {
-  const context = useContext(NotificationContext);
-  if (!context) {
-    throw new Error(
-      "useNotifications must be used within a NotificationProvider"
-    );
-  }
-  return context;
-};
+import { NotificationContext } from "@/hooks/useNotifications";
 
 interface NotificationProviderProps {
   children: React.ReactNode;
@@ -44,7 +20,6 @@ export const NotificationProvider = ({
     }
 
     try {
-      // Check if user is admin
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("role")
@@ -56,14 +31,11 @@ export const NotificationProvider = ({
         return;
       }
 
-      // Get new order count using RPC function
       const { data, error } = await supabase.rpc("get_new_order_count");
-
       if (error) {
         console.error("Error fetching new order count:", error);
         return;
       }
-
       setNewOrderCount(data || 0);
     } catch (error) {
       console.error("Error in refreshNotifications:", error);
@@ -74,7 +46,6 @@ export const NotificationProvider = ({
     refreshNotifications();
   }, [refreshNotifications, user]);
 
-  // Set up real-time subscription for order changes
   useEffect(() => {
     if (!user) return;
 
