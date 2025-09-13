@@ -481,20 +481,26 @@ export const OrdersList = ({ fishermanProfile, status, refreshTrigger }: OrdersL
                         </span>
                       )}
                     </p>
-                    <p>
-                      <strong>Aika:</strong>{" "}
-                      {format(
-                        new Date(order.fulfillment_slot.start_time),
-                        "dd.MM.yyyy HH:mm",
-                        { locale: fi }
-                      )}{" "}
-                      -{" "}
-                      {format(
-                        new Date(order.fulfillment_slot.end_time),
-                        "HH:mm",
-                        { locale: fi }
-                      )}
-                    </p>
+                    {order.fulfillment_slot ? (
+                      <p>
+                        <strong>Aika:</strong>{" "}
+                        {format(
+                          new Date(order.fulfillment_slot.start_time),
+                          "dd.MM.yyyy HH:mm",
+                          { locale: fi }
+                        )}{" "}
+                        -{" "}
+                        {format(
+                          new Date(order.fulfillment_slot.end_time),
+                          "HH:mm",
+                          { locale: fi }
+                        )}
+                      </p>
+                    ) : (
+                      <p>
+                        <strong>Aika:</strong> Sovitaan erikseen
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
