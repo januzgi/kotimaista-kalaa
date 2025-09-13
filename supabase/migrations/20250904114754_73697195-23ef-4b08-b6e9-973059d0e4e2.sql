@@ -57,6 +57,7 @@ CREATE TABLE public.fulfillment_slots (
 CREATE TABLE public.orders (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   customer_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  fisherman_profile_id UUID REFERENCES public.fisherman_profiles(id) ON DELETE SET NULL,
   customer_name TEXT NOT NULL,
   customer_address TEXT,
   customer_phone TEXT NOT NULL,
