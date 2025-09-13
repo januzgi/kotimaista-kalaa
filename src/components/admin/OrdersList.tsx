@@ -33,6 +33,7 @@ import { useNotifications } from "@/hooks/useNotifications";
 interface OrdersListProps {
   fishermanProfile: FishermanProfile | null;
   status: "NEW" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  refreshTrigger?: number;
 }
 
 /**
@@ -54,7 +55,7 @@ interface OrdersListProps {
  * @param props - The component props
  * @returns The orders list component with management capabilities
  */
-export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
+export const OrdersList = ({ fishermanProfile, status, refreshTrigger }: OrdersListProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -77,22 +78,8 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
 
     try {
       setLoading(true);
-      // First, get all fulfillment slot IDs for this fisherman
-      const { data: slotData, error: slotError } = await supabase
-        .from("fulfillment_slots")
-        .select("id")
-        .eq("fisherman_id", fishermanProfile.id);
-
-      if (slotError) throw slotError;
-
-      const slotIds = slotData?.map((slot) => slot.id) || [];
-
-      if (slotIds.length === 0) {
-        setOrders([]);
-        return;
-      }
-
-      // Then fetch orders for those slots
+      
+      // Fetch orders directly using fisherman_profile_id
       const { data, error } = await supabase
         .from("orders")
         .select(
@@ -122,7 +109,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
         `
         )
         .eq("status", status)
-        .in("fulfillment_slot_id", slotIds)
+        .eq("fisherman_profile_id", fishermanProfile.id)
         .order("created_at", { ascending: false });
 
       if (error) throw error;
@@ -137,7 +124,7 @@ export const OrdersList = ({ fishermanProfile, status }: OrdersListProps) => {
     } finally {
       setLoading(false);
     }
-  }, [fishermanProfile, status, toast]);
+  }, [fishermanProfile, status, toast, refreshTrigger]);
 
   useEffect(() => {
     fetchOrders();
