@@ -57,6 +57,7 @@ const Profiili = () => {
   const [pickupAddress, setPickupAddress] = useState("");
   const [publicPhone, setPublicPhone] = useState("");
   const [defaultDeliveryFee, setDefaultDeliveryFee] = useState(0);
+  const [deliveryFeeInput, setDeliveryFeeInput] = useState<string>("");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -112,6 +113,13 @@ const Profiili = () => {
     fetchUserData();
   }, [user]);
 
+  useEffect(() => {
+    // When the defaultDeliveryFee is loaded, update the input's string state
+    if (defaultDeliveryFee !== null) {
+      setDeliveryFeeInput(defaultDeliveryFee.toString());
+    }
+  }, [defaultDeliveryFee]);
+
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
   };
@@ -148,9 +156,27 @@ const Profiili = () => {
     setHasChanges(true);
   };
 
-  const handleDefaultDeliveryFeeChange = (value: number) => {
-    setDefaultDeliveryFee(value);
-    setHasChanges(true);
+  const handleFeeInputChange = (value: string) => {
+    const formattedValue = value.replace(",", ".");
+    // Allow empty input or valid number patterns
+    if (formattedValue === "" || /^[0-9]*\.?[0-9]*$/.test(formattedValue)) {
+      setDeliveryFeeInput(formattedValue);
+      setHasChanges(true);
+    }
+  };
+
+  const handleFeeInputBlur = () => {
+    const numericValue = parseFloat(deliveryFeeInput.replace(",", ".")) || 0;
+
+    // Enforce min (0) and max (40) values
+    const cappedValue = Math.max(0, Math.min(numericValue, 40));
+
+    // Round to the nearest whole number
+    const finalValue = Math.round(cappedValue);
+
+    // Update both the "real" numeric state and the input's string state
+    setDefaultDeliveryFee(finalValue);
+    setDeliveryFeeInput(finalValue.toString());
   };
 
   const handleSaveAll = async () => {
@@ -412,14 +438,11 @@ const Profiili = () => {
                   <Input
                     type="number"
                     step="1"
-                    min="0"
-                    value={defaultDeliveryFee}
-                    onChange={(e) =>
-                      handleDefaultDeliveryFeeChange(
-                        parseFloat(e.target.value) || 0
-                      )
-                    }
-                    placeholder="0.00"
+                    max="40"
+                    value={deliveryFeeInput}
+                    onChange={(e) => handleFeeInputChange(e.target.value)}
+                    onBlur={handleFeeInputBlur}
+                    placeholder="0"
                   />
                 </div>
               </div>
