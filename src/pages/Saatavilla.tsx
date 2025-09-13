@@ -311,9 +311,9 @@ const Saatavilla = () => {
           </div>
         )}
         {items.length > 0 && (
-          <div className="mt-12 text-center bottom-4 sticky">
+          <div className="mt-12 p-2 w-fit rounded-lg bg-background mx-auto text-center bottom-4 sticky">
             <Link to="/ostoskori">
-              <Button size="lg">
+              <Button size="lg" className="hover:bg-primary">
                 <ShoppingCart className="h-4 w-4" />
                 Siirry ostoskoriin ({items.length})
               </Button>
