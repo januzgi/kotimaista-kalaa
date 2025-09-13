@@ -61,7 +61,7 @@ CREATE TABLE public.orders (
   customer_address TEXT,
   customer_phone TEXT NOT NULL,
   fulfillment_type fulfillment_type NOT NULL,
-  fulfillment_slot_id UUID NOT NULL REFERENCES public.fulfillment_slots(id),
+  fulfillment_slot_id UUID REFERENCES public.fulfillment_slots(id),
   final_delivery_fee NUMERIC(10,2) DEFAULT 0,
   status order_status NOT NULL DEFAULT 'NEW',
   created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),

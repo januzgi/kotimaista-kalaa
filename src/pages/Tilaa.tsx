@@ -240,7 +240,12 @@ const Tilaa = () => {
       return;
     }
 
-    if (!customerName || !customerPhone || !selectedSlotId || !acceptedTerms) {
+    if (
+      !customerName ||
+      !customerPhone ||
+      (hasAnySlots && !selectedSlotId) ||
+      !acceptedTerms
+    ) {
       toast({
         variant: "destructive",
         title: "Puuttuvia tietoja",
@@ -274,7 +279,7 @@ const Tilaa = () => {
         customerAddress:
           fulfillmentType === "DELIVERY" ? customerAddress : undefined,
         fulfillmentType,
-        fulfillmentSlotId: selectedSlotId,
+        fulfillmentSlotId: hasAnySlots ? selectedSlotId : null,
       };
 
       const { data, error } = await supabase.functions.invoke("create-order", {
@@ -475,7 +480,7 @@ const Tilaa = () => {
                     htmlFor="pickup"
                     className={!hasPickupSlots ? "text-muted-foreground" : ""}
                   >
-                    Nouto {!hasPickupSlots && "(ei saatavilla)"}
+                    Nouto {!hasPickupSlots && "(sovi aika kalastajan kanssa)"}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -677,7 +682,7 @@ const Tilaa = () => {
             onClick={handleSubmitOrder}
             disabled={
               submitting ||
-              (!hasAnySlots && !selectedSlotId) ||
+              (hasAnySlots && !selectedSlotId) ||
               !customerName ||
               !customerPhone ||
               !acceptedTerms ||
