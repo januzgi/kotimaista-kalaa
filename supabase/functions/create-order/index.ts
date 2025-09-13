@@ -206,6 +206,7 @@ Deno.serve(async (req) => {
         fulfillment_type: orderData.fulfillmentType,
         fulfillment_slot_id: orderData.fulfillmentSlotId,
         final_delivery_fee: deliveryFee,
+        fisherman_profile_id: firstProduct.fisherman_profile.id,
         status: "NEW",
       })
       .select()
