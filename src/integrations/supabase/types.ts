@@ -233,7 +233,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           final_delivery_fee: number | null
-          fulfillment_slot_id: string
+          fisherman_profile_id: string | null
+          fulfillment_slot_id: string | null
           fulfillment_type: Database["public"]["Enums"]["fulfillment_type"]
           id: string
           status: Database["public"]["Enums"]["order_status"]
@@ -246,7 +247,8 @@ export type Database = {
           customer_name: string
           customer_phone: string
           final_delivery_fee?: number | null
-          fulfillment_slot_id: string
+          fisherman_profile_id?: string | null
+          fulfillment_slot_id?: string | null
           fulfillment_type: Database["public"]["Enums"]["fulfillment_type"]
           id?: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -259,7 +261,8 @@ export type Database = {
           customer_name?: string
           customer_phone?: string
           final_delivery_fee?: number | null
-          fulfillment_slot_id?: string
+          fisherman_profile_id?: string | null
+          fulfillment_slot_id?: string | null
           fulfillment_type?: Database["public"]["Enums"]["fulfillment_type"]
           id?: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -271,6 +274,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_fisherman_profile_id_fkey"
+            columns: ["fisherman_profile_id"]
+            isOneToOne: false
+            referencedRelation: "fisherman_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -433,6 +443,7 @@ export type Database = {
         Args: { fisherman_profile_id: string }
         Returns: {
           catch_date: string
+          catch_id: string
           fulfillment_slots: Json
           products: Json
         }[]

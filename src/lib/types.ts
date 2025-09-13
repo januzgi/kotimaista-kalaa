@@ -81,10 +81,3 @@ export type FulfillmentSlot = {
   type: "PICKUP" | "DELIVERY";
   error?: string | null;
 };
-
-export type CatchGroupRpcResponse = {
-  catch_id: string;
-  catch_date: string;
-  products: string; // The database sends this as a JSON string
-  fulfillment_slots: string; // This is also a JSON string
-};

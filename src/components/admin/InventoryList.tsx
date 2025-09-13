@@ -18,12 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  CatchGroup,
-  CatchGroupRpcResponse,
-  FulfillmentSlot,
-  Product,
-} from "@/lib/types";
+import { CatchGroup, FulfillmentSlot, Product } from "@/lib/types";
 
 /**
  * Props for the InventoryList component
@@ -74,28 +69,17 @@ export const InventoryList = ({
 
   const fetchInventoryData = useCallback(async () => {
     try {
-      setLoading(true); // Set loading to true at the start of the fetch
-      // Use the RPC function to get catch groups with proper data relationships
+      setLoading(true);
       const { data, error } = await supabase.rpc("get_catch_groups", {
         fisherman_profile_id: fishermanProfileId,
       });
 
       if (error) throw error;
 
-      // Transform the RPC result to match our interface
-      const catchGroupsData = data as CatchGroupRpcResponse[];
-      if (!catchGroupsData) {
-        setCatchGroups([]); // Handle null case
-        return;
-      }
-
-      const transformedGroups: CatchGroup[] = catchGroupsData.map((group) => ({
-        ...group,
-        products: JSON.parse(group.products),
-        fulfillment_slots: JSON.parse(group.fulfillment_slots),
-      }));
-
-      setCatchGroups(transformedGroups);
+      // No transformation needed! The data is already in the correct shape.
+      // We can directly cast it to our main CatchGroup type.
+      const catchGroupsData = (data as unknown as CatchGroup[]) || [];
+      setCatchGroups(catchGroupsData);
     } catch (error) {
       console.error("Error fetching inventory data:", error);
       toast({
@@ -104,7 +88,7 @@ export const InventoryList = ({
         description: "Varaston lataaminen epäonnistui.",
       });
     } finally {
-      setLoading(false); // Always set loading to false at the end
+      setLoading(false);
     }
   }, [fishermanProfileId, toast]);
 
