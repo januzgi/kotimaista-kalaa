@@ -5,14 +5,21 @@ export default async function handler(
   res: VercelResponse
 ) {
   const supabaseFunctionUrl = process.env.SUPABASE_FUNCTION_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
-  if (!supabaseFunctionUrl) {
-    console.error("SUPABASE_FUNCTION_URL environment variable is not set.");
+  if (!supabaseFunctionUrl || !supabaseAnonKey) {
+    console.error("Supabase environment variables are not fully set.");
     return res.status(500).json({ error: "Server configuration error." });
   }
 
   try {
-    const response = await fetch(supabaseFunctionUrl, { method: "POST" });
+    const response = await fetch(supabaseFunctionUrl, {
+      method: "POST",
+      headers: {
+        apikey: supabaseAnonKey,
+        Authorization: `Bearer ${supabaseAnonKey}`,
+      },
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
