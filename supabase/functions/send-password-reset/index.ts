@@ -9,7 +9,7 @@
  * - Sends branded password reset emails via Brevo
  * - Professional HTML email formatting with recovery instructions
  * - Comprehensive error handling and validation
- * - Redirects to custom password change page
+ * - Redirects to custom password change page based on environment
  *
  * Request Body:
  * - email: string - User's email address for password reset
@@ -17,7 +17,8 @@
  * Returns:
  * - Success: {success: true, message: string}
  * - Error: {error: string}
- */ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -68,10 +69,10 @@ Deno.serve(async (req) => {
         }
       );
     }
-    // Construct site URL for redirect
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const siteUrl =
-      supabaseUrl.replace("/supabase", "") || "http://localhost:3000";
+    // Use the SITE_URL environment variable for redirects.
+    // This allows you to set different URLs for production, development, and local environments.
+    // Fallback to localhost:8080 for local development.
+    const siteUrl = Deno.env.get("SITE_URL") ?? "http://localhost:8080";
     const redirectUrl = `${siteUrl}/vaihda-salasana`;
     // Generate secure password recovery link
     const { data: linkData, error: linkError } =

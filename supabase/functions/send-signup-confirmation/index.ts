@@ -17,7 +17,8 @@
  * Returns:
  * - Success: {success: true, message: string}
  * - Error: {error: string}
- */ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+ */
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -55,16 +56,17 @@ Deno.serve(async (req) => {
         }
       );
     }
+    // Use the SITE_URL environment variable for redirects.
+    // This allows you to set different URLs for production, development, and local environments.
+    // Fallback to localhost:8080 for local development.
+    const siteUrl = Deno.env.get("SITE_URL") ?? "http://localhost:8080";
     // Generate secure signup verification link
     const { data: linkData, error: linkError } =
       await supabaseClient.auth.admin.generateLink({
         type: "signup",
         email: email,
         options: {
-          redirectTo: `${
-            Deno.env.get("SUPABASE_URL")?.replace("/supabase", "") ||
-            "http://localhost:3000"
-          }/`,
+          redirectTo: `${siteUrl}/`,
         },
       });
     if (linkError || !linkData.properties?.action_link) {
