@@ -13,7 +13,6 @@ Deno.serve(async (_req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    // Perform a lightweight query to wake the database
     const { error, count } = await supabaseClient
       .from("products")
       .select("*", { count: "exact", head: true })
