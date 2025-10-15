@@ -327,6 +327,9 @@ Deno.serve(async (req) => {
           0,
           8
         )})`;
+
+        const siteUrl =
+          Deno.env.get("SITE_URL") ?? "https://kotimaistakalaa.fi";
         const emailHtml = `
           <!DOCTYPE html>
           <html>
@@ -371,7 +374,7 @@ Deno.serve(async (req) => {
               <p style="margin: 0; color: #1565c0;"><strong>Toimenpide:</strong> Kirjaudu ylläpitoon vahvistaaksesi tilauksen ja lähettääksesi asiakkaalle lopulliset tiedot.</p>
             </div>
             <div style="text-align: center; margin: 30px 0;">
-              <a href="https://kotimaistakalaa.fi/yllapito" 
+              <a href="${siteUrl}/yllapito" 
                  style="background: #027bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
                 Siirry ylläpitoon
               </a>

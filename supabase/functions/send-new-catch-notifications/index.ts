@@ -6,7 +6,7 @@
  * Features:
  * - Fetches all email subscribers from database
  * - Sends batch notifications using Brevo SMTP
- * - HTML and text email content
+ * - HTML and text email content with environment-aware URLs
  * - Error handling for individual email failures
  * - Success/failure reporting
  *
@@ -15,7 +15,8 @@
  * Returns:
  * - Success: {message: string, successful: number, failed: number, details: array}
  * - Error: {error: string}
- */ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+ */
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -34,6 +35,10 @@ const handler = async (req) => {
       console.error("BREVO_API_KEY not found");
       throw new Error("Email service not configured");
     }
+    // Use the SITE_URL environment variable for links.
+    // Fallback to the production URL if not set.
+    const siteUrl = Deno.env.get("SITE_URL") ?? "https://kotimaistakalaa.fi";
+
     // Import Supabase client
     const { createClient } = await import(
       "https://esm.sh/@supabase/supabase-js@2.57.0"
@@ -67,6 +72,7 @@ const handler = async (req) => {
     console.log(`Found ${subscribers.length} subscribers to notify`);
     // Email content
     const subject = "Uutta kalaa saatavilla! - Kotimaistakalaa.fi";
+    const availableUrl = `${siteUrl}/saatavilla`;
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -81,7 +87,7 @@ const handler = async (req) => {
           <p style="font-size: 16px; margin-bottom: 30px;">
             Hei, kalastaja on juuri lisännyt uutta saalista myyntiin. Katso saatavilla olevat kalat ja tee tilauksesi!
           </p>
-          <a href="https://kotimaistakalaa.fi/saatavilla" 
+          <a href="${availableUrl}" 
              style="display: inline-block; background-color: #027bff; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px;">
             Katso saatavilla olevat kalat
           </a>
@@ -98,7 +104,7 @@ const handler = async (req) => {
       
       Hei, kalastaja on juuri lisännyt uutta saalista myyntiin. Katso saatavilla olevat kalat ja tee tilauksesi!
       
-      Siirry sivulle: https://kotimaistakalaa.fi/saatavilla
+      Siirry sivulle: ${availableUrl}
       
       Terveisin,
       Kotimaistakalaa.fi
