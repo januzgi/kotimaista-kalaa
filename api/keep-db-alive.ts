@@ -1,4 +1,3 @@
-// src/pages/api/keep-db-alive.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 export default async function handler(
