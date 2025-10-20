@@ -293,7 +293,7 @@ export const DefaultPricesManagement = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-[var(--admin-side-container-width)] mx-auto">
       <Card>
         <CardHeader>
           <CardTitle>Lisää uusi kilohinta</CardTitle>

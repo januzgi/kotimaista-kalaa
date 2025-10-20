@@ -185,7 +185,7 @@ export const FishermanSchedule = ({
   };
 
   return (
-    <Card>
+    <Card className="max-w-[var(--admin-side-container-width)] mx-auto">
       <CardHeader>
         <CardTitle>Kalastajan aikataulu</CardTitle>
         <CardDescription>
