@@ -231,7 +231,7 @@ const Saatavilla = () => {
                     {formatDate(product.catch.catch_date)}
                   </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground w-fit">
                   Kalastaja:{" "}
                   {product.fisherman_profile?.user?.full_name || "Tuntematon"}
                 </div>
@@ -264,8 +264,8 @@ const Saatavilla = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <div>
+                <div className="space-y-3 text-center">
+                  <div className="mx-auto w-fit">
                     <label
                       htmlFor={`quantity-${product.id}`}
                       className="block text-sm font-medium mb-1"
@@ -283,14 +283,14 @@ const Saatavilla = () => {
                       }
                       onBlur={() => handleQuantityBlur(product.id)}
                       disabled={isInCart(product.id)}
-                      className="w-full"
+                      className="w-[200px]"
                     />
                   </div>
 
                   <Button
                     onClick={() => handleAddToCart(product)}
                     disabled={isInCart(product.id)}
-                    className="w-full"
+                    className="w-[200px]"
                     size="sm"
                     variant={isInCart(product.id) ? "secondary" : "default"}
                   >

@@ -354,7 +354,7 @@ const Tilaa = () => {
   const hasAnySlots = allSlots.length > 0;
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
+    <div className="container mx-auto px-4 py-8 max-w-2xl mb-4">
       <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
           Tee tilaus
@@ -386,11 +386,11 @@ const Tilaa = () => {
                 </div>
                 <div className="text-right">
                   <p className="font-semibold">
-                    {item.pricePerKg.toFixed(2)} €/kg
-                  </p>
-                  <p className="text-sm text-muted-foreground">
                     {item.quantity} kg ={" "}
                     {(item.quantity * item.pricePerKg).toFixed(2)} €
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {item.pricePerKg.toFixed(2)} €/kg
                   </p>
                 </div>
               </div>
@@ -422,8 +422,10 @@ const Tilaa = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="name">Nimi *</Label>
+              <div className="flex flex-col items-start">
+                <Label htmlFor="name">
+                  Nimi <span className="text-primary">*</span>
+                </Label>
                 <Input
                   id="name"
                   value={customerName}
@@ -432,8 +434,10 @@ const Tilaa = () => {
                   required
                 />
               </div>
-              <div>
-                <Label htmlFor="phone">Puhelinnumero *</Label>
+              <div className="flex flex-col items-start">
+                <Label htmlFor="phone">
+                  Puhelinnumero <span className="text-primary">*</span>
+                </Label>
                 <Input
                   id="phone"
                   type="tel"
@@ -575,7 +579,8 @@ const Tilaa = () => {
                   <div>
                     <p className="text-sm">
                       <strong>
-                        Nouto- tai kotiinkuljetusaikoja ei ole määritelty.
+                        Kalastaja ei ole määritellyt nouto- tai
+                        kotiinkuljetusaikoja.
                       </strong>
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -589,7 +594,8 @@ const Tilaa = () => {
                         </a>
                       ) : (
                         <span className="text-muted-foreground">
-                          Puhelinnumeroa ei ole saatavilla
+                          Puhelinnumeroa ei saatavilla, ole yhteydessä
+                          kalastajaan sähköpostitse.
                         </span>
                       )}
                     </p>
@@ -603,20 +609,33 @@ const Tilaa = () => {
         {/* Order Summary */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center">
+            <CardTitle className="flex items-center text-xl xs:text-2xl">
               <Euro className="mr-2 h-5 w-5 text-primary" />
               Tilauksen yhteenveto
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              {cartItems.map((item) => (
-                <div key={item.productId} className="flex justify-between">
+            <div className="space-y-0 xs:space-y-2">
+              {cartItems.map((item, index) => (
+                // <div key={item.productId} className="flex justify-between">
+                //   <span>
+                //     {item.species} ({item.quantity} kg ×{" "}
+                //     {item.pricePerKg.toFixed(2)} €/kg)
+                //   </span>
+                //   <span>{(item.quantity * item.pricePerKg).toFixed(2)} €</span>
+                // </div>
+                <div
+                  key={item.productId}
+                  className={`flex justify-between xs:flex-row flex-col border-t px-1 xs:px-0 xs:border-none
+                  ${index % 2 === 1 ? "xs:bg-transparent bg-muted" : ""}`}
+                >
                   <span>
                     {item.species} ({item.quantity} kg ×{" "}
                     {item.pricePerKg.toFixed(2)} €/kg)
                   </span>
-                  <span>{(item.quantity * item.pricePerKg).toFixed(2)} €</span>
+                  <span className="xs:text-left text-right font-medium">
+                    {(item.pricePerKg * item.quantity).toFixed(2)} €
+                  </span>
                 </div>
               ))}
               {fulfillmentType === "DELIVERY" && product && (
@@ -630,7 +649,7 @@ const Tilaa = () => {
               )}
               <Separator />
               <div className="flex justify-between font-bold text-lg">
-                <span>Yhteensä (alkaen)</span>
+                <span>Yhteensä</span>
                 <span>{calculateTotal().toFixed(2)} €</span>
               </div>
             </div>
@@ -643,7 +662,7 @@ const Tilaa = () => {
             id="terms"
             checked={acceptedTerms}
             onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-            className="mt-0.5"
+            className="mt-1"
           />
           <Label
             htmlFor="terms"

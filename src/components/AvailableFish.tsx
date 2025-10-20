@@ -27,6 +27,7 @@ export const AvailableFish = () => {
     { fishName: "Siika", price: "alkaen 18€/kg", fishIcon: fishIcons.siika },
     { fishName: "Muikku", price: "alkaen 6€/kg", fishIcon: fishIcons.muikku },
     { fishName: "Taimen", price: "alkaen 20€/kg", fishIcon: fishIcons.taimen },
+    { fishName: "Lohi", price: "alkaen 30€/kg", fishIcon: fishIcons.lohi },
   ];
 
   return (
@@ -37,7 +38,8 @@ export const AvailableFish = () => {
         </h2>
         <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
           Alla esimerkkejä kalalajeista ja niiden viitteelliset alkaen-hinnat.
-          Todellinen hinta riippuu kalan muodosta (esim. fileoitu).
+          Todellinen hinta riippuu kalan muodosta (esim. fileoitu) ja kalastajan
+          hinnoittelusta.
         </p>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:gap-6 mb-8">

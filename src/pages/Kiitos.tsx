@@ -39,7 +39,7 @@ const Kiitos = () => {
             </p>
             <div className="bg-muted/30 rounded-lg p-4">
               <h3 className="font-semibold mb-2">Mitä tapahtuu seuraavaksi?</h3>
-              <ul className="text-sm text-muted-foreground space-y-1 text-left max-w-md mx-auto">
+              <ul className="text-sm text-muted-foreground space-y-1 text-left w-fit mx-auto">
                 <li>• Kalastaja tarkistaa tilauksesi ja vahvistaa sen</li>
                 <li>
                   • Saat vahvistuksen sähköpostitse lopullisilla tiedoilla

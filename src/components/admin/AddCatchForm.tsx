@@ -435,7 +435,7 @@ export const AddCatchForm = ({
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full pl-3 text-left font-normal",
+                              "w-full pl-3 font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                           >
@@ -628,7 +628,7 @@ export const AddCatchForm = ({
                           <Button
                             variant="outline"
                             className={cn(
-                              "w-full justify-start text-left font-normal",
+                              "w-full justify-start font-normal",
                               !slot.date && "text-muted-foreground"
                             )}
                           >

@@ -24,9 +24,9 @@ const Toimitusehdot = () => {
             Toimitusehdot
           </CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-sm max-w-none space-y-6">
+        <CardContent className="prose prose-sm max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               1. Yleistä
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -37,7 +37,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               2. Tilauksen tekeminen ja sitovuus
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -48,7 +48,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               3. Hinnat ja maksu
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -60,10 +60,10 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               4. Toimitus ja nouto
             </h2>
-            <p className="text-muted-foreground leading-relaxed mb-3">
+            <p className="text-muted-foreground leading-relaxed mb-2">
               <strong>Nouto:</strong> Nouto-osoite ilmoitetaan tilausprosessin
               yhteydessä. Mikäli tuotetta ei noudeta 30 minuutin kuluessa
               sovitun noutoajan päättymisestä, kalastajalla on oikeus myydä
@@ -78,7 +78,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               5. Peruutusehdot
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -89,7 +89,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               6. Tuotteen laatu ja reklamaatiot
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -100,7 +100,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               7. Ylivoimainen este (Force Majeure)
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -114,7 +114,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               8. Asiakkaan vastuu
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -125,7 +125,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               9. Palveluntarjoajan rooli
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -136,7 +136,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               10. Ehtojen muuttaminen
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -145,7 +145,7 @@ const Toimitusehdot = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               11. Yhteystiedot
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -155,7 +155,7 @@ const Toimitusehdot = () => {
           </section>
 
           <div className="text-sm text-muted-foreground mt-8 pt-4 border-t">
-            <p>Viimeksi päivitetty: {new Date().toLocaleDateString("fi-FI")}</p>
+            <p>Viimeksi päivitetty: 20.10.2025</p>
           </div>
         </CardContent>
       </Card>

@@ -288,7 +288,7 @@ const Profiili = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 relative">
       <Card className="max-w-md mx-auto">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-primary">
@@ -343,9 +343,9 @@ const Profiili = () => {
                 )}
                 <button
                   onClick={handleNameEdit}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  className="hover:text-foreground bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 transition-colors shadow-sm"
                 >
-                  <Edit2 className="h-4 w-4" />
+                  <Edit2 className="h-3 w-3" />
                 </button>
               </div>
               <p className="text-muted-foreground mt-1">{user.email}</p>
@@ -360,13 +360,6 @@ const Profiili = () => {
                   <h3 className="font-semibold text-primary">
                     Kalastajan muistio:
                   </h3>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingNote(!isEditingNote)}
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
                 </div>
 
                 <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
@@ -381,13 +374,24 @@ const Profiili = () => {
                     value={noteContent}
                     onChange={(e) => handleNoteChange(e.target.value)}
                     placeholder="Kirjoita muistiosi tähän..."
-                    rows={4}
+                    rows={10}
                   />
                 ) : (
                   <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
                     {noteContent || "Ei muistiota lisätty."}
                   </p>
                 )}
+                <button
+                  onClick={() => setIsEditingNote(!isEditingNote)}
+                  className={`${
+                    isSaving || isEditingNote
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  } flex items-center gap-2 mx-auto text-sm hover:text-foreground bg-primary text-primary-foreground rounded-full p-1.5 px-4 mt-2 hover:bg-primary/90 transition-colors shadow-sm`}
+                  disabled={isSaving || isEditingNote}
+                >
+                  <Edit2 className="h-3 w-3" /> Muokkaa muistiota
+                </button>
               </div>
 
               {/* Pickup Address Section */}
@@ -445,26 +449,29 @@ const Profiili = () => {
           )}
 
           {hasChanges && (
-            <div className="pt-4 border-t">
-              <Button
-                onClick={handleSaveAll}
-                disabled={isSaving}
-                className="w-full"
-              >
-                {isSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
-                    Tallennetaan...
-                  </div>
-                ) : (
-                  "Tallenna"
-                )}
-              </Button>
-            </div>
+            <>
+              <div className="border-t"></div>
+              <div className="mt-0 bottom-4 sticky">
+                <Button
+                  onClick={handleSaveAll}
+                  disabled={isSaving}
+                  className="w-fit"
+                >
+                  {isSaving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
+                      Tallennetaan...
+                    </div>
+                  ) : (
+                    "Tallenna muutokset"
+                  )}
+                </Button>
+              </div>
+            </>
           )}
 
           <div className="pt-4">
-            <Button onClick={signOut} variant="outline" className="w-full">
+            <Button onClick={signOut} variant="outline" className="w-fit">
               Kirjaudu ulos
             </Button>
           </div>

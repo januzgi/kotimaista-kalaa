@@ -52,6 +52,7 @@ All colors MUST be HSL.
 
 :root {
   --admin-side-container-width: 780px;
+  --ostoskori-summary-width: 600px;
 }
 
 body {
@@ -62,7 +63,6 @@ body {
 #root {
   display: flex;
   flex-direction: column;
-  text-align: center;
   min-height: 100vh;
 }
 

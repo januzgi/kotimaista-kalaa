@@ -276,14 +276,14 @@ const Ostoskori = () => {
           <ShoppingCart className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
           <h2 className="text-xl font-semibold mb-2">Ostoskori on tyhjä</h2>
           <p className="text-muted-foreground mb-6">
-            Lisää tuotteita ostoskoriin aloittaaksesi ostokset.
+            Lisää kaloja ostoskoriin aloittaaksesi ostokset.
           </p>
           <Button onClick={() => navigate("/saatavilla")}>
-            Selaa tuotteita
+            Katso tarjonta
           </Button>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[var(--ostoskori-summary-width)] mx-auto">
           {/* Cart Items */}
           <div className="space-y-4 mx-auto max-w-[400px] sm:max-w-[600px]">
             {items.map((item) => {
@@ -298,7 +298,7 @@ const Ostoskori = () => {
                   }`}
                 >
                   <CardContent className="p-6">
-                    <div className="flex flex-col sm:flex-row sm:items-end gap-4">
+                    <div className="flex flex-col sm:flex-row gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
                           <FishIcon species={item.species} />
@@ -312,9 +312,6 @@ const Ostoskori = () => {
                         </div>
                         <p className="text-sm text-muted-foreground">
                           Kalastaja: {item.fishermanName}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item.pricePerKg.toFixed(2)} €/kg
                         </p>
                       </div>
 
@@ -356,6 +353,9 @@ const Ostoskori = () => {
                               {availability.currentAvailableQuantity} kg
                             </p>
                           )}
+                          <p className="text-xs text-muted-foreground">
+                            {item.pricePerKg.toFixed(2)} €/kg
+                          </p>
                         </div>
 
                         <div className="text-right min-w-[80px] ml-auto sm:ml-0">
@@ -383,27 +383,28 @@ const Ostoskori = () => {
           {/* Order Summary */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center">
+              <CardTitle className="flex items-center text-xl xxs:text-2xl">
                 <Euro className="mr-2 h-5 w-5 text-primary" />
                 Tilauksen yhteenveto
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                {items.map((item) => {
+              <div className="space-y-0 xs:space-y-2">
+                {items.map((item, index) => {
                   const soldOut = isSoldOut(item);
                   return (
                     <div
                       key={item.productId}
-                      className={`flex justify-between ${
+                      className={`flex justify-between xs:flex-row flex-col border-t px-1 xs:px-0 xs:border-none ${
                         soldOut ? "line-through opacity-50" : ""
-                      }`}
+                      }
+                        ${index % 2 === 1 ? "xs:bg-transparent bg-muted" : ""}`}
                     >
                       <span>
                         {item.species} ({item.quantity} kg ×{" "}
                         {item.pricePerKg.toFixed(2)} €/kg)
                       </span>
-                      <span>
+                      <span className="xs:text-left text-right font-medium">
                         {(item.pricePerKg * item.quantity).toFixed(2)} €
                       </span>
                     </div>
