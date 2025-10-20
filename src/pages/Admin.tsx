@@ -131,7 +131,7 @@ const Admin = () => {
           <TabsList className="grid w-full grid-cols-3 flex-1">
             <TabsTrigger
               value="orders"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
             >
               <ShoppingCart className="h-4 w-4" />
               Tilaukset
@@ -146,14 +146,14 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger
               value="catch"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
             >
               <Fish className="h-4 w-4" />
               Hallitse saalista
             </TabsTrigger>
             <TabsTrigger
               value="fishing-days"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
             >
               <Calendar className="h-4 w-4" />
               Kalastuspäivät
@@ -163,7 +163,7 @@ const Admin = () => {
           <TabsList className="bg-transparent p-0">
             <TabsTrigger
               value="prices"
-              className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none"
+              className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=active]:border-secondary border-b-2 rounded-b-none"
             >
               <Euro className="h-4 w-4" />
               Hallitse kilohintoja

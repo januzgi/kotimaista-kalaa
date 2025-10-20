@@ -46,7 +46,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger
             value="new"
-            className="text-xs sm:text-sm relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            className="text-xs sm:text-sm relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
           >
             <Inbox className="mr-1 h-4 w-4" />
             Uudet
@@ -61,21 +61,21 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
           </TabsTrigger>
           <TabsTrigger
             value="confirmed"
-            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            className="text-xs sm:text-sm data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
           >
             <CheckCircle2 className="mr-1 h-4 w-4" />
             Vahvistetut
           </TabsTrigger>
           <TabsTrigger
             value="completed"
-            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            className="text-xs sm:text-sm data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
           >
             <PackageCheck className="mr-1 h-4 w-4" />
             Valmiit
           </TabsTrigger>
           <TabsTrigger
             value="cancelled"
-            className="text-xs sm:text-sm data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            className="text-xs sm:text-sm data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
           >
             <XCircle className="mr-1 h-4 w-4" />
             Perutut
