@@ -332,7 +332,7 @@ export const InventoryList = ({
   }
 
   return (
-    <Card>
+    <Card className="max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>Nykyinen varasto ({getTotalProducts()})</CardTitle>
       </CardHeader>

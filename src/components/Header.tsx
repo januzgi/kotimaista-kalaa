@@ -28,6 +28,7 @@ const NavLink = ({
   badgeCount,
   isActive,
   isMobile = false,
+  onClick,
 }: {
   to: string;
   Icon: React.ElementType;
@@ -35,6 +36,7 @@ const NavLink = ({
   badgeCount?: number;
   isActive: boolean;
   isMobile?: boolean;
+  onClick?: () => void;
 }) => {
   const desktopClasses = `flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors font-medium pb-1 border-b-2 relative ${
     isActive ? "border-secondary text-primary" : "border-transparent"
@@ -44,7 +46,11 @@ const NavLink = ({
   }`;
 
   return (
-    <Link to={to} className={isMobile ? mobileClasses : desktopClasses}>
+    <Link
+      to={to}
+      className={isMobile ? mobileClasses : desktopClasses}
+      onClick={onClick}
+    >
       <Icon className={isMobile ? "h-5 w-5" : "h-4 w-4"} />
       <span>{label}</span>
       {badgeCount !== undefined && badgeCount > 0 && (
@@ -71,6 +77,7 @@ export const Header = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const cartItemCount = getItemCount();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const checkUserRole = async () => {
@@ -130,6 +137,7 @@ export const Header = () => {
           badgeCount={item.badgeCount}
           isActive={pathname === item.to}
           isMobile={isMobile}
+          onClick={isMobile ? () => setIsMobileMenuOpen(false) : undefined}
         />
       ));
 
@@ -182,7 +190,10 @@ export const Header = () => {
 
               {/* Mobile Menu (Authenticated) */}
               <div className="md:hidden">
-                <Sheet>
+                <Sheet
+                  open={isMobileMenuOpen}
+                  onOpenChange={setIsMobileMenuOpen}
+                >
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="sm">
                       {" "}
@@ -196,6 +207,7 @@ export const Header = () => {
                       <Link
                         to="/profiili"
                         className="flex items-center space-x-2 text-sm font-medium"
+                        onClick={() => setIsMobileMenuOpen(false)}
                       >
                         <Avatar className="h-6 w-6">
                           <AvatarImage src={user.user_metadata?.avatar_url} />
@@ -210,7 +222,10 @@ export const Header = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={signOut}
+                        onClick={() => {
+                          signOut();
+                          setIsMobileMenuOpen(false);
+                        }}
                         className="w-full justify-start"
                       >
                         <LogOut className="h-4 w-4 mr-2" /> Kirjaudu ulos
@@ -226,14 +241,20 @@ export const Header = () => {
               <Button
                 variant="outline"
                 className="hidden md:inline-flex text-sm"
-                onClick={() => setShowAuthDialog(true)}
+                onClick={() => {
+                  setShowAuthDialog(true);
+                  setIsMobileMenuOpen(false);
+                }}
               >
                 Kirjaudu sisään
               </Button>
 
               {/* Mobile Menu (Guest) */}
               <div className="md:hidden">
-                <Sheet>
+                <Sheet
+                  open={isMobileMenuOpen}
+                  onOpenChange={setIsMobileMenuOpen}
+                >
                   <SheetTrigger asChild>
                     <Button variant="ghost" size="sm">
                       {" "}

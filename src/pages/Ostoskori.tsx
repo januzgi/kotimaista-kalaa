@@ -224,8 +224,8 @@ const Ostoskori = () => {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-primary mb-2 flex items-center">
+      <div className="mb-8 mx-auto w-fit">
+        <h1 className="text-3xl font-bold text-primary mb-2 flex items-center justify-center">
           <ShoppingCart className="mr-3 h-8 w-8" />
           Ostoskori
         </h1>

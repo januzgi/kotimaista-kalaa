@@ -127,11 +127,11 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="orders" className="space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <TabsList className="grid w-full grid-cols-3 flex-1">
+        <div className="md:flex items-center justify-between gap-4 h-auto max-w-[var(--admin-side-container-width)] mx-auto">
+          <TabsList className="grid md:w-full grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-0 flex-1 h-auto mx-auto w-fit">
             <TabsTrigger
               value="orders"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md w-[180px] md:w-full"
             >
               <ShoppingCart className="h-4 w-4" />
               Tilaukset
@@ -146,24 +146,24 @@ const Admin = () => {
             </TabsTrigger>
             <TabsTrigger
               value="catch"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md w-[180px] md:w-full"
             >
               <Fish className="h-4 w-4" />
               Hallitse saalista
             </TabsTrigger>
             <TabsTrigger
               value="fishing-days"
-              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md w-[180px] md:w-full"
             >
               <Calendar className="h-4 w-4" />
               Kalastuspäivät
             </TabsTrigger>
           </TabsList>
 
-          <TabsList className="bg-transparent p-0">
+          <TabsList className="bg-transparent p-0 mt-4 md:mt-0">
             <TabsTrigger
               value="prices"
-              className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=active]:border-secondary border-b-2 rounded-b-none"
+              className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 bg-background hover:bg-accent hover:text-accent-foreground rounded-md border border-input data-[state=active]:border-secondary border-b-2 rounded-b-none w-[180px]"
             >
               <Euro className="h-4 w-4" />
               Hallitse kilohintoja

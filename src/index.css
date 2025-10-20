@@ -50,6 +50,10 @@ All colors MUST be HSL.
   }
 }
 
+:root {
+  --admin-side-container-width: 780px;
+}
+
 body {
   min-height: 100vh;
   background-color: hsl(var(--background));

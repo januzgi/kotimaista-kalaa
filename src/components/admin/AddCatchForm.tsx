@@ -33,6 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { FulfillmentSlot } from "@/lib/types";
+import { fi } from "date-fns/locale";
 
 /**
  * Available fish species options for the form
@@ -409,26 +410,72 @@ export const AddCatchForm = ({
   };
 
   return (
-    <Card>
+    <Card className="max-w-[var(--admin-side-container-width)] mx-auto">
       <CardHeader>
-        <CardTitle>Lisää uusi saalis</CardTitle>
+        <CardTitle className="text-primary">Lisää uusi saalis</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-12 sm:space-y-6"
+          >
             {/* Fish Entries Section */}
-            <div className="space-y-4">
-              <Label className="text-base font-medium">Kalat *</Label>
+            <div className="space-y-4 flex flex-col items-start">
+              {/* Catch Date Section */}
+              <FormField
+                control={form.control}
+                name="catch_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col max-w-[150px] items-start">
+                    <FormLabel>Pyyntipäivä</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd.MM.yyyy")
+                            ) : (
+                              <span>Valitse päivä</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          fromMonth={new Date()}
+                          locale={fi}
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => date > new Date()}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <Label className="text-base font-medium pt-4">Kalat</Label>
               {fields.map((field, index) => (
-                <Card key={field.id} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card key={field.id} className="p-4 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                     <FormField
                       control={form.control}
                       name={`fish_entries.${index}.species`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Laji *</FormLabel>
+                        <FormItem className="flex flex-col items-start w-full md:max-w-[150px]">
+                          <FormLabel>Laji</FormLabel>
                           <Select
                             onValueChange={(value) =>
                               handleFieldChange(index, "species", value)
@@ -460,8 +507,8 @@ export const AddCatchForm = ({
                       control={form.control}
                       name={`fish_entries.${index}.form`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Muoto *</FormLabel>
+                        <FormItem className="flex flex-col items-start w-full md:max-w-[150px]">
+                          <FormLabel>Muoto</FormLabel>
                           <Select
                             onValueChange={(value) =>
                               handleFieldChange(index, "form", value)
@@ -490,8 +537,8 @@ export const AddCatchForm = ({
                       control={form.control}
                       name={`fish_entries.${index}.price_per_kg`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Kilohinta (€) *</FormLabel>
+                        <FormItem className="flex flex-col items-start w-full md:max-w-[150px]">
+                          <FormLabel>Kilohinta (€)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -513,8 +560,8 @@ export const AddCatchForm = ({
                       control={form.control}
                       name={`fish_entries.${index}.available_quantity`}
                       render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Saatavilla (kg) *</FormLabel>
+                        <FormItem className="flex flex-col items-start w-full md:max-w-[150px]">
+                          <FormLabel>Saatavilla (kg)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -550,7 +597,7 @@ export const AddCatchForm = ({
               ))}
 
               {/* Add another fish button after all fish entries */}
-              <div className="flex justify-end">
+              <div className="flex ml-auto">
                 <Button
                   type="button"
                   variant="outline"
@@ -563,59 +610,19 @@ export const AddCatchForm = ({
               </div>
             </div>
 
-            {/* Catch Date Section */}
-            <FormField
-              control={form.control}
-              name="catch_date"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Pyyntipäivä *</FormLabel>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground"
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "dd.MM.yyyy")
-                          ) : (
-                            <span>Valitse päivä</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
-                        onSelect={field.onChange}
-                        disabled={(date) => date > new Date()}
-                        initialFocus
-                        className={cn("p-3 pointer-events-auto")}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
             {/* Fulfillment Slots Section */}
-            <div className="space-y-4">
+            <div className="space-y-4 flex flex-col items-start">
               <Label className="text-base font-medium">
-                Nouto- ja toimitusajat *
+                Nouto- ja toimitusajat
               </Label>
 
               {slots.map((slot, index) => (
-                <Card key={index} className="p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <div>
-                      <Label htmlFor={`date-${index}`}>Päivämäärä *</Label>
+                <Card key={index} className="p-4 w-full">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="flex flex-col items-start w-full md:w-full md:max-w-[150px]">
+                      <Label className="mb-2" htmlFor={`date-${index}`}>
+                        Päivämäärä
+                      </Label>
                       <Popover>
                         <PopoverTrigger asChild>
                           <Button
@@ -652,8 +659,31 @@ export const AddCatchForm = ({
                         </PopoverContent>
                       </Popover>
                     </div>
-                    <div>
-                      <Label htmlFor={`start-${index}`}>Alkuaika</Label>
+                    <div className="flex flex-col items-start w-full md:max-w-[150px]">
+                      <Label className="mb-2" htmlFor={`type-${index}`}>
+                        Tyyppi
+                      </Label>
+                      <Select
+                        value={slot.type}
+                        onValueChange={(value) =>
+                          updateSlot(index, "type", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="PICKUP">Nouto</SelectItem>
+                          <SelectItem value="DELIVERY">
+                            Kotiinkuljetus
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex flex-col items-start w-full md:max-w-[150px]">
+                      <Label className="mb-2" htmlFor={`start-${index}`}>
+                        Alkuaika
+                      </Label>
                       <Input
                         id={`start-${index}`}
                         type="time"
@@ -667,8 +697,10 @@ export const AddCatchForm = ({
                         )}
                       />
                     </div>
-                    <div>
-                      <Label htmlFor={`end-${index}`}>Loppuaika</Label>
+                    <div className="flex flex-col items-start w-full md:max-w-[150px]">
+                      <Label className="mb-2" htmlFor={`end-${index}`}>
+                        Loppuaika
+                      </Label>
                       <Input
                         id={`end-${index}`}
                         type="time"
@@ -687,27 +719,10 @@ export const AddCatchForm = ({
                         </p>
                       )}
                     </div>
-                    <div>
-                      <Label htmlFor={`type-${index}`}>Tyyppi</Label>
-                      <Select
-                        value={slot.type}
-                        onValueChange={(value) =>
-                          updateSlot(index, "type", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="PICKUP">Nouto</SelectItem>
-                          <SelectItem value="DELIVERY">
-                            Kotiinkuljetus
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-end">
-                      {slots.length > 1 && (
+                  </div>
+                  <div className="flex items-end">
+                    {slots.length > 1 && (
+                      <div className="mt-4 flex ml-auto">
                         <Button
                           type="button"
                           variant="outline"
@@ -715,15 +730,16 @@ export const AddCatchForm = ({
                           onClick={() => removeSlot(index)}
                         >
                           <Trash2 className="h-4 w-4" />
+                          Poista
                         </Button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
                 </Card>
               ))}
 
               {/* Add another time slot button after all fulfillment slots */}
-              <div className="flex justify-end">
+              <div className="flex ml-auto">
                 <Button
                   type="button"
                   variant="outline"
@@ -736,7 +752,7 @@ export const AddCatchForm = ({
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
+            <Button type="submit" className="w-fit" disabled={isSubmitting}>
               {isSubmitting ? "Lisätään..." : "Lisää saalis myyntiin"}
             </Button>
           </form>

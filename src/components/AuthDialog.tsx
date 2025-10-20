@@ -103,7 +103,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[calc(100vw-16px)] sm:max-w-md mx-auto rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-center">Tervetuloa</DialogTitle>
           </DialogHeader>
