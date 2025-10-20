@@ -55,7 +55,11 @@ interface OrdersListProps {
  * @param props - The component props
  * @returns The orders list component with management capabilities
  */
-export const OrdersList = ({ fishermanProfile, status, refreshTrigger }: OrdersListProps) => {
+export const OrdersList = ({
+  fishermanProfile,
+  status,
+  refreshTrigger,
+}: OrdersListProps) => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
@@ -78,7 +82,7 @@ export const OrdersList = ({ fishermanProfile, status, refreshTrigger }: OrdersL
 
     try {
       setLoading(true);
-      
+
       // Fetch orders directly using fisherman_profile_id
       const { data, error } = await supabase
         .from("orders")
@@ -124,6 +128,7 @@ export const OrdersList = ({ fishermanProfile, status, refreshTrigger }: OrdersL
     } finally {
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fishermanProfile, status, toast, refreshTrigger]);
 
   useEffect(() => {

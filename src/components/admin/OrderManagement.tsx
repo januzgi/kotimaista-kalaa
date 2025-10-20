@@ -34,7 +34,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
   return (
     <div className="space-y-6 pt-12">
       <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-dark mb-2">
+        <h2 className="text-xl sm:text-2xl font-bold text-primary mb-2">
           Tilaukset
         </h2>
         <p className="text-sm sm:text-base text-muted-foreground">
@@ -83,7 +83,11 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
         </TabsList>
 
         <TabsContent value="new">
-          <OrdersList status="NEW" fishermanProfile={fishermanProfile} />
+          <OrdersList
+            status="NEW"
+            fishermanProfile={fishermanProfile}
+            refreshTrigger={newOrderCount}
+          />
         </TabsContent>
 
         <TabsContent value="confirmed">

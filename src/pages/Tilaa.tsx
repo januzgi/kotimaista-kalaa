@@ -3,8 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/contexts/CartContext";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -338,15 +336,11 @@ const Tilaa = () => {
 
   if (loading || !product || cartItems.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Ladataan...</p>
-          </div>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Ladataan...</p>
+        </div>
       </div>
     );
   }
@@ -360,343 +354,332 @@ const Tilaa = () => {
   const hasAnySlots = allSlots.length > 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 max-w-2xl">
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
-            Tee tilaus
-          </h1>
-          <p className="text-muted-foreground">
-            Täytä tiedot ja valitse toimitustapa
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
+          Tee tilaus
+        </h1>
+        <p className="text-muted-foreground">
+          Täytä tiedot ja valitse toimitustapa
+        </p>
+      </div>
 
-        <div className="space-y-6">
-          {/* Cart Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Fish className="mr-2 h-5 w-5 text-primary" />
-                Tilattavat tuotteet
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {cartItems.map((item) => (
-                <div
-                  key={item.productId}
-                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg"
-                >
-                  <div className="flex gap-2 items-center">
-                    <FishIcon species={item.species} className="h-8 w-8" />
-                    <h3 className="font-semibold">{item.species}</h3>
-                    <p className="text-muted-foreground">{item.form}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold">
-                      {item.pricePerKg.toFixed(2)} €/kg
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {item.quantity} kg ={" "}
-                      {(item.quantity * item.pricePerKg).toFixed(2)} €
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <div className="text-right pt-2 border-t">
-                <p className="text-sm text-muted-foreground">
-                  Tuotteet yhteensä:
-                </p>
-                <p className="font-semibold text-lg">
-                  {cartItems
-                    .reduce(
-                      (sum, item) => sum + item.quantity * item.pricePerKg,
-                      0
-                    )
-                    .toFixed(2)}{" "}
-                  €
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="mr-2 h-5 w-5 text-primary" />
-                Asiakkaan tiedot
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="name">Nimi *</Label>
-                  <Input
-                    id="name"
-                    value={customerName}
-                    onChange={(e) => setCustomerName(e.target.value)}
-                    className="mt-1"
-                    required
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="phone">Puhelinnumero *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    value={customerPhone}
-                    onChange={(e) => setCustomerPhone(e.target.value)}
-                    className="mt-1"
-                    required
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Fulfillment Options */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <MapPin className="mr-2 h-5 w-5 text-primary" />
-                Toimitustapa
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <RadioGroup
-                value={fulfillmentType}
-                onValueChange={(value: "PICKUP" | "DELIVERY") =>
-                  setFulfillmentType(value)
-                }
+      <div className="space-y-6">
+        {/* Cart Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Fish className="mr-2 h-5 w-5 text-primary" />
+              Tilattavat tuotteet
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {cartItems.map((item) => (
+              <div
+                key={item.productId}
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 border rounded-lg"
               >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="PICKUP"
-                    id="pickup"
-                    disabled={!hasPickupSlots}
-                  />
-                  <Label
-                    htmlFor="pickup"
-                    className={!hasPickupSlots ? "text-muted-foreground" : ""}
-                  >
-                    Nouto {!hasPickupSlots && "(sovi aika kalastajan kanssa)"}
-                  </Label>
+                <div className="flex gap-2 items-center">
+                  <FishIcon species={item.species} className="h-8 w-8" />
+                  <h3 className="font-semibold">{item.species}</h3>
+                  <p className="text-muted-foreground">{item.form}</p>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem
-                    value="DELIVERY"
-                    id="delivery"
-                    disabled={!hasDeliverySlots}
-                  />
-                  <Label
-                    htmlFor="delivery"
-                    className={!hasDeliverySlots ? "text-muted-foreground" : ""}
-                  >
-                    Kotiinkuljetus {!hasDeliverySlots && "(ei saatavilla)"}
-                  </Label>
+                <div className="text-right">
+                  <p className="font-semibold">
+                    {item.pricePerKg.toFixed(2)} €/kg
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {item.quantity} kg ={" "}
+                    {(item.quantity * item.pricePerKg).toFixed(2)} €
+                  </p>
                 </div>
-              </RadioGroup>
+              </div>
+            ))}
+            <div className="text-right pt-2 border-t">
+              <p className="text-sm text-muted-foreground">
+                Tuotteet yhteensä:
+              </p>
+              <p className="font-semibold text-lg">
+                {cartItems
+                  .reduce(
+                    (sum, item) => sum + item.quantity * item.pricePerKg,
+                    0
+                  )
+                  .toFixed(2)}{" "}
+                €
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
-              {fulfillmentType === "PICKUP" && (
-                <div className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-start space-x-2 mb-3">
-                    <Home className="h-4 w-4 mt-1 text-muted-foreground" />
-                    <div>
-                      <p className="font-medium">Nouto-osoite:</p>
-                      <p className="text-muted-foreground">
-                        {product.fisherman_profile.pickup_address}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
+        {/* Customer Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <User className="mr-2 h-5 w-5 text-primary" />
+              Asiakkaan tiedot
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Nimi *</Label>
+                <Input
+                  id="name"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  className="mt-1"
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="phone">Puhelinnumero *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  className="mt-1"
+                  required
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-              {fulfillmentType === "DELIVERY" && (
-                <div className="space-y-4">
+        {/* Fulfillment Options */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <MapPin className="mr-2 h-5 w-5 text-primary" />
+              Toimitustapa
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <RadioGroup
+              value={fulfillmentType}
+              onValueChange={(value: "PICKUP" | "DELIVERY") =>
+                setFulfillmentType(value)
+              }
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="PICKUP"
+                  id="pickup"
+                  disabled={!hasPickupSlots}
+                />
+                <Label
+                  htmlFor="pickup"
+                  className={!hasPickupSlots ? "text-muted-foreground" : ""}
+                >
+                  Nouto {!hasPickupSlots && "(sovi aika kalastajan kanssa)"}
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem
+                  value="DELIVERY"
+                  id="delivery"
+                  disabled={!hasDeliverySlots}
+                />
+                <Label
+                  htmlFor="delivery"
+                  className={!hasDeliverySlots ? "text-muted-foreground" : ""}
+                >
+                  Kotiinkuljetus {!hasDeliverySlots && "(ei saatavilla)"}
+                </Label>
+              </div>
+            </RadioGroup>
+
+            {fulfillmentType === "PICKUP" && (
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-start space-x-2 mb-3">
+                  <Home className="h-4 w-4 mt-1 text-muted-foreground" />
                   <div>
-                    <Label htmlFor="address">Toimitusosoite *</Label>
-                    <Input
-                      id="address"
-                      value={customerAddress}
-                      onChange={(e) => setCustomerAddress(e.target.value)}
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div className="p-4 bg-muted/30 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span>Toimitusmaksu:</span>
-                      <span className="font-semibold">
-                        alk.{" "}
-                        {product.fisherman_profile.default_delivery_fee.toFixed(
-                          2
-                        )}{" "}
-                        €
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                      Lopullinen toimitusmaksu vahvistetaan
-                      tilausvahvistuksessa.
+                    <p className="font-medium">Nouto-osoite:</p>
+                    <p className="text-muted-foreground">
+                      {product.fisherman_profile.pickup_address}
                     </p>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Time Slots */}
-              {hasAnySlots ? (
+            {fulfillmentType === "DELIVERY" && (
+              <div className="space-y-4">
                 <div>
-                  <Label htmlFor="timeslot" className="flex items-center">
-                    <Clock className="mr-1 h-4 w-4" />
-                    Valitse aika *
-                  </Label>
-                  <Select
-                    value={selectedSlotId}
-                    onValueChange={setSelectedSlotId}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Valitse aikaväli" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableSlots.map((slot) => (
-                        <SelectItem key={slot.id} value={slot.id}>
-                          {format(
-                            new Date(slot.start_time),
-                            "dd.MM.yyyy HH:mm",
-                            { locale: fi }
-                          )}{" "}
-                          -{" "}
-                          {format(new Date(slot.end_time), "HH:mm", {
-                            locale: fi,
-                          })}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {availableSlots.length === 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Ei saatavilla olevia aikoja valitulle toimitustavalle.
-                    </p>
-                  )}
+                  <Label htmlFor="address">Toimitusosoite *</Label>
+                  <Input
+                    id="address"
+                    value={customerAddress}
+                    onChange={(e) => setCustomerAddress(e.target.value)}
+                    className="mt-1"
+                    required
+                  />
                 </div>
-              ) : (
                 <div className="p-4 bg-muted/30 rounded-lg">
-                  <div className="flex items-start space-x-2">
-                    <Phone className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
-                    <div>
-                      <p className="text-sm">
-                        <strong>
-                          Nouto- tai kotiinkuljetusaikoja ei ole määritelty.
-                        </strong>
-                      </p>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Sovi suoraan kalastajan kanssa noutoajasta:{" "}
-                        {product.fisherman_profile.public_phone_number ? (
-                          <a
-                            href={`tel:${product.fisherman_profile.public_phone_number}`}
-                            className="text-primary hover:underline font-medium"
-                          >
-                            {product.fisherman_profile.public_phone_number}
-                          </a>
-                        ) : (
-                          <span className="text-muted-foreground">
-                            Puhelinnumeroa ei ole saatavilla
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Order Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Euro className="mr-2 h-5 w-5 text-primary" />
-                Tilauksen yhteenveto
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {cartItems.map((item) => (
-                  <div key={item.productId} className="flex justify-between">
-                    <span>
-                      {item.species} ({item.quantity} kg ×{" "}
-                      {item.pricePerKg.toFixed(2)} €/kg)
-                    </span>
-                    <span>
-                      {(item.quantity * item.pricePerKg).toFixed(2)} €
-                    </span>
-                  </div>
-                ))}
-                {fulfillmentType === "DELIVERY" && product && (
-                  <div className="flex justify-between">
-                    <span>Toimitusmaksu (alkaen)</span>
-                    <span>
+                  <div className="flex items-center justify-between">
+                    <span>Toimitusmaksu:</span>
+                    <span className="font-semibold">
+                      alk.{" "}
                       {product.fisherman_profile.default_delivery_fee.toFixed(
                         2
                       )}{" "}
                       €
                     </span>
                   </div>
-                )}
-                <Separator />
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Yhteensä (alkaen)</span>
-                  <span>{calculateTotal().toFixed(2)} €</span>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Lopullinen toimitusmaksu vahvistetaan tilausvahvistuksessa.
+                  </p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            )}
 
-          {/* Terms and Conditions */}
-          <div className="flex items-start space-x-2 p-4 bg-muted/20 rounded-lg">
-            <Checkbox
-              id="terms"
-              checked={acceptedTerms}
-              onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
-              className="mt-0.5"
-            />
-            <Label
-              htmlFor="terms"
-              className="text-sm leading-relaxed cursor-pointer"
-            >
-              Olen lukenut ja hyväksyn{" "}
-              <a
-                href="/toimitusehdot"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline hover:no-underline"
-              >
-                toimitusehdot
-              </a>
-              . Ymmärrän, että tilaus on sitova.
-            </Label>
-          </div>
+            {/* Time Slots */}
+            {hasAnySlots ? (
+              <div>
+                <Label htmlFor="timeslot" className="flex items-center">
+                  <Clock className="mr-1 h-4 w-4" />
+                  Valitse aika *
+                </Label>
+                <Select
+                  value={selectedSlotId}
+                  onValueChange={setSelectedSlotId}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Valitse aikaväli" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableSlots.map((slot) => (
+                      <SelectItem key={slot.id} value={slot.id}>
+                        {format(new Date(slot.start_time), "dd.MM.yyyy HH:mm", {
+                          locale: fi,
+                        })}{" "}
+                        -{" "}
+                        {format(new Date(slot.end_time), "HH:mm", {
+                          locale: fi,
+                        })}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {availableSlots.length === 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Ei saatavilla olevia aikoja valitulle toimitustavalle.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="flex items-start space-x-2">
+                  <Phone className="h-4 w-4 mt-1 text-muted-foreground flex-shrink-0" />
+                  <div>
+                    <p className="text-sm">
+                      <strong>
+                        Nouto- tai kotiinkuljetusaikoja ei ole määritelty.
+                      </strong>
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Sovi suoraan kalastajan kanssa noutoajasta:{" "}
+                      {product.fisherman_profile.public_phone_number ? (
+                        <a
+                          href={`tel:${product.fisherman_profile.public_phone_number}`}
+                          className="text-primary hover:underline font-medium"
+                        >
+                          {product.fisherman_profile.public_phone_number}
+                        </a>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          Puhelinnumeroa ei ole saatavilla
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Submit Button */}
-          <Button
-            onClick={handleSubmitOrder}
-            disabled={
-              submitting ||
-              (hasAnySlots && !selectedSlotId) ||
-              !customerName ||
-              !customerPhone ||
-              !acceptedTerms ||
-              (fulfillmentType === "DELIVERY" && !customerAddress) ||
-              cartItems.length === 0
-            }
-            className="w-full"
-            size="lg"
+        {/* Order Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Euro className="mr-2 h-5 w-5 text-primary" />
+              Tilauksen yhteenveto
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {cartItems.map((item) => (
+                <div key={item.productId} className="flex justify-between">
+                  <span>
+                    {item.species} ({item.quantity} kg ×{" "}
+                    {item.pricePerKg.toFixed(2)} €/kg)
+                  </span>
+                  <span>{(item.quantity * item.pricePerKg).toFixed(2)} €</span>
+                </div>
+              ))}
+              {fulfillmentType === "DELIVERY" && product && (
+                <div className="flex justify-between">
+                  <span>Toimitusmaksu (alkaen)</span>
+                  <span>
+                    {product.fisherman_profile.default_delivery_fee.toFixed(2)}{" "}
+                    €
+                  </span>
+                </div>
+              )}
+              <Separator />
+              <div className="flex justify-between font-bold text-lg">
+                <span>Yhteensä (alkaen)</span>
+                <span>{calculateTotal().toFixed(2)} €</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Terms and Conditions */}
+        <div className="flex items-start space-x-2 p-4 bg-muted/20 rounded-lg">
+          <Checkbox
+            id="terms"
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+            className="mt-0.5"
+          />
+          <Label
+            htmlFor="terms"
+            className="text-sm leading-relaxed cursor-pointer"
           >
-            {submitting ? "Lähetetään..." : "Tee tilaus"}
-          </Button>
+            Olen lukenut ja hyväksyn{" "}
+            <a
+              href="/toimitusehdot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:no-underline"
+            >
+              toimitusehdot
+            </a>
+            . Ymmärrän, että tilaus on sitova.
+          </Label>
         </div>
-      </main>
-      <Footer />
+
+        {/* Submit Button */}
+        <Button
+          onClick={handleSubmitOrder}
+          disabled={
+            submitting ||
+            (hasAnySlots && !selectedSlotId) ||
+            !customerName ||
+            !customerPhone ||
+            !acceptedTerms ||
+            (fulfillmentType === "DELIVERY" && !customerAddress) ||
+            cartItems.length === 0
+          }
+          className="w-full"
+          size="lg"
+        >
+          {submitting ? "Lähetetään..." : "Tee tilaus"}
+        </Button>
+      </div>
     </div>
   );
 };

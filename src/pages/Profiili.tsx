@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -266,7 +264,7 @@ const Profiili = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Ladataan profiilia...</p>
@@ -290,192 +288,188 @@ const Profiili = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8">
-        <Card className="max-w-md mx-auto">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold text-dark">
-              Profiili
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative group">
-                <Avatar className="w-24 h-24">
-                  <AvatarImage
-                    src={
-                      selectedFile
-                        ? URL.createObjectURL(selectedFile)
-                        : user.user_metadata?.avatar_url
-                    }
-                    alt={user.user_metadata?.full_name || "Käyttäjä"}
+    <div className="container mx-auto px-4 py-8">
+      <Card className="max-w-md mx-auto">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-primary">
+            Profiili
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="relative group">
+              <Avatar className="w-24 h-24">
+                <AvatarImage
+                  src={
+                    selectedFile
+                      ? URL.createObjectURL(selectedFile)
+                      : user.user_metadata?.avatar_url
+                  }
+                  alt={user.user_metadata?.full_name || "Käyttäjä"}
+                />
+                <AvatarFallback className="bg-primary text-primary-foreground text-lg">
+                  {getUserInitials(user.user_metadata?.full_name)}
+                </AvatarFallback>
+              </Avatar>
+              <button
+                onClick={handleAvatarClick}
+                className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 transition-colors shadow-sm"
+              >
+                <Edit2 className="h-3 w-3" />
+              </button>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+
+            <div className="text-center">
+              <div className="flex items-center justify-center gap-2">
+                {isEditingName ? (
+                  <Input
+                    value={editedName}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    className="text-center text-xl font-semibold max-w-48"
+                    placeholder="Syötä nimesi"
                   />
-                  <AvatarFallback className="bg-primary text-primary-foreground text-lg">
-                    {getUserInitials(user.user_metadata?.full_name)}
-                  </AvatarFallback>
-                </Avatar>
+                ) : (
+                  <h2 className="text-xl font-semibold text-primary">
+                    {editedName || "Nimetön käyttäjä"}
+                  </h2>
+                )}
                 <button
-                  onClick={handleAvatarClick}
-                  className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-1.5 hover:bg-primary/90 transition-colors shadow-sm"
+                  onClick={handleNameEdit}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
                 >
-                  <Edit2 className="h-3 w-3" />
+                  <Edit2 className="h-4 w-4" />
                 </button>
               </div>
+              <p className="text-muted-foreground mt-1">{user.email}</p>
+            </div>
+          </div>
 
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
-
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2">
-                  {isEditingName ? (
-                    <Input
-                      value={editedName}
-                      onChange={(e) => handleNameChange(e.target.value)}
-                      className="text-center text-xl font-semibold max-w-48"
-                      placeholder="Syötä nimesi"
-                    />
-                  ) : (
-                    <h2 className="text-xl font-semibold text-dark">
-                      {editedName || "Nimetön käyttäjä"}
-                    </h2>
-                  )}
-                  <button
-                    onClick={handleNameEdit}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-1"
+          {userRole === "ADMIN" && fishermanProfile && (
+            <div className="pt-4 border-t space-y-6">
+              {/* Fisherman's Note Section */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-primary">
+                    Kalastajan muistio:
+                  </h3>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingNote(!isEditingNote)}
                   >
                     <Edit2 className="h-4 w-4" />
-                  </button>
+                  </Button>
                 </div>
-                <p className="text-muted-foreground mt-1">{user.email}</p>
+
+                <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
+                  Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi
+                  kirjoittaa ajatuksia mahdollisesta saaliista, terveiset
+                  sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa.
+                  Se on asiakkaillekin mielenkiintoista.
+                </p>
+
+                {isEditingNote ? (
+                  <Textarea
+                    value={noteContent}
+                    onChange={(e) => handleNoteChange(e.target.value)}
+                    placeholder="Kirjoita muistiosi tähän..."
+                    rows={4}
+                  />
+                ) : (
+                  <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
+                    {noteContent || "Ei muistiota lisätty."}
+                  </p>
+                )}
+              </div>
+
+              {/* Pickup Address Section */}
+              <div>
+                <h3 className="font-semibold text-primary mb-2">
+                  Nouto-osoite:
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Tämä osoite näytetään asiakkaille kun he valitsevat
+                  noutotoimituksen.
+                </p>
+                <Input
+                  value={pickupAddress}
+                  onChange={(e) => handlePickupAddressChange(e.target.value)}
+                  placeholder="Syötä noutoosoite..."
+                />
+              </div>
+
+              {/* Public Phone Number Section */}
+              <div>
+                <h3 className="font-semibold text-primary mb-2">
+                  Julkinen puhelinnumero:
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Tämä numero voi näkyä asiakkaille yhteystiedoissa.
+                </p>
+                <Input
+                  value={publicPhone}
+                  onChange={(e) => handlePublicPhoneChange(e.target.value)}
+                  placeholder="Syötä puhelinnumero..."
+                  type="tel"
+                />
+              </div>
+
+              {/* Default Delivery Fee Section */}
+              <div>
+                <h3 className="font-semibold text-primary mb-2">
+                  Kotiinkuljetuksen oletusmaksu (€):
+                </h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Tämä on oletusmaksu kotiinkuljetukselle. Voit muokata sitä
+                  tilauskohtaisesti.
+                </p>
+                <Input
+                  type="number"
+                  step="1"
+                  max="40"
+                  value={deliveryFeeInput}
+                  onChange={(e) => handleFeeInputChange(e.target.value)}
+                  onBlur={handleFeeInputBlur}
+                  placeholder="0"
+                />
               </div>
             </div>
+          )}
 
-            {userRole === "ADMIN" && fishermanProfile && (
-              <div className="pt-4 border-t space-y-6">
-                {/* Fisherman's Note Section */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-dark">
-                      Kalastajan muistio:
-                    </h3>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setIsEditingNote(!isEditingNote)}
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
+          {hasChanges && (
+            <div className="pt-4 border-t">
+              <Button
+                onClick={handleSaveAll}
+                disabled={isSaving}
+                className="w-full"
+              >
+                {isSaving ? (
+                  <div className="flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
+                    Tallennetaan...
                   </div>
-
-                  <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
-                    Tämä muistio näkyy etusivulla kalenterin vieressä. Tähän voi
-                    kirjoittaa ajatuksia mahdollisesta saaliista, terveiset
-                    sivuilla kävijöille tai kertoa missä ja miten aiot kalastaa.
-                    Se on asiakkaillekin mielenkiintoista.
-                  </p>
-
-                  {isEditingNote ? (
-                    <Textarea
-                      value={noteContent}
-                      onChange={(e) => handleNoteChange(e.target.value)}
-                      placeholder="Kirjoita muistiosi tähän..."
-                      rows={4}
-                    />
-                  ) : (
-                    <p className="text-muted-foreground text-sm bg-muted p-3 rounded-md min-h-[80px]">
-                      {noteContent || "Ei muistiota lisätty."}
-                    </p>
-                  )}
-                </div>
-
-                {/* Pickup Address Section */}
-                <div>
-                  <h3 className="font-semibold text-dark mb-2">
-                    Nouto-osoite:
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Tämä osoite näytetään asiakkaille kun he valitsevat
-                    noutotoimituksen.
-                  </p>
-                  <Input
-                    value={pickupAddress}
-                    onChange={(e) => handlePickupAddressChange(e.target.value)}
-                    placeholder="Syötä noutoosoite..."
-                  />
-                </div>
-
-                {/* Public Phone Number Section */}
-                <div>
-                  <h3 className="font-semibold text-dark mb-2">
-                    Julkinen puhelinnumero:
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Tämä numero voi näkyä asiakkaille yhteystiedoissa.
-                  </p>
-                  <Input
-                    value={publicPhone}
-                    onChange={(e) => handlePublicPhoneChange(e.target.value)}
-                    placeholder="Syötä puhelinnumero..."
-                    type="tel"
-                  />
-                </div>
-
-                {/* Default Delivery Fee Section */}
-                <div>
-                  <h3 className="font-semibold text-dark mb-2">
-                    Kotiinkuljetuksen oletusmaksu (€):
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Tämä on oletusmaksu kotiinkuljetukselle. Voit muokata sitä
-                    tilauskohtaisesti.
-                  </p>
-                  <Input
-                    type="number"
-                    step="1"
-                    max="40"
-                    value={deliveryFeeInput}
-                    onChange={(e) => handleFeeInputChange(e.target.value)}
-                    onBlur={handleFeeInputBlur}
-                    placeholder="0"
-                  />
-                </div>
-              </div>
-            )}
-
-            {hasChanges && (
-              <div className="pt-4 border-t">
-                <Button
-                  onClick={handleSaveAll}
-                  disabled={isSaving}
-                  className="w-full"
-                >
-                  {isSaving ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
-                      Tallennetaan...
-                    </div>
-                  ) : (
-                    "Tallenna"
-                  )}
-                </Button>
-              </div>
-            )}
-
-            <div className="pt-4">
-              <Button onClick={signOut} variant="outline" className="w-full">
-                Kirjaudu ulos
+                ) : (
+                  "Tallenna"
+                )}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-      </main>
-      <Footer />
+          )}
+
+          <div className="pt-4">
+            <Button onClick={signOut} variant="outline" className="w-full">
+              Kirjaudu ulos
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

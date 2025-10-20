@@ -55,7 +55,7 @@ export const AvailableFish = () => {
           <Link to="/saatavilla">
             <Button
               size="lg"
-              className="w-full h-14 whitespace-normal sm:w-auto sm:h-11 sm:whitespace-nowrap max-w-[300px]"
+              className="w-full bg-primary h-14 whitespace-normal sm:w-auto sm:h-11 sm:whitespace-nowrap max-w-[300px]"
             >
               Katso kaikki saatavilla olevat kalat
             </Button>

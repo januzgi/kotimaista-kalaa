@@ -1,8 +1,6 @@
-import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { AvailableFish } from "@/components/AvailableFish";
 import { PublicSchedule } from "@/components/PublicSchedule";
-import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
@@ -62,43 +60,39 @@ const Index = () => {
   }, [user]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <HeroSection />
-        <AvailableFish />
-        <PublicSchedule />
+    <>
+      <HeroSection />
+      <AvailableFish />
+      <PublicSchedule />
 
-        {!isSubscribed && (
-          <>
-            <div className="w-full text-center mb-8 px-4">
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-4">
-                Älä missaa seuraavaa saalista!
-              </h3>
-              <p className="text-base sm:text-lg text-muted-foreground mb-6">
-                Liity postituslistallemme ja saat ensimmäisenä tiedon, kun
-                tuoretta kalaa on taas saatavilla.
-              </p>
-              <Button
-                variant="default"
-                size="lg"
-                className="w-full sm:w-auto max-w-[240px]"
-                onClick={() => setIsSubscriptionModalOpen(true)}
-                disabled={isSubscribed}
-              >
-                {isSubscribed ? "Olet jo listalla" : "Liity listalle"}
-              </Button>
-            </div>
+      {!isSubscribed && (
+        <>
+          <div className="w-full text-center mb-8 px-4">
+            <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold text-primary mb-4">
+              Älä missaa seuraavaa saalista!
+            </h3>
+            <p className="text-base sm:text-lg text-muted-foreground mb-6">
+              Liity postituslistallemme ja saat ensimmäisenä tiedon, kun
+              tuoretta kalaa on taas saatavilla.
+            </p>
+            <Button
+              variant="default"
+              size="lg"
+              className="w-full sm:w-auto max-w-[240px]"
+              onClick={() => setIsSubscriptionModalOpen(true)}
+              disabled={isSubscribed}
+            >
+              {isSubscribed ? "Olet jo listalla" : "Liity listalle"}
+            </Button>
+          </div>
 
-            <EmailSubscriptionModal
-              open={isSubscriptionModalOpen}
-              onOpenChange={setIsSubscriptionModalOpen}
-            />
-          </>
-        )}
-      </main>
-      <Footer />
-      
+          <EmailSubscriptionModal
+            open={isSubscriptionModalOpen}
+            onOpenChange={setIsSubscriptionModalOpen}
+          />
+        </>
+      )}
+
       <ProfileCompletionModal
         open={isProfileModalOpen}
         onOpenChange={setIsProfileModalOpen}
@@ -107,7 +101,7 @@ const Index = () => {
           window.location.reload();
         }}
       />
-    </div>
+    </>
   );
 };
 

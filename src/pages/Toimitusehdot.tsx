@@ -1,5 +1,3 @@
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /**
@@ -19,155 +17,148 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
  */
 const Toimitusehdot = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8 max-w-4xl">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-2xl sm:text-3xl font-bold text-dark">
-              Toimitusehdot
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="prose prose-sm max-w-none space-y-6">
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                1. Yleistä
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Nämä toimitusehdot koskevat kaikkia Kotimaista kalaa -palvelun
-                kautta tehtyjä tilauksia. Tekemällä tilauksen hyväksyt nämä
-                ehdot kokonaisuudessaan.
-              </p>
-            </section>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
+            Toimitusehdot
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="prose prose-sm max-w-none space-y-6">
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              1. Yleistä
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Nämä toimitusehdot koskevat kaikkia Kotimaista kalaa -palvelun
+              kautta tehtyjä tilauksia. Tekemällä tilauksen hyväksyt nämä ehdot
+              kokonaisuudessaan.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                2. Tilauksen tekeminen ja sitovuus
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Tilaus on sitova. Asiakkaalla on kuitenkin oikeus peruuttaa
-                tilaus kohdan 5 (Peruutusehdot) mukaisesti. Tilaus vahvistetaan,
-                kun kalastaja on hyväksynyt sen.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              2. Tilauksen tekeminen ja sitovuus
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Tilaus on sitova. Asiakkaalla on kuitenkin oikeus peruuttaa tilaus
+              kohdan 5 (Peruutusehdot) mukaisesti. Tilaus vahvistetaan, kun
+              kalastaja on hyväksynyt sen.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                3. Hinnat ja maksu
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Tuotteiden hinnat ovat nähtävillä tuotesivuilla.
-                Kotiinkuljetuksen hinta ilmoitetaan tilausta tehdessä. Maksu
-                suoritetaan tilauksen noudon tai toimituksen yhteydessä suoraan
-                kalastajalle. Hyväksytyt maksutavat ovat käteinen ja
-                mobiilimaksu, ellei toisin sovita.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              3. Hinnat ja maksu
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Tuotteiden hinnat ovat nähtävillä tuotesivuilla. Kotiinkuljetuksen
+              hinta ilmoitetaan tilausta tehdessä. Maksu suoritetaan tilauksen
+              noudon tai toimituksen yhteydessä suoraan kalastajalle. Hyväksytyt
+              maksutavat ovat käteinen ja mobiilimaksu, ellei toisin sovita.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                4. Toimitus ja nouto
-              </h2>
-              <p className="text-muted-foreground leading-relaxed mb-3">
-                <strong>Nouto:</strong> Nouto-osoite ilmoitetaan tilausprosessin
-                yhteydessä. Mikäli tuotetta ei noudeta 30 minuutin kuluessa
-                sovitun noutoajan päättymisestä, kalastajalla on oikeus myydä
-                tuote eteenpäin, ja tilaus katsotaan asiakkaan toimesta
-                peruuntuneeksi.
-              </p>
-              <p className="text-muted-foreground leading-relaxed">
-                <strong>Kotiinkuljetus:</strong> Toimitus tapahtuu sovittuna
-                aikana asiakkaan antamaan osoitteeseen. Asiakkaan tulee olla
-                paikalla vastaanottamassa toimitusta.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              4. Toimitus ja nouto
+            </h2>
+            <p className="text-muted-foreground leading-relaxed mb-3">
+              <strong>Nouto:</strong> Nouto-osoite ilmoitetaan tilausprosessin
+              yhteydessä. Mikäli tuotetta ei noudeta 30 minuutin kuluessa
+              sovitun noutoajan päättymisestä, kalastajalla on oikeus myydä
+              tuote eteenpäin, ja tilaus katsotaan asiakkaan toimesta
+              peruuntuneeksi.
+            </p>
+            <p className="text-muted-foreground leading-relaxed">
+              <strong>Kotiinkuljetus:</strong> Toimitus tapahtuu sovittuna
+              aikana asiakkaan antamaan osoitteeseen. Asiakkaan tulee olla
+              paikalla vastaanottamassa toimitusta.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                5. Peruutusehdot
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Tilaus tulee peruuttaa viimeistään 2 tuntia ennen sovitun nouto-
-                tai toimitusajan alkua ottamalla yhteyttä suoraan kalastajaan.
-                Tämän aikarajan jälkeen tehtyjä peruutuksia ei hyväksytä.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              5. Peruutusehdot
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Tilaus tulee peruuttaa viimeistään 2 tuntia ennen sovitun nouto-
+              tai toimitusajan alkua ottamalla yhteyttä suoraan kalastajaan.
+              Tämän aikarajan jälkeen tehtyjä peruutuksia ei hyväksytä.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                6. Tuotteen laatu ja reklamaatiot
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Kalastaja takaa tuotteen tuoreuden ja laadun luovutushetkellä.
-                Mahdolliset tuotteen laatuun liittyvät huomautukset tulee
-                esittää välittömästi tuotetta vastaanotettaessa.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              6. Tuotteen laatu ja reklamaatiot
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Kalastaja takaa tuotteen tuoreuden ja laadun luovutushetkellä.
+              Mahdolliset tuotteen laatuun liittyvät huomautukset tulee esittää
+              välittömästi tuotetta vastaanotettaessa.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                7. Ylivoimainen este (Force Majeure)
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Kalastaja ei vastaa toimituksen viivästymisestä tai
-                peruuntumisesta, jos se johtuu ylivoimaisesta esteestä, kuten
-                poikkeuksellisista sääolosuhteista tai sairastumisesta.
-                Tällaisessa tapauksessa kalastaja on yhteydessä asiakkaaseen
-                sopiakseen uudesta toimitusajasta tai tilauksen perumisesta
-                veloituksetta.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              7. Ylivoimainen este (Force Majeure)
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Kalastaja ei vastaa toimituksen viivästymisestä tai
+              peruuntumisesta, jos se johtuu ylivoimaisesta esteestä, kuten
+              poikkeuksellisista sääolosuhteista tai sairastumisesta.
+              Tällaisessa tapauksessa kalastaja on yhteydessä asiakkaaseen
+              sopiakseen uudesta toimitusajasta tai tilauksen perumisesta
+              veloituksetta.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                8. Asiakkaan vastuu
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Asiakas vastaa antamiensa yhteystietojen ja toimitusosoitteen
-                oikeellisuudesta sekä on velvollinen olemaan tavoitettavissa
-                sovittuna toimitus- tai noutoaikana.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              8. Asiakkaan vastuu
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Asiakas vastaa antamiensa yhteystietojen ja toimitusosoitteen
+              oikeellisuudesta sekä on velvollinen olemaan tavoitettavissa
+              sovittuna toimitus- tai noutoaikana.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                9. Palveluntarjoajan rooli
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Kotimaista kalaa -palvelu toimii ainoastaan välittäjänä
-                kalastajan ja asiakkaan välillä. Kauppa syntyy suoraan asiakkaan
-                ja kalastajan välille.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              9. Palveluntarjoajan rooli
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Kotimaista kalaa -palvelu toimii ainoastaan välittäjänä kalastajan
+              ja asiakkaan välillä. Kauppa syntyy suoraan asiakkaan ja
+              kalastajan välille.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                10. Ehtojen muuttaminen
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Palveluntarjoaja pidättää oikeuden muuttaa näitä toimitusehtoja.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              10. Ehtojen muuttaminen
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Palveluntarjoaja pidättää oikeuden muuttaa näitä toimitusehtoja.
+            </p>
+          </section>
 
-            <section>
-              <h2 className="text-xl font-semibold text-dark mb-3">
-                11. Yhteystiedot
-              </h2>
-              <p className="text-muted-foreground leading-relaxed">
-                Kysymykset ja yhteydenotot tulee ohjata suoraan kalastajalle,
-                jonka yhteystiedot löytyvät tilausvahvistuksesta.
-              </p>
-            </section>
+          <section>
+            <h2 className="text-xl font-semibold text-primary mb-3">
+              11. Yhteystiedot
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Kysymykset ja yhteydenotot tulee ohjata suoraan kalastajalle,
+              jonka yhteystiedot löytyvät tilausvahvistuksesta.
+            </p>
+          </section>
 
-            <div className="text-sm text-muted-foreground mt-8 pt-4 border-t">
-              <p>
-                Viimeksi päivitetty: {new Date().toLocaleDateString("fi-FI")}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </main>
-      <Footer />
+          <div className="text-sm text-muted-foreground mt-8 pt-4 border-t">
+            <p>Viimeksi päivitetty: {new Date().toLocaleDateString("fi-FI")}</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

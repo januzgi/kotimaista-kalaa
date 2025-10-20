@@ -104,9 +104,9 @@ export const Header = () => {
         <nav className="hidden md:flex items-center space-x-8">
           <Link
             to="/saatavilla"
-            className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 ${
+            className={`flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors font-medium pb-1 border-b-2 ${
               isActivePage("/saatavilla")
-                ? "border-[#0e43f2] text-dark"
+                ? "border-secondary text-primary"
                 : "border-transparent"
             }`}
           >
@@ -115,9 +115,9 @@ export const Header = () => {
           </Link>
           <Link
             to="/ostoskori"
-            className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 relative ${
+            className={`flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors font-medium pb-1 border-b-2 relative ${
               isActivePage("/ostoskori")
-                ? "border-[#0e43f2] text-dark"
+                ? "border-secondary text-primary"
                 : "border-transparent"
             }`}
           >
@@ -135,9 +135,9 @@ export const Header = () => {
           {isAdmin && (
             <Link
               to="/admin"
-              className={`flex items-center space-x-2 text-muted-foreground hover:text-dark transition-colors font-medium pb-1 border-b-2 relative ${
+              className={`flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors font-medium pb-1 border-b-2 relative ${
                 isActivePage("/admin")
-                  ? "border-[#0e43f2] text-dark"
+                  ? "border-secondary text-primary"
                   : "border-transparent"
               }`}
             >
@@ -204,8 +204,8 @@ export const Header = () => {
                         to="/saatavilla"
                         className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
                           isActivePage("/saatavilla")
-                            ? "text-[#0e43f2]"
-                            : "text-muted-foreground hover:text-dark"
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
                         <Fish className="h-5 w-5" />
@@ -215,8 +215,8 @@ export const Header = () => {
                         to="/ostoskori"
                         className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
                           isActivePage("/ostoskori")
-                            ? "text-[#0e43f2]"
-                            : "text-muted-foreground hover:text-dark"
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
                         <ShoppingCart className="h-5 w-5" />
@@ -232,8 +232,8 @@ export const Header = () => {
                           to="/admin"
                           className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
                             isActivePage("/admin")
-                              ? "text-[#0e43f2]"
-                              : "text-muted-foreground hover:text-dark"
+                              ? "text-primary"
+                              : "text-muted-foreground hover:text-primary"
                           }`}
                         >
                           <Settings className="h-5 w-5" />
@@ -299,8 +299,8 @@ export const Header = () => {
                         to="/saatavilla"
                         className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
                           isActivePage("/saatavilla")
-                            ? "text-[#0e43f2]"
-                            : "text-muted-foreground hover:text-dark"
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
                         <Fish className="h-5 w-5" />
@@ -310,8 +310,8 @@ export const Header = () => {
                         to="/ostoskori"
                         className={`flex items-center space-x-2 text-lg font-medium transition-colors ${
                           isActivePage("/ostoskori")
-                            ? "text-[#0e43f2]"
-                            : "text-muted-foreground hover:text-dark"
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
                         <ShoppingCart className="h-5 w-5" />

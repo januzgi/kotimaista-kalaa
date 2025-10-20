@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,7 +76,7 @@ const Admin = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Ladataan ylläpitoa...</p>
@@ -93,120 +91,109 @@ const Admin = () => {
 
   if (!fishermanProfile) {
     return (
-      <div className="min-h-screen bg-background">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle>Kalastajan profiili puuttuu</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Sinulla täytyy olla kalastajan profiili voidaksesi hallita
-                saalista ja tilauksia.
-              </p>
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleCreateFishermanProfile}
-                  className="flex-1"
-                >
-                  Luo kalastajan profiili
-                </Button>
-                <Button variant="outline" onClick={() => navigate("/")}>
-                  Takaisin etusivulle
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Kalastajan profiili puuttuu</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              Sinulla täytyy olla kalastajan profiili voidaksesi hallita
+              saalista ja tilauksia.
+            </p>
+            <div className="flex gap-2">
+              <Button onClick={handleCreateFishermanProfile} className="flex-1">
+                Luo kalastajan profiili
+              </Button>
+              <Button variant="outline" onClick={() => navigate("/")}>
+                Takaisin etusivulle
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto px-4 py-8">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-dark mb-2">
-            Ylläpito
-          </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
-            Hallitse saalista ja tilauksia
-          </p>
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
+          Ylläpito
+        </h1>
+        <p className="text-sm sm:text-base text-muted-foreground">
+          Hallitse saalista ja tilauksia
+        </p>
+      </div>
+
+      <Tabs defaultValue="orders" className="space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <TabsList className="grid w-full grid-cols-3 flex-1">
+            <TabsTrigger
+              value="orders"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              Tilaukset
+              {newOrderCount > 0 && (
+                <Badge
+                  variant="destructive"
+                  className="h-4 w-4 p-0 flex items-center justify-center text-xs"
+                >
+                  {newOrderCount}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="catch"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            >
+              <Fish className="h-4 w-4" />
+              Hallitse saalista
+            </TabsTrigger>
+            <TabsTrigger
+              value="fishing-days"
+              className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
+            >
+              <Calendar className="h-4 w-4" />
+              Kalastuspäivät
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsList className="bg-transparent p-0">
+            <TabsTrigger
+              value="prices"
+              className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none"
+            >
+              <Euro className="h-4 w-4" />
+              Hallitse kilohintoja
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        <Tabs defaultValue="orders" className="space-y-6">
-          <div className="flex items-center justify-between gap-4">
-            <TabsList className="grid w-full grid-cols-3 flex-1">
-              <TabsTrigger
-                value="orders"
-                className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
-              >
-                <ShoppingCart className="h-4 w-4" />
-                Tilaukset
-                {newOrderCount > 0 && (
-                  <Badge
-                    variant="destructive"
-                    className="h-4 w-4 p-0 flex items-center justify-center text-xs"
-                  >
-                    {newOrderCount}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger
-                value="catch"
-                className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
-              >
-                <Fish className="h-4 w-4" />
-                Hallitse saalista
-              </TabsTrigger>
-              <TabsTrigger
-                value="fishing-days"
-                className="text-xs sm:text-sm flex items-center gap-2 relative data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none data-[state=active]:shadow-md"
-              >
-                <Calendar className="h-4 w-4" />
-                Kalastuspäivät
-              </TabsTrigger>
-            </TabsList>
+        <TabsContent value="catch" className="space-y-6">
+          <AddCatchForm
+            fishermanProfileId={fishermanProfile.id}
+            onSuccess={() => setRefreshKey((prev) => prev + 1)}
+          />
+          <InventoryList
+            fishermanProfileId={fishermanProfile.id}
+            refreshKey={refreshKey}
+          />
+        </TabsContent>
 
-            <TabsList className="bg-transparent p-0">
-              <TabsTrigger
-                value="prices"
-                className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 rounded-md border border-input bg-background hover:bg-accent hover:text-accent-foreground data-[state=active]:border-[#0e43f2] border-b-2 rounded-b-none"
-              >
-                <Euro className="h-4 w-4" />
-                Hallitse kilohintoja
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <TabsContent value="prices">
+          <DefaultPricesManagement fishermanProfile={fishermanProfile} />
+        </TabsContent>
 
-          <TabsContent value="catch" className="space-y-6">
-            <AddCatchForm
-              fishermanProfileId={fishermanProfile.id}
-              onSuccess={() => setRefreshKey((prev) => prev + 1)}
-            />
-            <InventoryList
-              fishermanProfileId={fishermanProfile.id}
-              refreshKey={refreshKey}
-            />
-          </TabsContent>
+        <TabsContent value="orders">
+          <OrderManagement fishermanProfile={fishermanProfile} />
+        </TabsContent>
 
-          <TabsContent value="prices">
-            <DefaultPricesManagement fishermanProfile={fishermanProfile} />
-          </TabsContent>
-
-          <TabsContent value="orders">
-            <OrderManagement fishermanProfile={fishermanProfile} />
-          </TabsContent>
-
-          <TabsContent value="fishing-days">
-            <FishermanSchedule fishermanProfile={fishermanProfile} />
-          </TabsContent>
-        </Tabs>
-      </main>
-      <Footer />
+        <TabsContent value="fishing-days">
+          <FishermanSchedule fishermanProfile={fishermanProfile} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
