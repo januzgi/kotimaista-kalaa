@@ -61,6 +61,9 @@ export const PublicSchedule = () => {
     setCurrentMonth(month);
   };
 
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
   return (
     <section className="py-12 sm:py-16 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -70,8 +73,10 @@ export const PublicSchedule = () => {
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Katso milloin kalastaja suunnittelee lähtevänsä vesille.{" "}
-            <span style={{ color: "#000a43" }}>Sinisellä</span> merkatut päivät
-            ovat suunniteltuja kalastuspäiviä.
+            <span style={{ color: "#183c89", fontWeight: "bold" }}>
+              Sinisellä
+            </span>{" "}
+            merkatut päivät ovat suunniteltuja kalastuspäiviä.
           </p>
         </div>
 
@@ -90,10 +95,13 @@ export const PublicSchedule = () => {
                     className="rounded-md"
                     classNames={{
                       day_today:
-                        "bg-accent text-secondary border-2 border-[hsl(var(--secondary))]",
+                        "bg-muted text-primary border-2 border-primary underline",
                     }}
-                    disabled={true}
                     showOutsideDays={false}
+                    modifiers={{ past: { before: startOfToday } }}
+                    modifiersClassNames={{
+                      past: "opacity-50 aria-selected:opacity-50",
+                    }}
                   />
                 </div>
                 <div className="mt-4 text-center text-sm text-muted-foreground">
