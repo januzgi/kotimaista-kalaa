@@ -90,7 +90,7 @@ export const PublicSchedule = () => {
                     className="rounded-md"
                     classNames={{
                       day_today:
-                        "bg-transparent text-foreground border-2 rounded-full border-[hsl(var(--primary))]",
+                        "bg-accent text-secondary border-2 border-[hsl(var(--secondary))]",
                     }}
                     disabled={true}
                     showOutsideDays={false}
