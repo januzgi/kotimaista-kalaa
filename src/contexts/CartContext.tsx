@@ -5,8 +5,8 @@ import React, {
   useEffect,
   ReactNode,
   useMemo,
+  useCallback,
 } from "react";
-
 import { useAuthContext } from "./AuthContext";
 
 /**
@@ -99,19 +99,25 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * Effect to persist cart to localStorage whenever items change
    */
   useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+    // Persist cart only if the user is logged in
+    if (user) {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+    } else {
+      // Clear storage if user logs out
+      localStorage.removeItem(CART_STORAGE_KEY);
+      setItems([]); // Also clear in-memory state
+    }
+  }, [items, user]); // Add user dependency here
 
   /**
    * Adds an item to the cart or increases quantity if item already exists
    * @param item - The cart item to add
    */
-  const addItem = (item: CartItem) => {
+  const addItem = useCallback((item: CartItem) => {
     setItems((prevItems) => {
       const existingItemIndex = prevItems.findIndex(
         (i) => i.productId === item.productId
       );
-
       if (existingItemIndex >= 0) {
         // Update existing item quantity
         const newItems = [...prevItems];
@@ -125,7 +131,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
         return [...prevItems, item];
       }
     });
-  };
+  }, []);
+
+  /**
+   * Removes a single item from the cart by product ID
+   * @param productId - ID of the product to remove
+   */
+  const removeItem = useCallback((productId: string) => {
+    setItems((prevItems) =>
+      prevItems.filter((item) => item.productId !== productId)
+    );
+  }, []);
 
   /**
    * Updates the quantity of a specific cart item
@@ -133,27 +149,28 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * @param productId - ID of the product to update
    * @param quantity - New quantity value
    */
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item.productId === productId ? { ...item, quantity } : item
-      )
-    );
-  };
+  const updateQuantity = useCallback(
+    (productId: string, quantity: number) => {
+      if (quantity <= 0) {
+        removeItem(productId);
+        return;
+      }
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item.productId === productId ? { ...item, quantity } : item
+        )
+      );
+    },
+    [removeItem]
+  );
 
   /**
    * Removes multiple items from cart by their product IDs and tracks removed items
    * Used when products become unavailable/sold out
    * @param productIds - Array of product IDs to remove
    */
-  const removeItemsById = (productIds: string[]) => {
+  const removeItemsById = useCallback((productIds: string[]) => {
     const removedItemNames: string[] = [];
-
     setItems((prevItems) => {
       const itemsToRemove = prevItems.filter((item) =>
         productIds.includes(item.productId)
@@ -161,66 +178,58 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removedItemNames.push(
         ...itemsToRemove.map((item) => `${item.species} (${item.form})`)
       );
-
       return prevItems.filter((item) => !productIds.includes(item.productId));
     });
-
     setRemovedItems(removedItemNames);
-  };
+  }, []);
 
   /**
    * Clears the list of recently removed items
    */
-  const clearRemovedItems = () => {
+  const clearRemovedItems = useCallback(() => {
     setRemovedItems([]);
-  };
+  }, []);
 
   /**
    * Removes all items from the cart and clears localStorage
    */
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     setItems([]);
-    localStorage.removeItem(CART_STORAGE_KEY);
-  };
+    // localStorage removal is handled by the useEffect based on items/user
+  }, []);
 
   /**
    * Returns the total number of unique items in the cart
    * @returns Number of unique items
    */
-  const getItemCount = () => {
+  const getItemCount = useCallback(() => {
     return items.length;
-  };
+  }, [items]);
 
   /**
    * Calculates the total price of all items in the cart
    * @returns Total price in euros
    */
-  const getTotalPrice = () => {
+  const getTotalPrice = useCallback(() => {
     return items.reduce(
       (total, item) => total + item.pricePerKg * item.quantity,
       0
     );
-  };
-
-  /**
-   * Removes a single item from the cart by product ID
-   * @param productId - ID of the product to remove
-   */
-  const removeItem = (productId: string) => {
-    setItems((prevItems) =>
-      prevItems.filter((item) => item.productId !== productId)
-    );
-  };
+  }, [items]);
 
   /**
    * Checks if a specific product is already in the cart
    * @param productId - ID of the product to check
    * @returns True if product is in cart
    */
-  const isInCart = (productId: string) => {
-    return items.some((item) => item.productId === productId);
-  };
+  const isInCart = useCallback(
+    (productId: string) => {
+      return items.some((item) => item.productId === productId);
+    },
+    [items]
+  );
 
+  // Memoize the context value
   const value = useMemo(() => {
     if (!user) {
       // If user is logged out, provide an empty cart state
@@ -239,7 +248,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       };
     }
 
-    // If user is logged in, provide the real cart state
+    // Real provider value for logged-in users
     return {
       items,
       removedItems,
@@ -253,7 +262,21 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeItemsById,
       getTotalPrice,
     };
-  }, [user, items, removedItems]);
+  }, [
+    user,
+    items,
+    removedItems,
+    // Include the memoized functions in the dependency array
+    addItem,
+    removeItem,
+    updateQuantity,
+    clearCart,
+    getItemCount,
+    isInCart,
+    clearRemovedItems,
+    removeItemsById,
+    getTotalPrice,
+  ]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
