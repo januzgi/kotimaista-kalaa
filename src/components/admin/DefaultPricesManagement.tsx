@@ -281,7 +281,7 @@ export const DefaultPricesManagement = ({
           variant: "destructive",
           title: "Virhe",
           description:
-            "Tämän lajin ja muodon yhdistelmälle on jo kilohinta määritelty.",
+            "Tämän lajin ja muodon yhdistelmälle on jo kilohinta määritelty. Jos haluat muokata kilohintaa, käytä 'Poista' -painiketta ja lisää uusi kilohinta.",
         });
       } else {
         toast({
