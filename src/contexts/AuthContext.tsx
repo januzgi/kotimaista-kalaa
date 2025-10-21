@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
   useMemo,
+  useCallback,
 } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,78 +71,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     return () => subscription.unsubscribe();
   }, [toast]);
 
-  const signInWithProvider = async (provider: "google") => {
-    try {
-      sessionStorage.setItem("oauth_in_progress", "true");
-      const redirectUrl = `${window.location.origin}/`;
+  // Wrap signInWithProvider in useCallback
+  const signInWithProvider = useCallback(
+    async (provider: "google") => {
+      try {
+        sessionStorage.setItem("oauth_in_progress", "true");
+        const redirectUrl = `${window.location.origin}/`;
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: { redirectTo: redirectUrl },
+        });
+        if (error) throw error;
+      } catch (error) {
+        sessionStorage.removeItem("oauth_in_progress"); // Clear flag on error too
+        toast({
+          variant: "destructive",
+          title: "Kirjautuminen epäonnistui",
+          description:
+            error instanceof Error ? error.message : "Tuntematon virhe",
+        });
+      }
+    },
+    [toast]
+  );
 
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: redirectUrl,
-        },
-      });
+  const signInWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+        if (error) throw error;
+        toast({
+          title: "Kirjauduit sisään onnistuneesti",
+          description: "Tervetuloa takaisin!",
+        });
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Kirjautuminen epäonnistui",
+          description: "Sähköposti tai salasana on virheellinen.",
+        });
+        console.error("Sign in error:", error);
+      }
+    },
+    [toast]
+  );
 
-      if (error) throw error;
-    } catch (error) {
-      sessionStorage.removeItem("oauth_in_progress"); // Clear flag on error too
-      toast({
-        variant: "destructive",
-        title: "Kirjautuminen epäonnistui",
-        description:
-          error instanceof Error ? error.message : "Tuntematon virhe",
-      });
-    }
-  };
+  const signUpWithEmail = useCallback(
+    async (email: string, password: string) => {
+      try {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/` },
+        });
+        if (error) throw error;
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Rekisteröityminen epäonnistui",
+          description:
+            error instanceof Error ? error.message : "Tuntematon virhe",
+        });
+        throw error;
+      }
+    },
+    [toast]
+  );
 
-  const signInWithEmail = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-      toast({
-        title: "Kirjauduit sisään onnistuneesti",
-        description: "Tervetuloa takaisin!",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Kirjautuminen epäonnistui",
-        description: "Sähköposti tai salasana on virheellinen.",
-      });
-      console.error("Sign in error:", error);
-      // Re-throw the error if you want calling components to potentially handle it too
-      // throw error;
-    }
-  };
-
-  const signUpWithEmail = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-        },
-      });
-
-      if (error) throw error;
-      // Success is handled by AuthDialog showing the confirmation message
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Rekisteröityminen epäonnistui",
-        description:
-          error instanceof Error ? error.message : "Tuntematon virhe",
-      });
-      // Re-throw needed so AuthDialog doesn't show success on failure
-      throw error;
-    }
-  };
-
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
@@ -157,13 +157,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           error instanceof Error ? error.message : "Tuntematon virhe",
       });
     }
-  };
+  }, [toast]);
 
   const openAuthDialog = () => setIsAuthDialogOpen(true);
   const closeAuthDialog = () => setIsAuthDialogOpen(false);
-  // --- End: Logic moved from useAuth.tsx ---
 
-  // Memoize the context value to prevent unnecessary re-renders
+  // Memoize the context value
   const value = useMemo(
     () => ({
       user,
@@ -178,6 +177,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       closeAuthDialog,
     }),
     [
+      // Update dependencies to include the memoized functions
       user,
       session,
       loading,
@@ -187,7 +187,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       signUpWithEmail,
       signOut,
     ]
-  ); // Add dependencies
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
