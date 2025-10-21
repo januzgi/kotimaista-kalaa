@@ -33,11 +33,15 @@ import { FishermanProfile, DefaultPrice } from "@/lib/types";
 
 /**
  * Zod schema for adding new default prices
+ * Updated to reflect the 0.50 minimum.
  */
 const addPriceSchema = z.object({
   species: z.string().min(1, "Laji on pakollinen"),
   form: z.string().min(1, "Muoto on pakollinen"),
-  price_per_kg: z.number().min(0.01, "Kilohinta on pakollinen"),
+  price_per_kg: z
+    .number()
+    .min(0.5, "Kilohinnan on oltava vähintään 0.50 €")
+    .max(100, "Kilohinta ei voi ylittää 100 €"),
 });
 
 type AddPriceForm = z.infer<typeof addPriceSchema>;
@@ -76,16 +80,13 @@ const formOptions = [
  * Component for managing default prices for fish species and preparation forms.
  *
  * Features:
- * - Add new default prices for species/form combinations
+ * - Add new default prices with robust, user-friendly input
  * - List existing default prices with inline editing
  * - Delete default prices
  * - Form validation with Zod schemas
  * - Duplicate prevention for species/form combinations
- * - Real-time price updates
- * - Responsive layout
- *
- * Default prices are used to automatically populate pricing when adding
- * new catch entries, streamlining the catch entry process.
+ * - Real-time price updates with rounding to 0.50
+ * - Responsive layout with mobile-friendly decimal input
  *
  * @param props - The component props
  * @returns The default prices management component
@@ -96,6 +97,7 @@ export const DefaultPricesManagement = ({
   const [defaultPrices, setDefaultPrices] = useState<DefaultPrice[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingPrice, setEditingPrice] = useState<string>("");
+  const [newPrice, setNewPrice] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -104,7 +106,7 @@ export const DefaultPricesManagement = ({
     defaultValues: {
       species: "",
       form: "",
-      price_per_kg: 0,
+      price_per_kg: undefined,
     },
   });
 
@@ -140,6 +142,107 @@ export const DefaultPricesManagement = ({
   }, [fetchDefaultPrices]);
 
   /**
+   * Rounds a number to the nearest 0.5.
+   * @param value - The number to round.
+   * @returns The number rounded to the nearest 0.5.
+   */
+  const roundToHalf = (value: number) => {
+    return Math.round(value * 2) / 2;
+  };
+
+  /**
+   * Handles change events for price inputs, allowing only valid decimal patterns.
+   *
+   * @param value - The raw input value.
+   * @param setter - The React state setter function (e.g., setNewPrice or setEditingPrice).
+   */
+  const handlePriceInputChange = (
+    value: string,
+    setter: React.Dispatch<React.SetStateAction<string>>
+  ) => {
+    const formattedValue = value.replace(",", ".");
+
+    // Allow empty string or valid numeric/decimal patterns
+    if (formattedValue === "" || /^[0-9]*\.?[0-9]*$/.test(formattedValue)) {
+      const numValue = parseFloat(formattedValue);
+      // Enforce max value of 100
+      if (!isNaN(numValue) && numValue > 100) {
+        setter("100");
+      } else if (
+        // Prevent values like "00" or "05" but allow "0."
+        formattedValue.length > 1 &&
+        formattedValue.startsWith("0") &&
+        !formattedValue.startsWith("0.")
+      ) {
+        setter(formattedValue.substring(1));
+      } else {
+        setter(formattedValue);
+      }
+    }
+  };
+
+  /**
+   * Handles blur event for the "new price" input.
+   * It formats, rounds, and updates both the local string state and the RHF state.
+   */
+  const handleNewPriceBlur = () => {
+    let numericValue = parseFloat(newPrice) || 0;
+
+    // Enforce max
+    if (numericValue > 100) {
+      numericValue = 100;
+    }
+
+    // Enforce minimum and round
+    if (numericValue > 0 && numericValue < 0.5) {
+      numericValue = 0.5;
+    }
+    const roundedValue = roundToHalf(numericValue);
+
+    if (roundedValue > 0) {
+      // Update local string state (formatted)
+      setNewPrice(roundedValue.toFixed(2));
+      // Update react-hook-form state (numeric)
+      form.setValue("price_per_kg", roundedValue, { shouldValidate: true });
+    } else {
+      // Handle empty or zero input
+      setNewPrice("");
+      form.setValue("price_per_kg", undefined, { shouldValidate: true });
+    }
+  };
+
+  /**
+   * Handles blur event for the "editing price" input.
+   * It formats and rounds the value in the local editingPrice state.
+   */
+  const handleEditingPriceBlur = () => {
+    let numericValue = parseFloat(editingPrice) || 0;
+
+    // Enforce max
+    if (numericValue > 100) {
+      numericValue = 100;
+    }
+
+    // Enforce minimum and round
+    if (numericValue > 0 && numericValue < 0.5) {
+      numericValue = 0.5;
+    }
+    const roundedValue = roundToHalf(numericValue);
+
+    // Update local string state (formatted)
+    // We must ensure a minimum of 0.50 if user entered anything
+    if (roundedValue < 0.5) {
+      setEditingPrice(
+        defaultPrices
+          .find((p) => p.id === editingId)
+          ?.price_per_kg.toFixed(2) || "0.50"
+      ); // Revert to original or 0.50
+    } else {
+      setEditingPrice(roundedValue.toFixed(2));
+    }
+  };
+
+  /**
    * Handles form submission to add a new default price
    * @param data - Form data from the add price form
    */
@@ -162,10 +265,12 @@ export const DefaultPricesManagement = ({
       });
 
       form.reset();
+      setNewPrice("");
       fetchDefaultPrices();
     } catch (error: unknown) {
       console.error("Error adding default price:", error);
       // Check if the error is an object with a 'code' property
+      // and if the code is '23505' (unique constraint violation)
       if (
         typeof error === "object" &&
         error !== null &&
@@ -195,7 +300,7 @@ export const DefaultPricesManagement = ({
    */
   const handleEdit = (id: string, currentPrice: number) => {
     setEditingId(id);
-    setEditingPrice(currentPrice.toString());
+    setEditingPrice(currentPrice.toFixed(2));
   };
 
   /**
@@ -203,20 +308,29 @@ export const DefaultPricesManagement = ({
    * @param id - ID of the price entry to update
    */
   const handleSaveEdit = async (id: string) => {
-    const price = parseFloat(editingPrice);
-    if (isNaN(price) || price <= 0) {
+    // Parse the value from state, rounding it on save
+    let price = parseFloat(editingPrice.replace(",", ".")) || 0; // <-- Change to 'let'
+
+    // Enforce max
+    if (price > 100) {
+      price = 100;
+    }
+
+    if (price < 0.5) {
       toast({
         variant: "destructive",
         title: "Virhe",
-        description: "Kilohinta ei ole kelvollinen.",
+        description: "Kilohinnan on oltava vähintään 0.50 €.",
       });
       return;
     }
 
+    const roundedPrice = roundToHalf(price);
+
     try {
       const { error } = await supabase
         .from("default_prices")
-        .update({ price_per_kg: price })
+        .update({ price_per_kg: roundedPrice })
         .eq("id", id);
 
       if (error) throw error;
@@ -289,7 +403,12 @@ export const DefaultPricesManagement = ({
   };
 
   if (loading) {
-    return <div>Ladataan...</div>;
+    return (
+      <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Ladataan kilohintoja...</p>
+      </div>
+    );
   }
 
   return (
@@ -364,18 +483,19 @@ export const DefaultPricesManagement = ({
                 <FormField
                   control={form.control}
                   name="price_per_kg"
-                  render={({ field }) => (
+                  render={() => (
                     <FormItem>
                       <FormLabel>Kilohinta (€)</FormLabel>
                       <FormControl>
                         <Input
-                          type="number"
-                          step="0.01"
+                          type="text"
+                          inputMode="decimal"
                           placeholder="0.00"
-                          {...field}
+                          value={newPrice}
                           onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
+                            handlePriceInputChange(e.target.value, setNewPrice)
                           }
+                          onBlur={handleNewPriceBlur}
                         />
                       </FormControl>
                       <FormMessage />
@@ -429,10 +549,16 @@ export const DefaultPricesManagement = ({
                     {editingId === price.id ? (
                       <>
                         <Input
-                          type="number"
-                          step="0.01"
+                          type="text"
+                          inputMode="decimal"
                           value={editingPrice}
-                          onChange={(e) => setEditingPrice(e.target.value)}
+                          onChange={(e) =>
+                            handlePriceInputChange(
+                              e.target.value,
+                              setEditingPrice
+                            )
+                          }
+                          onBlur={handleEditingPriceBlur}
                           className="w-24"
                         />
                         <span className="text-sm text-muted-foreground">
@@ -455,17 +581,18 @@ export const DefaultPricesManagement = ({
                     ) : (
                       <>
                         <button
-                          className="text-right font-medium hover:underline"
+                          className="text-right font-medium hover:underline p-2"
                           onClick={() =>
                             handleEdit(price.id, price.price_per_kg)
                           }
                         >
-                          {price.price_per_kg} €/kg
+                          {price.price_per_kg.toFixed(2)} €/kg
                         </button>
                         <Button
                           size="sm"
-                          variant="outline"
+                          variant="ghost"
                           onClick={() => handleDelete(price.id)}
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>

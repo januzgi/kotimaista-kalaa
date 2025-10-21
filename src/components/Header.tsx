@@ -38,11 +38,11 @@ const NavLink = ({
   isMobile?: boolean;
   onClick?: () => void;
 }) => {
-  const desktopClasses = `flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors font-medium pb-1 border-b-2 relative ${
+  const desktopClasses = `flex items-center space-x-2 text-muted-foreground hover:text-foreground  transition-colors font-medium pb-1 border-b-2 relative ${
     isActive ? "border-secondary text-primary" : "border-transparent"
   }`;
   const mobileClasses = `flex items-center space-x-2 text-lg font-medium transition-colors relative ${
-    isActive ? "text-primary" : "text-muted-foreground hover:text-primary"
+    isActive ? "text-primary" : "text-muted-foreground hover:text-foreground "
   }`;
 
   return (
@@ -146,7 +146,7 @@ export const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link
           to="/"
-          className="text-xl font-bold text-primary hover:text-primary/80 transition-colors"
+          className="text-xl font-bold text-primary hover:text-foreground /80 transition-colors"
         >
           Kotimaista kalaa
         </Link>
