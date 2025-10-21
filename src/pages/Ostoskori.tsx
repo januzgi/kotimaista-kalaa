@@ -280,18 +280,17 @@ const Ostoskori = () => {
           <p className="text-muted-foreground mb-6">
             Lisää kaloja ostoskoriin aloittaaksesi ostokset.
           </p>
-          <Button onClick={() => navigate("/saatavilla")}>
-            Katso tarjonta
-          </Button>
           {!user && (
-            <Button
-              variant="outline"
-              className="mt-4"
-              onClick={openAuthDialog}
-            >
+            <Button className="mt-4 mr-4" onClick={openAuthDialog}>
               Kirjaudu sisään ostaaksesi
             </Button>
           )}
+          <Button
+            variant={user ? "default" : "outline"}
+            onClick={() => navigate("/saatavilla")}
+          >
+            Katso tarjonta
+          </Button>
         </div>
       ) : (
         <div className="space-y-6 max-w-[var(--ostoskori-summary-width)] mx-auto">

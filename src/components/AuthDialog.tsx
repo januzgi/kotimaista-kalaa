@@ -232,7 +232,9 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                 {/* Signup Form */}
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email">Sähköposti</Label>
+                    <Label htmlFor="signup-email">
+                      Sähköposti <span className="text-primary">*</span>
+                    </Label>
                     <Input
                       id="signup-email"
                       type="email"
@@ -244,7 +246,9 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password">Salasana</Label>
+                    <Label htmlFor="signup-password">
+                      Salasana <span className="text-primary">*</span>
+                    </Label>
                     <Input
                       id="signup-password"
                       type="password"
@@ -256,7 +260,9 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password">Vahvista salasana</Label>
+                    <Label htmlFor="confirm-password">
+                      Vahvista salasana <span className="text-primary">*</span>
+                    </Label>
                     <Input
                       id="confirm-password"
                       type="password"
