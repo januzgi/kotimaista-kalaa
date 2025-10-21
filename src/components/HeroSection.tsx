@@ -5,6 +5,7 @@ import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import heroImage from "@/assets/images/Rubai.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { BellRing } from "lucide-react";
 
 /**
  * Hero section component for the homepage.
@@ -80,7 +81,7 @@ export const HeroSection = () => {
               Yli 10 vuoden kokemus kalastuksesta ja sitoutuminen laadukkaimpaan
               tuoreeseen kalaan.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 lg:justify-start justify-center">
+            <div className="flex flex-col sm:flex-row gap-2 lg:justify-start justify-center">
               <Link to="/saatavilla">
                 <Button size="lg" className="w-full sm:w-auto">
                   Selaa saatavaa kalaa
@@ -93,9 +94,14 @@ export const HeroSection = () => {
                 onClick={() => setIsSubscriptionModalOpen(true)}
                 disabled={isSubscribed}
               >
-                {isSubscribed
-                  ? "Olet jo listalla"
-                  : "Tilaa sähköposti-ilmoitukset"}
+                {isSubscribed ? (
+                  "Olet jo listalla"
+                ) : (
+                  <>
+                    <BellRing className="h-4 w-4" />
+                    Tilaa sähköposti-ilmoitukset
+                  </>
+                )}
               </Button>
             </div>
           </div>
