@@ -229,16 +229,16 @@ const Saatavilla = () => {
               className="transition-all duration-200 hover:shadow-lg"
             >
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center">
                     <FishIcon species={product.species} />
                     {product.species}
                   </CardTitle>
-                  <Badge variant="outline" className="text-xs">
-                    {formatDate(product.catch.catch_date)}
-                  </Badge>
                 </div>
-                <div className="text-sm text-muted-foreground w-fit">
+                <Badge variant="outline" className="text-xs w-fit">
+                  pyyntipäivä: {formatDate(product.catch.catch_date)}
+                </Badge>
+                <div className="text-xs text-muted-foreground w-fit">
                   Kalastaja:{" "}
                   {product.fisherman_profile?.user?.full_name || "Tuntematon"}
                 </div>
