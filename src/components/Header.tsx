@@ -1,8 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { AuthDialog } from "./AuthDialog";
-import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -17,6 +15,7 @@ import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * A reusable navigation link component for both desktop and mobile views.
@@ -70,7 +69,7 @@ const NavLink = ({
  */
 export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
-  const { user, signOut, openAuthDialog } = useAuth();
+  const { user, signOut, openAuthDialog } = useAuthContext();
   const { getItemCount } = useCart();
   const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
@@ -272,7 +271,6 @@ export const Header = () => {
           )}
         </div>
       </div>
-      <AuthDialog />
     </header>
   );
 };

@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/hooks/useAuth";
 import { Fish, Package, Euro, ShoppingCart } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
 import { Product } from "@/lib/types";
 import { Link } from "react-router-dom";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Available fish products page component.
@@ -37,7 +37,7 @@ const Saatavilla = () => {
   );
   const { toast } = useToast();
   const { items, addItem, isInCart } = useCart();
-  const { user, openAuthDialog } = useAuth();
+  const { user, openAuthDialog } = useAuthContext();
 
   /**
    * Fetches all available products from the database

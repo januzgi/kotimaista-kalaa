@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/contexts/CartContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ import { Fish, MapPin, Clock, Euro, User, Phone, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FishIcon } from "@/components/FishIcon";
 import { FulfillmentSlot, Product } from "@/lib/types";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Order placement page component.
@@ -48,7 +48,7 @@ const Tilaa = () => {
   const [searchParams] = useSearchParams();
   const productId = searchParams.get("product");
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { toast } = useToast();
   const { items: cartItems, clearCart, removeItemsById } = useCart();
 

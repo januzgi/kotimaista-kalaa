@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+
 import { NotificationContext } from "@/hooks/useNotifications";
+import { useAuthContext } from "./AuthContext";
 
 interface NotificationProviderProps {
   children: React.ReactNode;
@@ -11,7 +12,7 @@ export const NotificationProvider = ({
   children,
 }: NotificationProviderProps) => {
   const [newOrderCount, setNewOrderCount] = useState(0);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
 
   const refreshNotifications = useCallback(async () => {
     if (!user) {

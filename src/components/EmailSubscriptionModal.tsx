@@ -8,9 +8,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Props for the EmailSubscriptionModal component
@@ -45,7 +45,7 @@ export const EmailSubscriptionModal = ({
 }: EmailSubscriptionModalProps) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const { toast } = useToast();
 
   /**

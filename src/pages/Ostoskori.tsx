@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useCart, CartItem } from "@/contexts/CartContext";
-import { useAuth } from "@/hooks/useAuth";
 import { ShoppingCart, Trash2, AlertTriangle, Euro, X } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Interface for product availability data
@@ -43,7 +43,7 @@ const Ostoskori = () => {
   const { toast } = useToast();
   const { items, updateQuantity, removeItem, removedItems, clearRemovedItems } =
     useCart();
-  const { user, openAuthDialog } = useAuth();
+  const { user, openAuthDialog } = useAuthContext();
   const [inputQuantities, setInputQuantities] = useState<{
     [key: string]: string;
   }>({});

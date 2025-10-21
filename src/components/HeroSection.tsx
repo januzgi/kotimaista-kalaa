@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import heroImage from "@/assets/images/Rubai.jpg";
-import { useAuth } from "@/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
 import { BellRing } from "lucide-react";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Hero section component for the homepage.
@@ -26,7 +27,7 @@ import { BellRing } from "lucide-react";
  */
 export const HeroSection = () => {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {

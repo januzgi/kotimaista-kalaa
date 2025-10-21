@@ -1,5 +1,13 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
-import { useAuth } from "@/hooks/useAuth";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useMemo,
+} from "react";
+
+import { useAuthContext } from "./AuthContext";
 
 /**
  * Interface representing an item in the shopping cart
@@ -54,11 +62,11 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 /**
  * Local storage key for persisting cart data
  */
-const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
+const CART_STORAGE_KEY = "kotimaistakalaa_cart";
 
 /**
  * Cart context provider component that manages shopping cart state and persistence.
- * 
+ *
  * Features:
  * - Persistent cart storage using localStorage
  * - Add, update, and remove cart items
@@ -67,21 +75,21 @@ const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
  * - Total price calculation
  * - Item count tracking
  * - Removed items tracking for user notifications
- * 
+ *
  * The cart automatically persists to localStorage and handles various
  * edge cases like sold-out items and quantity updates.
- * 
+ *
  * @param props - The provider props containing children components
  * @returns Cart context provider wrapping children
  */
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
       return savedCart ? JSON.parse(savedCart) : [];
     } catch (error) {
-      console.error('Error parsing cart from localStorage:', error);
+      console.error("Error parsing cart from localStorage:", error);
       return [];
     }
   });
@@ -99,15 +107,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * @param item - The cart item to add
    */
   const addItem = (item: CartItem) => {
-    setItems(prevItems => {
-      const existingItemIndex = prevItems.findIndex(i => i.productId === item.productId);
-      
+    setItems((prevItems) => {
+      const existingItemIndex = prevItems.findIndex(
+        (i) => i.productId === item.productId
+      );
+
       if (existingItemIndex >= 0) {
         // Update existing item quantity
         const newItems = [...prevItems];
         newItems[existingItemIndex] = {
           ...newItems[existingItemIndex],
-          quantity: newItems[existingItemIndex].quantity + item.quantity
+          quantity: newItems[existingItemIndex].quantity + item.quantity,
         };
         return newItems;
       } else {
@@ -128,12 +138,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       removeItem(productId);
       return;
     }
-    
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.productId === productId
-          ? { ...item, quantity }
-          : item
+
+    setItems((prevItems) =>
+      prevItems.map((item) =>
+        item.productId === productId ? { ...item, quantity } : item
       )
     );
   };
@@ -145,14 +153,18 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    */
   const removeItemsById = (productIds: string[]) => {
     const removedItemNames: string[] = [];
-    
-    setItems(prevItems => {
-      const itemsToRemove = prevItems.filter(item => productIds.includes(item.productId));
-      removedItemNames.push(...itemsToRemove.map(item => `${item.species} (${item.form})`));
-      
-      return prevItems.filter(item => !productIds.includes(item.productId));
+
+    setItems((prevItems) => {
+      const itemsToRemove = prevItems.filter((item) =>
+        productIds.includes(item.productId)
+      );
+      removedItemNames.push(
+        ...itemsToRemove.map((item) => `${item.species} (${item.form})`)
+      );
+
+      return prevItems.filter((item) => !productIds.includes(item.productId));
     });
-    
+
     setRemovedItems(removedItemNames);
   };
 
@@ -184,7 +196,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * @returns Total price in euros
    */
   const getTotalPrice = () => {
-    return items.reduce((total, item) => total + (item.pricePerKg * item.quantity), 0);
+    return items.reduce(
+      (total, item) => total + item.pricePerKg * item.quantity,
+      0
+    );
   };
 
   /**
@@ -192,7 +207,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * @param productId - ID of the product to remove
    */
   const removeItem = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.productId !== productId));
+    setItems((prevItems) =>
+      prevItems.filter((item) => item.productId !== productId)
+    );
   };
 
   /**
@@ -201,7 +218,7 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
    * @returns True if product is in cart
    */
   const isInCart = (productId: string) => {
-    return items.some(item => item.productId === productId);
+    return items.some((item) => item.productId === productId);
   };
 
   const value = useMemo(() => {
@@ -238,27 +255,23 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     };
   }, [user, items, removedItems]);
 
-  return (
-    <CartContext.Provider value={value}>
-      {children}
-    </CartContext.Provider>
-  );
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 };
 
 /**
  * Custom hook for accessing cart context and operations.
- * 
+ *
  * Must be used within a CartProvider component. Provides access to all
  * cart operations including adding, removing, updating items, and
  * accessing cart state.
- * 
+ *
  * @throws Error if used outside of CartProvider
  * @returns Cart context with all operations and state
  */
 export const useCart = () => {
   const context = useContext(CartContext);
   if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };

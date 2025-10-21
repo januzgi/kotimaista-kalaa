@@ -1,34 +1,44 @@
-import { useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useMemo,
+} from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
-/**
- * Custom hook for handling user authentication with Supabase.
- *
- * Features:
- * - Manages authentication state (user, session, loading)
- * - OAuth provider sign-in (Google, Facebook, Apple)
- * - Email/password authentication
- * - User registration with email verification
- * - Automatic session persistence and token refresh
- * - Toast notifications for auth events
- *
- * The hook sets up real-time auth state listeners and automatically
- * manages the authentication lifecycle.
- *
- * @returns Object containing user state and authentication methods
- */
-export const useAuth = () => {
+// Define the shape of the context value
+interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  isAuthDialogOpen: boolean;
+  signInWithProvider: (provider: "google") => Promise<void>;
+  signInWithEmail: (email: string, password: string) => Promise<void>;
+  signUpWithEmail: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  openAuthDialog: () => void;
+  closeAuthDialog: () => void;
+}
+
+// Create the context with a default undefined value initially
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Create the AuthProvider component
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { toast } = useToast();
 
-  /**
-   * Sets up authentication state listeners and checks for existing sessions
-   */
   useEffect(() => {
     // Set up auth state listener FIRST
     const {
@@ -38,8 +48,6 @@ export const useAuth = () => {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // This checks if the user has just successfully logged in via a redirect
-      // from an external provider like Google.
       if (
         event === "SIGNED_IN" &&
         sessionStorage.getItem("oauth_in_progress") === "true"
@@ -48,7 +56,6 @@ export const useAuth = () => {
           title: "Kirjauduit sisään onnistuneesti",
           description: "Tervetuloa takaisin!",
         });
-        // Clean up the flag so it doesn't fire again on a normal page refresh
         sessionStorage.removeItem("oauth_in_progress");
       }
     });
@@ -63,13 +70,7 @@ export const useAuth = () => {
     return () => subscription.unsubscribe();
   }, [toast]);
 
-  /**
-   * Signs in user with OAuth provider (Google, Facebook, Apple)
-   * @param provider - The OAuth provider to use
-   */
-  const signInWithProvider = async (
-    provider: "google" | "facebook" | "apple"
-  ) => {
+  const signInWithProvider = async (provider: "google") => {
     try {
       sessionStorage.setItem("oauth_in_progress", "true");
       const redirectUrl = `${window.location.origin}/`;
@@ -83,6 +84,7 @@ export const useAuth = () => {
 
       if (error) throw error;
     } catch (error) {
+      sessionStorage.removeItem("oauth_in_progress"); // Clear flag on error too
       toast({
         variant: "destructive",
         title: "Kirjautuminen epäonnistui",
@@ -92,45 +94,29 @@ export const useAuth = () => {
     }
   };
 
-  /**
-   * Signs in user with email and password
-   * @param email - User's email address
-   * @param password - User's password
-   */
   const signInWithEmail = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
-
-      // If Supabase returns an error, throw it so our catch block can handle it.
       if (error) throw error;
-
-      // If there was no error, show the success message.
       toast({
         title: "Kirjauduit sisään onnistuneesti",
         description: "Tervetuloa takaisin!",
       });
     } catch (error) {
-      // The catch block's only job is to handle the error by showing a message.
-      // No need to throw again.
       toast({
         variant: "destructive",
         title: "Kirjautuminen epäonnistui",
         description: "Sähköposti tai salasana on virheellinen.",
       });
-      console.error("Sign in error:", error); // It's good practice to log the actual error
+      console.error("Sign in error:", error);
+      // Re-throw the error if you want calling components to potentially handle it too
+      // throw error;
     }
   };
 
-  /**
-   * Registers a new user with email and password
-   * Note: Email verification is handled by the send-signup-confirmation Edge Function
-   * which is triggered automatically on user signup via database trigger
-   * @param email - User's email address
-   * @param password - User's password
-   */
   const signUpWithEmail = async (email: string, password: string) => {
     try {
       const { error } = await supabase.auth.signUp({
@@ -142,6 +128,7 @@ export const useAuth = () => {
       });
 
       if (error) throw error;
+      // Success is handled by AuthDialog showing the confirmation message
     } catch (error) {
       toast({
         variant: "destructive",
@@ -149,18 +136,15 @@ export const useAuth = () => {
         description:
           error instanceof Error ? error.message : "Tuntematon virhe",
       });
+      // Re-throw needed so AuthDialog doesn't show success on failure
       throw error;
     }
   };
 
-  /**
-   * Signs out the current user
-   */
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-
       toast({
         title: "Kirjauduit ulos onnistuneesti",
         description: "Nähdään pian!",
@@ -177,17 +161,42 @@ export const useAuth = () => {
 
   const openAuthDialog = () => setIsAuthDialogOpen(true);
   const closeAuthDialog = () => setIsAuthDialogOpen(false);
+  // --- End: Logic moved from useAuth.tsx ---
 
-  return {
-    user,
-    session,
-    loading,
-    signInWithProvider,
-    signInWithEmail,
-    signUpWithEmail,
-    signOut,
-    isAuthDialogOpen,
-    openAuthDialog,
-    closeAuthDialog,
-  };
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(
+    () => ({
+      user,
+      session,
+      loading,
+      isAuthDialogOpen,
+      signInWithProvider,
+      signInWithEmail,
+      signUpWithEmail,
+      signOut,
+      openAuthDialog,
+      closeAuthDialog,
+    }),
+    [
+      user,
+      session,
+      loading,
+      isAuthDialogOpen,
+      signInWithProvider,
+      signInWithEmail,
+      signUpWithEmail,
+      signOut,
+    ]
+  ); // Add dependencies
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Custom hook to consume the AuthContext
+export const useAuthContext = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuthContext must be used within an AuthProvider");
+  }
+  return context;
 };

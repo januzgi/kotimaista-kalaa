@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FishermanProfile } from "@/lib/types";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Custom hook for managing admin access control and fisherman profile data.
@@ -21,7 +22,7 @@ import { FishermanProfile } from "@/lib/types";
  * @returns Object containing loading state, admin status, profile data, and user info
  */
 export const useAdminAccess = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuthContext();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
   const [fishermanProfile, setFishermanProfile] =

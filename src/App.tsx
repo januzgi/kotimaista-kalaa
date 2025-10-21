@@ -16,6 +16,8 @@ import Tietosuoja from "./pages/Tietosuoja";
 import { VaihdaSalasana } from "./pages/VaihdaSalasana";
 import { Header } from "./components/Header";
 import { Footer } from "./components/Footer";
+import { AuthDialog } from "./components/AuthDialog";
+import { AuthProvider } from "./contexts/AuthContext";
 
 /**
  * React Query client instance for managing server state and caching
@@ -49,26 +51,29 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
-        <Header />
-        <main>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/profiili" element={<Profiili />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/saatavilla" element={<Saatavilla />} />
-            <Route path="/ostoskori" element={<Ostoskori />} />
-            <Route path="/tilaa" element={<Tilaa />} />
-            <Route path="/kiitos" element={<Kiitos />} />
-            <Route path="/toimitusehdot" element={<Toimitusehdot />} />
-            <Route path="/tietosuoja" element={<Tietosuoja />} />
-            <Route path="/vaihda-salasana" element={<VaihdaSalasana />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </main>
-        <Footer />
-      </BrowserRouter>
+      <AuthProvider>
+        <BrowserRouter>
+          <Header />
+          <main>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/profiili" element={<Profiili />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/saatavilla" element={<Saatavilla />} />
+              <Route path="/ostoskori" element={<Ostoskori />} />
+              <Route path="/tilaa" element={<Tilaa />} />
+              <Route path="/kiitos" element={<Kiitos />} />
+              <Route path="/toimitusehdot" element={<Toimitusehdot />} />
+              <Route path="/tietosuoja" element={<Tietosuoja />} />
+              <Route path="/vaihda-salasana" element={<VaihdaSalasana />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </main>
+          <Footer />
+          <AuthDialog />
+        </BrowserRouter>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

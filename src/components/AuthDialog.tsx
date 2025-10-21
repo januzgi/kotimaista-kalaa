@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, UserPlus } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
 import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Authentication dialog component that provides sign-in and sign-up functionality.
@@ -38,7 +38,7 @@ export const AuthDialog = () => {
     signUpWithEmail,
     isAuthDialogOpen,
     closeAuthDialog,
-  } = useAuth();
+  } = useAuthContext();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupEmail, setSignupEmail] = useState("");

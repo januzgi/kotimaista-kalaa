@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
-import { useAuth } from "@/hooks/useAuth";
+
 import { supabase } from "@/integrations/supabase/client";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * Homepage component that serves as the landing page for the Kotimaista kalaa application.
@@ -27,7 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = () => {
   const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const [isSubscribed, setIsSubscribed] = useState(false);
 
   useEffect(() => {

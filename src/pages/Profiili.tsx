@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Edit2 } from "lucide-react";
 import { FishermanProfile } from "@/lib/types";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 /**
  * User profile management page component.
@@ -33,7 +33,7 @@ import { FishermanProfile } from "@/lib/types";
  * @returns The user profile management page
  */
 const Profiili = () => {
-  const { user, loading, signOut } = useAuth();
+  const { user, loading, signOut } = useAuthContext();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
