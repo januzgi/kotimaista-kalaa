@@ -28,6 +28,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Trash2, Plus } from "lucide-react";
 import { FishermanProfile, DefaultPrice } from "@/lib/types";
 
@@ -99,6 +109,8 @@ export const DefaultPricesManagement = ({
   const [editingPrice, setEditingPrice] = useState<string>("");
   const [newPrice, setNewPrice] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const form = useForm<AddPriceForm>({
@@ -353,15 +365,25 @@ export const DefaultPricesManagement = ({
   };
 
   /**
-   * Deletes a default price entry
+   * Opens the delete confirmation dialog for a default price entry
    * @param id - ID of the price entry to delete
    */
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
+    setDeleteTargetId(id);
+    setDeleteDialogOpen(true);
+  };
+
+  /**
+   * Confirms and executes the deletion of a default price entry
+   */
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return;
+
     try {
       const { error } = await supabase
         .from("default_prices")
         .delete()
-        .eq("id", id);
+        .eq("id", deleteTargetId);
 
       if (error) throw error;
 
@@ -378,6 +400,9 @@ export const DefaultPricesManagement = ({
         title: "Virhe",
         description: "Kilohintaa ei voitu poistaa.",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setDeleteTargetId(null);
     }
   };
 
@@ -607,6 +632,26 @@ export const DefaultPricesManagement = ({
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vahvista poisto</AlertDialogTitle>
+            <AlertDialogDescription>
+              Haluatko varmasti poistaa tämän kilohinnan? Toimintoa ei voi kumota.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Peruuta</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Poista
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
