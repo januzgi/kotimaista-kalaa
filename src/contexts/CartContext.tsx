@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Interface representing an item in the shopping cart
@@ -74,6 +75,7 @@ const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
  * @returns Cart context provider wrapping children
  */
 export const CartProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const savedCart = localStorage.getItem(CART_STORAGE_KEY);
@@ -202,20 +204,42 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     return items.some(item => item.productId === productId);
   };
 
-  return (
-    <CartContext.Provider value={{
+  const value = useMemo(() => {
+    if (!user) {
+      // If user is logged out, provide an empty cart state
+      return {
+        items: [],
+        removedItems: [],
+        addItem: () => {},
+        removeItem: () => {},
+        updateQuantity: () => {},
+        clearCart: () => {},
+        getItemCount: () => 0,
+        isInCart: () => false,
+        clearRemovedItems: () => {},
+        removeItemsById: () => {},
+        getTotalPrice: () => 0,
+      };
+    }
+
+    // If user is logged in, provide the real cart state
+    return {
       items,
       removedItems,
       addItem,
-      updateQuantity,
       removeItem,
-      removeItemsById,
-      clearRemovedItems,
+      updateQuantity,
       clearCart,
       getItemCount,
+      isInCart,
+      clearRemovedItems,
+      removeItemsById,
       getTotalPrice,
-      isInCart
-    }}>
+    };
+  }, [user, items, removedItems]);
+
+  return (
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

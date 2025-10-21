@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { Fish, Package, Euro, ShoppingCart } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
 import { Product } from "@/lib/types";
@@ -36,6 +37,7 @@ const Saatavilla = () => {
   );
   const { toast } = useToast();
   const { items, addItem, isInCart } = useCart();
+  const { user, openAuthDialog } = useAuth();
 
   /**
    * Fetches all available products from the database
@@ -93,6 +95,11 @@ const Saatavilla = () => {
    * @param product - The product to add to the cart
    */
   const handleAddToCart = (product: Product) => {
+    if (!user) {
+      openAuthDialog();
+      return;
+    }
+
     const quantityString = quantities[product.id] || "1";
     const numericQuantity = parseFloat(quantityString.replace(",", "."));
 

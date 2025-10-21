@@ -23,6 +23,7 @@ export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthDialogOpen, setIsAuthDialogOpen] = useState(false);
   const { toast } = useToast();
 
   /**
@@ -174,6 +175,9 @@ export const useAuth = () => {
     }
   };
 
+  const openAuthDialog = () => setIsAuthDialogOpen(true);
+  const closeAuthDialog = () => setIsAuthDialogOpen(false);
+
   return {
     user,
     session,
@@ -182,5 +186,8 @@ export const useAuth = () => {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    isAuthDialogOpen,
+    openAuthDialog,
+    closeAuthDialog,
   };
 };

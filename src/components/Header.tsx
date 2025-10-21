@@ -69,9 +69,8 @@ const NavLink = ({
  * Application header component with navigation, authentication, and shopping cart.
  */
 export const Header = () => {
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAuthDialogOpen, openAuthDialog, closeAuthDialog } = useAuth();
   const { getItemCount } = useCart();
   const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
@@ -241,10 +240,7 @@ export const Header = () => {
               <Button
                 variant="outline"
                 className="hidden md:inline-flex text-sm"
-                onClick={() => {
-                  setShowAuthDialog(true);
-                  setIsMobileMenuOpen(false);
-                }}
+                onClick={openAuthDialog}
               >
                 Kirjaudu sisään
               </Button>
@@ -266,7 +262,7 @@ export const Header = () => {
                       {renderNavLinks(true)}
                       <Separator />
                       <Button
-                        onClick={() => setShowAuthDialog(true)}
+                        onClick={openAuthDialog}
                         variant="default"
                       >
                         Kirjaudu sisään
@@ -279,7 +275,7 @@ export const Header = () => {
           )}
         </div>
       </div>
-      <AuthDialog open={showAuthDialog} onOpenChange={setShowAuthDialog} />
+      <AuthDialog open={isAuthDialogOpen} onOpenChange={closeAuthDialog} />
     </header>
   );
 };

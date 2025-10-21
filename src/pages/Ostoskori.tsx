@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useCart, CartItem } from "@/contexts/CartContext";
+import { useAuth } from "@/hooks/useAuth";
 import { ShoppingCart, Trash2, AlertTriangle, Euro, X } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
 
@@ -42,6 +43,7 @@ const Ostoskori = () => {
   const { toast } = useToast();
   const { items, updateQuantity, removeItem, removedItems, clearRemovedItems } =
     useCart();
+  const { user, openAuthDialog } = useAuth();
   const [inputQuantities, setInputQuantities] = useState<{
     [key: string]: string;
   }>({});
@@ -281,6 +283,15 @@ const Ostoskori = () => {
           <Button onClick={() => navigate("/saatavilla")}>
             Katso tarjonta
           </Button>
+          {!user && (
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={openAuthDialog}
+            >
+              Kirjaudu sisään ostaaksesi
+            </Button>
+          )}
         </div>
       ) : (
         <div className="space-y-6 max-w-[var(--ostoskori-summary-width)] mx-auto">
