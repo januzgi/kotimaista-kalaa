@@ -70,7 +70,7 @@ const NavLink = ({
  */
 export const Header = () => {
   const [isAdmin, setIsAdmin] = useState(false);
-  const { user, signOut, isAuthDialogOpen, openAuthDialog, closeAuthDialog } = useAuth();
+  const { user, signOut, openAuthDialog } = useAuth();
   const { getItemCount } = useCart();
   const { newOrderCount } = useNotifications();
   const navigate = useNavigate();
@@ -261,10 +261,7 @@ export const Header = () => {
                     <div className="flex flex-col space-y-4 mt-4">
                       {renderNavLinks(true)}
                       <Separator />
-                      <Button
-                        onClick={openAuthDialog}
-                        variant="default"
-                      >
+                      <Button onClick={openAuthDialog} variant="default">
                         Kirjaudu sisään
                       </Button>
                     </div>

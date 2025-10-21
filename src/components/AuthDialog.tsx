@@ -15,11 +15,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 
 /**
- * Props for the AuthDialog component
- */
-interface AuthDialogProps {}
-
-/**
  * Authentication dialog component that provides sign-in and sign-up functionality.
  *
  * Features:
