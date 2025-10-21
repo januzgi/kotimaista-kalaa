@@ -117,7 +117,7 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-6 sm:mb-8">
+      <div className="mb-6 sm:mb-8 max-w-[var(--admin-side-container-width)] mx-auto">
         <h1 className="text-2xl sm:text-3xl font-bold text-primary mb-2">
           Ylläpito
         </h1>
@@ -160,7 +160,7 @@ const Admin = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsList className="bg-transparent p-0 mt-4 md:mt-0">
+          <TabsList className="bg-transparent p-0 mt-4 md:mt-0 flex">
             <TabsTrigger
               value="prices"
               className="text-xs sm:text-sm flex items-center gap-2 px-3 py-1.5 bg-background hover:text-foreground rounded-md border-b-2 border-input rounded-b-none data-[state=active]:border-secondary data-[state=active]:border-b-2 w-[180px]"

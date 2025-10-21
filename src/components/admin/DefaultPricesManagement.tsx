@@ -529,7 +529,7 @@ export const DefaultPricesManagement = ({
                 />
               </div>
 
-              <Button type="submit" className="w-full md:w-auto">
+              <Button type="submit" className="flex ml-auto w-fit">
                 <Plus className="w-4 h-4" />
                 Lisää kilohinta
               </Button>
@@ -638,7 +638,8 @@ export const DefaultPricesManagement = ({
           <AlertDialogHeader>
             <AlertDialogTitle>Vahvista poisto</AlertDialogTitle>
             <AlertDialogDescription>
-              Haluatko varmasti poistaa tämän kilohinnan? Toimintoa ei voi kumota.
+              Haluatko varmasti poistaa tämän kilohinnan? Toimintoa ei voi
+              kumota.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
