@@ -275,7 +275,7 @@ export const Header = () => {
           )}
         </div>
       </div>
-      <AuthDialog open={isAuthDialogOpen} onOpenChange={closeAuthDialog} />
+      <AuthDialog />
     </header>
   );
 };

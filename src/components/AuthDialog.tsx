@@ -17,12 +17,7 @@ import { ForgotPasswordDialog } from "./ForgotPasswordDialog";
 /**
  * Props for the AuthDialog component
  */
-interface AuthDialogProps {
-  /** Whether the dialog is open */
-  open: boolean;
-  /** Callback function called when dialog open state changes */
-  onOpenChange: (open: boolean) => void;
-}
+interface AuthDialogProps {}
 
 /**
  * Authentication dialog component that provides sign-in and sign-up functionality.
@@ -41,8 +36,14 @@ interface AuthDialogProps {
  * @param props - The component props
  * @returns The authentication dialog component
  */
-export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
-  const { signInWithProvider, signInWithEmail, signUpWithEmail } = useAuth();
+export const AuthDialog = () => {
+  const {
+    signInWithProvider,
+    signInWithEmail,
+    signUpWithEmail,
+    isAuthDialogOpen,
+    closeAuthDialog,
+  } = useAuth();
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPassword, setLoginPassword] = useState("");
   const [signupEmail, setSignupEmail] = useState("");
@@ -58,7 +59,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
    */
   const handleProviderSignIn = async (provider: "google") => {
     await signInWithProvider(provider);
-    onOpenChange(false);
+    closeAuthDialog();
   };
 
   /**
@@ -70,7 +71,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
     setIsLoading(true);
     try {
       await signInWithEmail(loginEmail, loginPassword);
-      onOpenChange(false);
+      closeAuthDialog();
     } catch (error) {
       // Error handling is done in the auth function
     } finally {
@@ -102,7 +103,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
 
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+      <Dialog open={isAuthDialogOpen} onOpenChange={closeAuthDialog}>
         <DialogContent className="w-[calc(100vw-16px)] sm:max-w-md mx-auto rounded-lg">
           <DialogHeader>
             <DialogTitle className="text-center">Tervetuloa</DialogTitle>
@@ -120,7 +121,7 @@ export const AuthDialog = ({ open, onOpenChange }: AuthDialogProps) => {
               <Button
                 onClick={() => {
                   setSignupSuccess(false);
-                  onOpenChange(false);
+                  closeAuthDialog();
                 }}
                 className="w-full"
               >
