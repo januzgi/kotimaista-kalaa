@@ -122,7 +122,7 @@ const Admin = () => {
           Ylläpito
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground">
-          Hallitse saalista ja tilauksia
+          Hallitse tilauksia, saalista, kalastuspäiviä ja kilohintoja
         </p>
       </div>
 

@@ -517,7 +517,9 @@ export const DefaultPricesManagement = ({
         <CardHeader>
           <CardTitle>Olemassa olevat kilohintasi</CardTitle>
           <CardDescription>
-            Muokkaa tai poista olemassa olevia oletuskilohintoja
+            Poista olemassa olevia oletuskilohintoja.
+            <br /> Jos haluat muokata kilohintaa, käytä 'Poista' -painiketta ja
+            lisää uusi kilohinta.
           </CardDescription>
         </CardHeader>
         <CardContent>
