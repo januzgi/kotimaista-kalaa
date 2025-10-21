@@ -52,6 +52,7 @@ All colors MUST be HSL.
 
 :root {
   --admin-side-container-width: 780px;
+  --saatavilla-container-width: 1000px;
   --ostoskori-summary-width: 600px;
 }
 

@@ -32,7 +32,7 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
   const { newOrderCount } = useNotifications();
 
   return (
-    <div className="space-y-6 pt-12">
+    <div className="space-y-6 pt-12 max-w-[var(--admin-side-container-width)] mx-auto">
       <div>
         <h2 className="text-xl sm:text-2xl font-bold text-primary mb-2">
           Tilaukset

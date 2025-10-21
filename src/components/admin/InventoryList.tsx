@@ -318,7 +318,7 @@ export const InventoryList = ({
 
   if (loading) {
     return (
-      <Card>
+      <Card className="max-w-[var(--admin-side-container-width)] mx-auto">
         <CardHeader>
           <CardTitle>Nykyinen varasto</CardTitle>
         </CardHeader>
@@ -332,7 +332,7 @@ export const InventoryList = ({
   }
 
   return (
-    <Card className="max-w-4xl mx-auto">
+    <Card className="max-w-[var(--admin-side-container-width)] mx-auto">
       <CardHeader>
         <CardTitle>Nykyinen varasto ({getTotalProducts()})</CardTitle>
       </CardHeader>
@@ -345,7 +345,7 @@ export const InventoryList = ({
         ) : (
           <div className="space-y-8">
             {catchGroups.map((group) => (
-              <div key={group.catch_id} className="space-y-4">
+              <div key={group.catch_id} className="space-y-4 border-t-2 pt-4">
                 {/* Catch Date Header */}
                 <div className="border-b pb-2">
                   <div className="flex items-center justify-between">
@@ -369,7 +369,7 @@ export const InventoryList = ({
                 </div>
 
                 {/* Products for this catch */}
-                <div className="space-y-3 pl-4">
+                <div className="space-y-3">
                   {group.products.map((product) => (
                     <div
                       key={product.id}
