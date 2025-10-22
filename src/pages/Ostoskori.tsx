@@ -7,10 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
-import { useCart, CartItem } from "@/contexts/CartContext";
+import { CartItem } from "@/contexts/cart.definition";
 import { ShoppingCart, Trash2, AlertTriangle, Euro, X } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 
 /**
  * Interface for product availability data

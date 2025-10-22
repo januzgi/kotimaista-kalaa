@@ -1,113 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useContext } from "react";
+import { CartContext, CartContextType } from "@/contexts/cart.definition";
 
-export interface CartItem {
-  productId: string;
-  species: string;
-  form: string;
-  pricePerKg: number;
-  quantity: number;
-  fishermanName: string;
-  availableQuantity: number;
-}
-
-const CART_STORAGE_KEY = 'kotimaistakalaa_cart';
-
+/**
+ * Custom hook for accessing cart context and operations.
+ *
+ * Must be used within a CartProvider component. Provides access to all
+ * cart operations including adding, removing, updating items, and
+ * accessing cart state.
+ *
+ * @throws Error if used outside of CartProvider
+ * @returns Cart context with all operations and state
+ */
 export const useCart = () => {
-  const [items, setItems] = useState<CartItem[]>(() => {
-    try {
-      const savedCart = localStorage.getItem(CART_STORAGE_KEY);
-      return savedCart ? JSON.parse(savedCart) : [];
-    } catch (error) {
-      console.error('Error parsing cart from localStorage:', error);
-      return [];
-    }
-  });
-  const [removedItems, setRemovedItems] = useState<string[]>([]);
-
-  // Cart is initialized from localStorage in useState initializer
-
-  // Save cart to localStorage whenever items change
-  useEffect(() => {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
-
-  const addItem = (item: CartItem) => {
-    setItems(prevItems => {
-      const existingItemIndex = prevItems.findIndex(i => i.productId === item.productId);
-      
-      if (existingItemIndex >= 0) {
-        // Update existing item quantity
-        const newItems = [...prevItems];
-        newItems[existingItemIndex] = {
-          ...newItems[existingItemIndex],
-          quantity: newItems[existingItemIndex].quantity + item.quantity
-        };
-        return newItems;
-      } else {
-        // Add new item
-        return [...prevItems, item];
-      }
-    });
-  };
-
-  const updateQuantity = (productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      removeItem(productId);
-      return;
-    }
-    
-    setItems(prevItems =>
-      prevItems.map(item =>
-        item.productId === productId
-          ? { ...item, quantity }
-          : item
-      )
-    );
-  };
-
-  const removeItemsById = (productIds: string[]) => {
-    const removedItemNames: string[] = [];
-    
-    setItems(prevItems => {
-      const itemsToRemove = prevItems.filter(item => productIds.includes(item.productId));
-      removedItemNames.push(...itemsToRemove.map(item => `${item.species} (${item.form})`));
-      
-      return prevItems.filter(item => !productIds.includes(item.productId));
-    });
-    
-    setRemovedItems(removedItemNames);
-  };
-
-  const clearRemovedItems = () => {
-    setRemovedItems([]);
-  };
-
-  const clearCart = () => {
-    setItems([]);
-  };
-
-  const getItemCount = () => {
-    return items.length;
-  };
-
-  const getTotalPrice = () => {
-    return items.reduce((total, item) => total + (item.pricePerKg * item.quantity), 0);
-  };
-
-  const removeItem = (productId: string) => {
-    setItems(prevItems => prevItems.filter(item => item.productId !== productId));
-  };
-
-  return {
-    items,
-    removedItems,
-    addItem,
-    updateQuantity,
-    removeItem,
-    removeItemsById,
-    clearRemovedItems,
-    clearCart,
-    getItemCount,
-    getTotalPrice
-  };
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context as CartContextType;
 };

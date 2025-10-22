@@ -94,8 +94,7 @@ export const PublicSchedule = () => {
                     locale={fi}
                     className="rounded-md"
                     classNames={{
-                      day_today:
-                        "bg-muted text-primary border-2 border-primary underline",
+                      day_today: "text-primary underline",
                     }}
                     showOutsideDays={false}
                     modifiers={{ past: { before: startOfToday } }}

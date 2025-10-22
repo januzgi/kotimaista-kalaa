@@ -12,10 +12,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
 import { Menu, LogOut, User, ShoppingCart, Fish, Settings } from "lucide-react";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
 
 /**
  * A reusable navigation link component for both desktop and mobile views.
@@ -142,10 +142,7 @@ export const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <Link
-          to="/"
-          className="text-xl font-bold text-primary hover:text-foreground /80 transition-colors"
-        >
+        <Link to="/" className="text-xl font-bold text-primary">
           Kotimaista kalaa
         </Link>
 

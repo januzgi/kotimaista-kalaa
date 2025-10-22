@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import heroImage from "@/assets/images/Rubai.jpg";
-
 import { supabase } from "@/integrations/supabase/client";
-import { BellRing } from "lucide-react";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { BellRing, CheckCircle } from "lucide-react";
+import { useAuthContext } from "@/hooks/useAuth";
 
 /**
  * Hero section component for the homepage.
@@ -96,7 +95,10 @@ export const HeroSection = () => {
                 disabled={isSubscribed}
               >
                 {isSubscribed ? (
-                  "Olet jo listalla"
+                  <>
+                    <CheckCircle className="h-4 w-4" /> Saat ilmoitukset
+                    sähköpostiisi
+                  </>
                 ) : (
                   <>
                     <BellRing className="h-4 w-4" />

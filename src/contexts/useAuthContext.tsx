@@ -7,26 +7,10 @@ import {
   useMemo,
   useCallback,
 } from "react";
-import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
-// Define the shape of the context value
-interface AuthContextType {
-  user: User | null;
-  session: Session | null;
-  loading: boolean;
-  isAuthDialogOpen: boolean;
-  signInWithProvider: (provider: "google") => Promise<void>;
-  signInWithEmail: (email: string, password: string) => Promise<void>;
-  signUpWithEmail: (email: string, password: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  openAuthDialog: () => void;
-  closeAuthDialog: () => void;
-}
-
-// Create the context with a default undefined value initially
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+import { Session, User } from "@supabase/supabase-js";
+import { AuthContext } from "./auth.definition";
 
 // Create the AuthProvider component
 interface AuthProviderProps {
@@ -190,13 +174,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-// Custom hook to consume the AuthContext
-export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuthContext must be used within an AuthProvider");
-  }
-  return context;
 };

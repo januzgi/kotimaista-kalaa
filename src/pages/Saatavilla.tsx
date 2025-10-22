@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { Fish, Package, Euro, ShoppingCart } from "lucide-react";
 import { FishIcon } from "@/components/FishIcon";
 import { Product } from "@/lib/types";
 import { Link } from "react-router-dom";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
 
 /**
  * Available fish products page component.

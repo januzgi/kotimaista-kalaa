@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useCart } from "@/contexts/CartContext";
+import { useCart } from "@/hooks/useCart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +22,7 @@ import { Fish, MapPin, Clock, Euro, User, Phone, Home } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FishIcon } from "@/components/FishIcon";
 import { FulfillmentSlot, Product } from "@/lib/types";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
 
 /**
  * Order placement page component.

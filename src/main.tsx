@@ -3,7 +3,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { CartProvider } from "./contexts/CartContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
-import { AuthProvider } from "./contexts/AuthContext.tsx";
+import { AuthProvider } from "./contexts/useAuthContext.tsx";
 
 /**
  * Application entry point that renders the React app with necessary context providers.

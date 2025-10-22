@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { EmailSubscriptionModal } from "@/components/EmailSubscriptionModal";
 import { ProfileCompletionModal } from "@/components/ProfileCompletionModal";
-
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
+import { BellRing, CheckCircle } from "lucide-react";
 
 /**
  * Homepage component that serves as the landing page for the Kotimaista kalaa application.
@@ -83,7 +83,16 @@ const Index = () => {
               onClick={() => setIsSubscriptionModalOpen(true)}
               disabled={isSubscribed}
             >
-              {isSubscribed ? "Olet jo listalla" : "Liity listalle"}
+              {isSubscribed ? (
+                <>
+                  <CheckCircle className="h-4 w-4" /> Saat ilmoitukset
+                  sähköpostiisi
+                </>
+              ) : (
+                <>
+                  <BellRing className="h-4 w-4" /> Liity listalle
+                </>
+              )}
             </Button>
           </div>
 

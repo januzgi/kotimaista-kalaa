@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthContext } from "@/contexts/AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
 
 /**
  * Props for the EmailSubscriptionModal component
@@ -92,7 +92,7 @@ export const EmailSubscriptionModal = ({
 
       if (data.message === "Already subscribed") {
         toast({
-          title: "Olet jo listalla!",
+          title: "Olet jo listalla ja saat ilmoitukset sähköpostiisi!",
           description:
             "Kiitos mielenkiinnostasi, olet jo postituslistallamme :')",
         });
@@ -128,7 +128,8 @@ export const EmailSubscriptionModal = ({
         </DialogHeader>
         <div className="space-y-4 py-4">
           <p className="text-center text-muted-foreground text-sm">
-            Saat ilmoituksen aina kun tuoretta kalaa on saatavilla.
+            Saat ilmoituksen aina kun kalastaja päivittää tuoretta kalaa
+            saataville.
           </p>
           <div className="space-y-2">
             <Label htmlFor="email">Sähköpostiosoite</Label>
@@ -143,7 +144,7 @@ export const EmailSubscriptionModal = ({
           </div>
           <Button
             onClick={handleSubscribe}
-            className="w-full"
+            className="w-fit flex mx-auto"
             disabled={isLoading}
             size="lg"
           >

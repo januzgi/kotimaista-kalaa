@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
 import { NotificationContext } from "@/hooks/useNotifications";
-import { useAuthContext } from "./AuthContext";
+import { useAuthContext } from "@/hooks/useAuth";
 
 interface NotificationProviderProps {
   children: React.ReactNode;
