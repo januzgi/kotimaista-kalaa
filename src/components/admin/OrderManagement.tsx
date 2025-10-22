@@ -42,8 +42,8 @@ export const OrderManagement = ({ fishermanProfile }: OrderManagementProps) => {
         </p>
       </div>
 
-      <Tabs defaultValue="new" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+      <Tabs defaultValue="new">
+        <TabsList className="grid grid-cols-1 mb-6 sm:grid-cols-4 w-[180px] sm:w-full mx-auto h-auto">
           <TabsTrigger
             value="new"
             className="text-xs sm:text-sm relative data-[state=active]:border-secondary border-b-2 rounded-b-none data-[state=active]:shadow-md"

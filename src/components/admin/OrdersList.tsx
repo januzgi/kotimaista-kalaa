@@ -119,7 +119,6 @@ export const OrdersList = ({
       if (error) throw error;
       setOrders(data || []);
     } catch (error) {
-      console.error("Error fetching orders:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -157,7 +156,6 @@ export const OrdersList = ({
       fetchOrders(); // Refetch orders to update the UI
       setExpandedOrder(null);
     } catch (error) {
-      console.error("Error marking order as completed:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -196,16 +194,21 @@ export const OrdersList = ({
         );
 
         if (functionError) {
-          console.error("Error sending confirmation email:", functionError);
           toast({
             variant: "destructive",
             title: "Varoitus",
             description:
-              "Tilaus vahvistettiin, mutta vahvistussähköpostin lähetys epäonnistui.",
+              "Tilaus vahvistettiin, mutta vahvistussähköpostin lähetys epäonnistui. Voit laittaa kalastajalle viestin niin hän varmasti huomaa tilauksesi.",
           });
         }
       } catch (emailError) {
-        console.error("Error with confirmation email function:", emailError);
+        console.error("Error sending confirmation email:", emailError);
+        toast({
+          variant: "destructive",
+          title: "Virhe",
+          description:
+            "Vahvistussähköpostin lähetys epäonnistui. Voit laittaa kalastajalle viestin niin hän varmasti huomaa tilauksesi.",
+        });
       }
 
       toast({
@@ -218,7 +221,6 @@ export const OrdersList = ({
       refreshNotifications();
       setExpandedOrder(null);
     } catch (error) {
-      console.error("Error confirming order:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -285,7 +287,6 @@ export const OrdersList = ({
       refreshNotifications();
       setExpandedOrder(null);
     } catch (error) {
-      console.error("Error cancelling order:", error);
       toast({
         variant: "destructive",
         title: "Virhe",
@@ -375,15 +376,18 @@ export const OrdersList = ({
   return (
     <div className="space-y-4">
       {orders.map((order) => (
-        <Card key={order.id} className="transition-all duration-200">
+        <Card
+          key={order.id}
+          className="transition-all duration-200 max-w-[600px] mx-auto"
+        >
           <CardHeader
             className="cursor-pointer hover:bg-muted/50"
             onClick={() => toggleOrderExpansion(order.id)}
           >
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
+              <div className="flex flex-col md:flex-row gap-2 md:gap-4 items-start md:items-center">
                 <div>
-                  <CardTitle className="text-lg">
+                  <CardTitle className="text-lg italic">
                     {order.customer_name}
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
@@ -422,9 +426,9 @@ export const OrdersList = ({
                     </>
                   )}
                   {order.status === "CANCELLED" && (
-                    <>
+                    <span className="flex items-center text-destructive">
                       <XCircle className="mr-1 h-4 w-4" /> Peruttu
-                    </>
+                    </span>
                   )}
                 </Badge>
               </div>
@@ -443,9 +447,9 @@ export const OrdersList = ({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Customer Information */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h4 className="font-semibold flex items-center">
-                    <User className="mr-2 h-4 w-4" />
+                    <User className="mr-2 h-4 w-4 text-primary" />
                     Asiakkaan tiedot
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -466,9 +470,9 @@ export const OrdersList = ({
                 </div>
 
                 {/* Fulfillment Information */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                   <h4 className="font-semibold flex items-center">
-                    <Clock className="mr-2 h-4 w-4" />
+                    <Clock className="mr-2 h-4 w-4 text-primary" />
                     Toimitustiedot
                   </h4>
                   <div className="space-y-2 text-sm">
@@ -503,7 +507,7 @@ export const OrdersList = ({
                       </p>
                     ) : (
                       <p>
-                        <strong>Aika:</strong> Sovitaan erikseen
+                        <strong>Aika:</strong> Sovittava erikseen
                       </p>
                     )}
                   </div>
@@ -512,24 +516,24 @@ export const OrdersList = ({
 
               {/* Order Items */}
               <div className="mt-6">
-                <h4 className="font-semibold mb-3">Tilatut tuotteet</h4>
+                <h4 className="font-semibold text-primary">Tilatut tuotteet</h4>
                 <div className="space-y-2">
                   {order.order_items.map((item) => (
                     <div
                       key={item.id}
                       className="flex justify-between py-2 border-b"
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center flex-wrap xs:flex-nowrap max-w-[150px] xs:max-w-unset">
                         <FishIcon species={item.product.species} />
                         <span className="font-medium">
                           {item.product.species}
                         </span>
-                        <span className="text-muted-foreground mx-2">
+                        <span className="text-muted-foreground mx-2 w-full xs:w-auto">
                           {item.product.form}
                         </span>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm">
+                        <div className="text-xs xs:text-sm grow text-muted-foreground">
                           {item.quantity} kg ×{" "}
                           {item.product.price_per_kg.toFixed(2)} €/kg
                         </div>
@@ -581,7 +585,7 @@ export const OrdersList = ({
                     </div>
                   )}
 
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <Button
                       onClick={() => handleConfirmOrder(order.id)}
                       disabled={processingState[order.id]}
@@ -613,7 +617,7 @@ export const OrdersList = ({
 
               {/* Action Section for CONFIRMED orders */}
               {status === "CONFIRMED" && (
-                <div className="mt-6 p-4 bg-muted/30 rounded-lg space-y-3">
+                <div className="mt-6 p-4 bg-muted/30 rounded-lg space-y-2">
                   <ConfirmationDialog
                     triggerButton={
                       <Button
