@@ -73,9 +73,11 @@ export const HeroSection = () => {
               Tervetuloa apajille
             </h2>
             <p className="text-base sm:text-lg text-muted-foreground mb-6">
-              Tuoretta, paikallista kalaa suoraan kalastajalta. Pyydän kalaa
-              viikoittain Pirkanmaan puhtaista vesistöistä ja toimitan sen
-              tuoreena kotiovellesi.
+              <span className="font-bold text-primary italic">
+                Kotimaista kalaa
+              </span>{" "}
+              tarjoaa tuoretta, paikallista kalaa suoraan kalastajalta. Kalaa
+              pyydetään viikoittain Pirkanmaan puhtaista vesistöistä.
             </p>
             <p className="text-sm sm:text-base text-muted-foreground mb-6">
               Yli 10 vuoden kokemus kalastuksesta ja sitoutuminen laadukkaimpaan

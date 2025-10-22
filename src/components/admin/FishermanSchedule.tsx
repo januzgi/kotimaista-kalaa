@@ -216,7 +216,7 @@ export const FishermanSchedule = ({
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="flex flex-col gap-4 items-center justify-between">
           <div className="text-sm text-muted-foreground">
             Valittu {selectedDates.length} kalastuspäivää kuulle{" "}
             {format(currentMonth, "MMMM yyyy", { locale: fi })}
@@ -224,7 +224,7 @@ export const FishermanSchedule = ({
           <Button
             onClick={handleSaveSchedule}
             disabled={loading}
-            className="w-full sm:w-auto"
+            className="w-fit"
           >
             {loading ? "Tallennetaan..." : "Tallenna aikataulu"}
           </Button>

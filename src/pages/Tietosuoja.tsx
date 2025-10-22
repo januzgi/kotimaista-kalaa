@@ -8,16 +8,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
  */
 const Tietosuoja = () => {
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-[var(--content-width)]">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl sm:text-3xl font-bold text-primary">
             Tietosuojaseloste
           </CardTitle>
         </CardHeader>
-        <CardContent className="prose prose-sm max-w-none space-y-6">
+        <CardContent className="prose prose-sm max-w-none space-y-8">
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               1. Rekisterinpitäjä
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -27,7 +27,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               2. Rekisterin nimi
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -36,7 +36,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               3. Henkilötietojen käsittelyn tarkoitus
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -48,7 +48,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               4. Rekisterin tietosisältö
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -61,7 +61,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               5. Säännönmukaiset tietolähteet
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -72,7 +72,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               6. Tietojen luovutukset
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -82,7 +82,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               7. Rekisterin suojauksen periaatteet
             </h2>
             <p className="text-muted-foreground leading-relaxed">
@@ -96,7 +96,7 @@ const Tietosuoja = () => {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-primary mb-3">
+            <h2 className="text-xl font-semibold text-primary mb-2">
               8. Tarkastusoikeus ja tiedon korjaaminen
             </h2>
             <p className="text-muted-foreground leading-relaxed">

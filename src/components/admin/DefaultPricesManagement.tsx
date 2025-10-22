@@ -563,11 +563,10 @@ export const DefaultPricesManagement = ({
                   <div className="flex items-center space-x-4">
                     <div>
                       <span className="font-medium lowercase">
-                        {getSpeciesLabel(price.species)}
+                        {getSpeciesLabel(price.species)}{" "}
                       </span>
                       <span className="text-muted-foreground lowercase">
-                        {" "}
-                        - {getFormLabel(price.form)}
+                        {getFormLabel(price.form)}
                       </span>
                     </div>
                   </div>

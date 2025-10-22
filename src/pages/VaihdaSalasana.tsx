@@ -66,7 +66,9 @@ export const VaihdaSalasana = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="new-password">Uusi salasana</Label>
+            <Label htmlFor="new-password">
+              Uusi salasana <span className="text-primary">*</span>
+            </Label>
             <Input
               id="new-password"
               type="password"
@@ -76,7 +78,9 @@ export const VaihdaSalasana = () => {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirm-password">Vahvista uusi salasana</Label>
+            <Label htmlFor="confirm-password">
+              Vahvista uusi salasana <span className="text-primary">*</span>
+            </Label>
             <Input
               id="confirm-password"
               type="password"

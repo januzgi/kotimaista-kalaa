@@ -385,7 +385,7 @@ export const InventoryList = ({
                   {group.products.map((product) => (
                     <div
                       key={product.id}
-                      className="border rounded-lg p-4 pr-0 hover:bg-muted/50 transition-colors"
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
                     >
                       <div className="flex flex-col s:flex-row s:items-center justify-between gap-2">
                         <div className="flex-1">
