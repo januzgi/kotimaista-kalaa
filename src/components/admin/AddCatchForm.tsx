@@ -643,6 +643,7 @@ export const AddCatchForm = ({
                         <PopoverContent className="w-auto p-0" align="start">
                           <Calendar
                             mode="single"
+                            locale={fi}
                             selected={slot.date}
                             onSelect={(date) =>
                               date && updateSlot(index, "date", date)

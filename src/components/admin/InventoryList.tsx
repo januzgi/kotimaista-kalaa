@@ -19,6 +19,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CatchGroup, FulfillmentSlot, Product } from "@/lib/types";
+import { FishIcon } from "../FishIcon";
 
 /**
  * Props for the InventoryList component
@@ -305,11 +306,22 @@ export const InventoryList = ({
       await fetchInventoryData();
     } catch (error) {
       console.error("Error deleting:", error);
-      toast({
-        variant: "destructive",
-        title: "Virhe",
-        description: "Poistaminen epäonnistui.",
-      });
+
+      // Check for the specific foreign key violation code
+      if (error && error.code === "23503") {
+        toast({
+          variant: "destructive",
+          title: "Saalista ei voi poistaa",
+          description: "Osa saaliista kuuluu olemassa olevaan tilaukseen.",
+        });
+      } else {
+        // Show generic error for all other problems
+        toast({
+          variant: "destructive",
+          title: "Virhe",
+          description: "Poistaminen epäonnistui.",
+        });
+      }
     } finally {
       setDeleteDialogOpen(false);
       setDeleteTarget(null);
@@ -348,7 +360,7 @@ export const InventoryList = ({
               <div key={group.catch_id} className="space-y-4 border-t-2 pt-4">
                 {/* Catch Date Header */}
                 <div className="border-b pb-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col s:flex-row s:items-center s:justify-between gap-2">
                     <div>
                       <h2 className="text-xl font-bold text-primary">
                         {formatCatchDate(group.catch_date)}
@@ -358,12 +370,12 @@ export const InventoryList = ({
                       </div>
                     </div>
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
                       onClick={() => handleDeleteCatch(group.catch_date)}
-                      className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      className="hover:bg-destructive/10 w-fit ml-auto"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4" /> Poista saalis
                     </Button>
                   </div>
                 </div>
@@ -373,16 +385,17 @@ export const InventoryList = ({
                   {group.products.map((product) => (
                     <div
                       key={product.id}
-                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                      className="border rounded-lg p-4 pr-0 hover:bg-muted/50 transition-colors"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex flex-col s:flex-row s:items-center justify-between gap-2">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-lg">
+                          <h3 className="font-semibold text-lg flex items-center">
+                            <FishIcon species={product.species} />
                             {product.species}
                           </h3>
                           <div className="flex flex-wrap gap-2 mt-1">
                             <Badge variant="secondary">{product.form}</Badge>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
                               {editingProductId === product.id ? (
                                 <div className="flex items-center gap-2">
                                   <Input
@@ -408,7 +421,7 @@ export const InventoryList = ({
                                   </Button>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2">
+                                <div className="flex gap-2 flex-row items-center">
                                   <Badge variant="outline">
                                     {product.available_quantity} kg
                                   </Badge>
@@ -418,7 +431,7 @@ export const InventoryList = ({
                                     onClick={() => handleEditQuantity(product)}
                                     className="h-6 gap-1 px-1 text-muted-foreground hover:text-accent-foreground"
                                   >
-                                    <Edit className="h-3 w-3" /> Muokkaa
+                                    <Edit className="h-3 w-3" /> Muokkaa määrää
                                   </Button>
                                 </div>
                               )}
@@ -426,9 +439,9 @@ export const InventoryList = ({
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-end">
                           <div className="text-right">
-                            <p className="font-bold text-lg text-primary">
+                            <p className="font-bold text-md sm:text-lg">
                               {product.price_per_kg.toFixed(2)} €/kg
                             </p>
                           </div>
@@ -436,7 +449,7 @@ export const InventoryList = ({
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteProduct(product)}
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 pr-4"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

@@ -22,6 +22,7 @@ export default {
       screens: {
         xxs: "360px",
         xs: "420px",
+        s: "480px",
       },
       fontFamily: {
         caveat: ["Caveat", "cursive"],
