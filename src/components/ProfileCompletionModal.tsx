@@ -87,7 +87,9 @@ export const ProfileCompletionModal = ({
       }
 
       // Update user auth metadata
-      const updateData: any = { full_name: fullName.trim() };
+      const updateData: { full_name: string; avatar_url?: string } = {
+        full_name: fullName.trim(),
+      };
       if (avatarUrl) {
         updateData.avatar_url = avatarUrl;
       }
@@ -130,15 +132,19 @@ export const ProfileCompletionModal = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center">Viimeistele profiilisi</DialogTitle>
+          <DialogTitle className="text-center">
+            Viimeistele profiilisi
+          </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           <div className="flex flex-col items-center space-y-4">
             <div className="relative group">
               <Avatar className="w-20 h-20">
                 <AvatarImage
-                  src={selectedFile ? URL.createObjectURL(selectedFile) : undefined}
+                  src={
+                    selectedFile ? URL.createObjectURL(selectedFile) : undefined
+                  }
                   alt={fullName || "Käyttäjä"}
                 />
                 <AvatarFallback className="bg-primary text-primary-foreground text-lg">
@@ -153,7 +159,7 @@ export const ProfileCompletionModal = ({
                 <Edit2 className="h-3 w-3" />
               </button>
             </div>
-            
+
             <input
               ref={fileInputRef}
               type="file"
@@ -162,7 +168,7 @@ export const ProfileCompletionModal = ({
               className="hidden"
             />
           </div>
-          
+
           <div className="space-y-2">
             <Label htmlFor="fullName">Nimi</Label>
             <Input
@@ -172,12 +178,8 @@ export const ProfileCompletionModal = ({
               placeholder="Syötä nimesi"
             />
           </div>
-          
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full"
-          >
+
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
             {isSaving ? (
               <div className="flex items-center gap-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-background"></div>
